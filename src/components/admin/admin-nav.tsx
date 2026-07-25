@@ -12,6 +12,7 @@ const links = [
   { href: "/admin/dashboard", label: "Dashboard" },
   { href: "/admin/signals/new", label: "Add Signal" },
   { href: "/admin/signals", label: "Manage Signals" },
+  { href: "/admin/subscribers", label: "Members" },
   { href: "/admin/referrals", label: "Referrals" },
 ];
 
