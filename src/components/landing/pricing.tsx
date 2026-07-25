@@ -1,11 +1,119 @@
 "use client";
 
+import { useState, useTransition } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { WhatsAppIcon } from "@/components/site/icons";
 import { clientConfig } from "@/lib/client-config";
+import { checkExistingMember } from "@/app/register/actions";
+
+function toWhatsAppLink(phone: string, text: string) {
+  return `https://wa.me/${phone.replace(/\D/g, "")}?text=${encodeURIComponent(text)}`;
+}
+
+function ContinuePremiumPanel({
+  existingMemberPriceInr,
+}: {
+  existingMemberPriceInr: number;
+}) {
+  const [open, setOpen] = useState(false);
+  const [phone, setPhone] = useState("");
+  const [result, setResult] = useState<{ found: boolean; name: string | null } | null>(null);
+  const [isChecking, startChecking] = useTransition();
+
+  function handleCheck() {
+    if (phone.replace(/\D/g, "").length < 8) return;
+    startChecking(async () => {
+      const data = await checkExistingMember(phone);
+      setResult(data);
+    });
+  }
+
+  if (!open) {
+    return (
+      <Button
+        variant="outline"
+        size="lg"
+        className="thc-glow mt-3 w-full"
+        onClick={() => setOpen(true)}
+      >
+        Continue Premium
+      </Button>
+    );
+  }
+
+  const manager = clientConfig.paymentInfo.managers[0];
+
+  return (
+    <div className="thc-glass mt-3 rounded-xl border border-white/5 p-4">
+      <p className="text-sm font-medium text-foreground">
+        Enter your registered phone number to confirm your membership.
+      </p>
+      <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+        <Input
+          value={phone}
+          onChange={(e) => {
+            setPhone(e.target.value);
+            setResult(null);
+          }}
+          placeholder="Phone number"
+          inputMode="tel"
+          className="sm:flex-1"
+        />
+        <Button
+          className="thc-glow thc-btn-gradient"
+          disabled={isChecking}
+          onClick={handleCheck}
+        >
+          {isChecking ? "Checking…" : "Validate"}
+        </Button>
+      </div>
+
+      {result && (
+        <div className="mt-3">
+          {result.found ? (
+            <div className="rounded-lg border border-[var(--thc-win)]/40 bg-[var(--thc-win)]/10 p-3 text-sm">
+              <p className="text-foreground/90">
+                {result.name ? `Welcome back, ${result.name}!` : "Membership confirmed!"}{" "}
+                Continue at{" "}
+                <span className="font-semibold text-[var(--thc-win)]">
+                  ₹{existingMemberPriceInr.toLocaleString("en-IN")}
+                </span>
+                .
+              </p>
+              {manager && (
+                <Button asChild size="sm" className="thc-glow thc-btn-gradient mt-3 w-full">
+                  <a
+                    href={toWhatsAppLink(
+                      manager.phone,
+                      `Hi, I'd like to continue my premium membership at the existing-member price of ₹${existingMemberPriceInr}.`,
+                    )}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <WhatsAppIcon className="h-4 w-4" />
+                    Continue via WhatsApp
+                  </a>
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-muted-foreground">
+              We couldn&apos;t find an existing membership for that number.{" "}
+              <Link href="/register" className="text-primary underline underline-offset-2">
+                Register as a new member
+              </Link>{" "}
+              instead.
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function DhanOfferCard() {
   return (
@@ -117,6 +225,8 @@ export function Pricing() {
               </span>
             </span>
           </div>
+
+          <ContinuePremiumPanel existingMemberPriceInr={batchInfo.existingMemberPriceInr} />
 
           <ul className="mt-6 flex flex-col gap-2.5 text-sm">
             {batchInfo.benefits.map((benefit) => (
