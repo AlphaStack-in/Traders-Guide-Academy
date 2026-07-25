@@ -1,9 +1,15 @@
+import Image from "next/image";
 import { Navbar } from "@/components/site/navbar";
 import { Footer } from "@/components/site/footer";
 import { Button } from "@/components/ui/button";
 import { WhatsAppIcon, InstagramIcon } from "@/components/site/icons";
 import { ReferralForm } from "@/components/contact/referral-form";
 import { clientConfig } from "@/lib/client-config";
+
+const PROMO_BANNERS = [
+  { src: "/promo/offer1.jpeg", width: 852, height: 1280, alt: "Traders Hub Center jackpot offer" },
+  { src: "/promo/offer2.jpeg", width: 1024, height: 1536, alt: "Traders Hub Center 13th batch offer" },
+];
 
 function toWhatsAppLink(phone: string) {
   return `https://wa.me/${phone.replace(/\D/g, "")}`;
@@ -22,6 +28,29 @@ export default function ContactPage() {
             Questions about a signal, a batch, or payment — reach us directly.
           </p>
         </div>
+
+        {clientConfig.id === "thc" && (
+          <div className="mb-8 grid gap-4 sm:grid-cols-2">
+            {PROMO_BANNERS.map((banner) => (
+              <a
+                key={banner.src}
+                href={clientConfig.whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="thc-glow overflow-hidden rounded-2xl border border-white/5"
+              >
+                <Image
+                  src={banner.src}
+                  alt={banner.alt}
+                  width={banner.width}
+                  height={banner.height}
+                  sizes="(min-width: 640px) 50vw, 100vw"
+                  className="h-auto w-full"
+                />
+              </a>
+            ))}
+          </div>
+        )}
 
         <div className="grid gap-6 sm:grid-cols-2">
           <a
