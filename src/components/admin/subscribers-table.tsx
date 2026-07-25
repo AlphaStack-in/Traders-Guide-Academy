@@ -2,12 +2,19 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { Pencil, Plus, Search, Trash2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import { formatSignalDate, formatSignalTime } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -66,6 +73,47 @@ function draftToInput(draft: MemberDraft): SubscriberInput | { error: string } {
 
 function toWhatsAppLink(phone: string) {
   return `https://wa.me/${phone.replace(/\D/g, "")}`;
+}
+
+type SortKey = "createdAt" | "name" | "batchNumber";
+type SortDirection = "asc" | "desc";
+interface SortState {
+  key: SortKey;
+  direction: SortDirection;
+}
+
+function SortableHead({
+  label,
+  sortKey,
+  sort,
+  onSort,
+}: {
+  label: string;
+  sortKey: SortKey;
+  sort: SortState;
+  onSort: (key: SortKey) => void;
+}) {
+  const isActive = sort.key === sortKey;
+  return (
+    <TableHead>
+      <button
+        type="button"
+        onClick={() => onSort(sortKey)}
+        className="flex items-center gap-1 text-muted-foreground transition-colors hover:text-foreground"
+      >
+        {label}
+        {isActive ? (
+          sort.direction === "asc" ? (
+            <ArrowUp className="h-3 w-3" />
+          ) : (
+            <ArrowDown className="h-3 w-3" />
+          )
+        ) : (
+          <ArrowUpDown className="h-3 w-3 opacity-40" />
+        )}
+      </button>
+    </TableHead>
+  );
 }
 
 function MemberDraftFields({
@@ -310,26 +358,76 @@ function SubscriberRowItem({ subscriber }: { subscriber: SubscriberRow }) {
 
 export function SubscribersTable({ subscribers }: { subscribers: SubscriberRow[] }) {
   const [query, setQuery] = useState("");
+  const [batchFilter, setBatchFilter] = useState("all");
+  const [sort, setSort] = useState<SortState>({ key: "createdAt", direction: "desc" });
+
+  const batchNumbers = useMemo(() => {
+    const set = new Set<number>();
+    for (const s of subscribers) {
+      if (s.batchNumber != null) set.add(s.batchNumber);
+    }
+    return Array.from(set).sort((a, b) => b - a);
+  }, [subscribers]);
+  const hasUnassigned = subscribers.some((s) => s.batchNumber == null);
+
+  function handleSort(key: SortKey) {
+    setSort((prev) => {
+      if (prev.key !== key) return { key, direction: key === "createdAt" ? "desc" : "asc" };
+      return { key, direction: prev.direction === "asc" ? "desc" : "asc" };
+    });
+  }
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return subscribers;
-    return subscribers.filter((s) =>
-      [s.name, s.phone, s.email ?? ""].some((field) => field.toLowerCase().includes(q)),
-    );
-  }, [subscribers, query]);
+    let rows = subscribers;
+    if (q) {
+      rows = rows.filter((s) =>
+        [s.name, s.phone, s.email ?? ""].some((field) => field.toLowerCase().includes(q)),
+      );
+    }
+    if (batchFilter !== "all") {
+      rows = rows.filter((s) =>
+        batchFilter === "unassigned" ? s.batchNumber == null : String(s.batchNumber) === batchFilter,
+      );
+    }
+
+    const sign = sort.direction === "asc" ? 1 : -1;
+    return [...rows].sort((a, b) => {
+      if (sort.key === "name") return sign * a.name.localeCompare(b.name);
+      if (sort.key === "batchNumber") {
+        return sign * ((a.batchNumber ?? -1) - (b.batchNumber ?? -1));
+      }
+      return sign * (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    });
+  }, [subscribers, query, batchFilter, sort]);
 
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="relative w-full sm:max-w-xs">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by name, phone, or email…"
-            className="pl-9"
-          />
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div className="relative w-full sm:w-64">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search by name, phone, or email…"
+              className="pl-9"
+            />
+          </div>
+          <Select value={batchFilter} onValueChange={setBatchFilter}>
+            <SelectTrigger className="w-full sm:w-40">
+              <SelectValue placeholder="Batch" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All batches</SelectItem>
+              {batchNumbers.map((b) => (
+                <SelectItem key={b} value={String(b)}>
+                  Batch {b}
+                </SelectItem>
+              ))}
+              {hasUnassigned && <SelectItem value="unassigned">Unassigned</SelectItem>}
+            </SelectContent>
+          </Select>
         </div>
         <AddMemberPanel />
       </div>
@@ -339,12 +437,12 @@ export function SubscribersTable({ subscribers }: { subscribers: SubscriberRow[]
           <Table>
             <TableHeader>
               <TableRow className="border-b-white/10 hover:bg-transparent">
-                <TableHead>Registered</TableHead>
-                <TableHead>Name</TableHead>
+                <SortableHead label="Registered" sortKey="createdAt" sort={sort} onSort={handleSort} />
+                <SortableHead label="Name" sortKey="name" sort={sort} onSort={handleSort} />
                 <TableHead>Phone</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Plan</TableHead>
-                <TableHead>Batch</TableHead>
+                <SortableHead label="Batch" sortKey="batchNumber" sort={sort} onSort={handleSort} />
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -357,7 +455,7 @@ export function SubscribersTable({ subscribers }: { subscribers: SubscriberRow[]
                   >
                     {subscribers.length === 0
                       ? "No members registered yet."
-                      : "No members match your search."}
+                      : "No members match your filters."}
                   </TableCell>
                 </TableRow>
               ) : (
