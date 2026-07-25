@@ -621,6 +621,34 @@ export function OngoingRiskRewardChart({ data }: { data: RiskRewardPoint[] }) {
   );
 }
 
+function makeBestWorstLabel(data: { label: string; pnlPercent: number }[]) {
+  return function BestWorstLabel({
+    x = 0,
+    y = 0,
+    width = 0,
+    height = 0,
+    index = 0,
+  }: RiskRewardLabelProps) {
+    const point = data[index];
+    if (!point) return null;
+    const cx = Number(x) + Number(width) / 2;
+    const isPositive = point.pnlPercent >= 0;
+    const cy = isPositive ? Number(y) - 6 : Number(y) + Number(height) + 14;
+    return (
+      <text
+        x={cx}
+        y={cy}
+        textAnchor="middle"
+        fontSize={11}
+        fontWeight={700}
+        fill={isPositive ? "var(--thc-win)" : "var(--thc-loss)"}
+      >
+        {`${isPositive ? "+" : ""}${point.pnlPercent.toFixed(1)}%`}
+      </text>
+    );
+  };
+}
+
 export function BestWorstBarChart({
   data,
 }: {
@@ -660,6 +688,7 @@ export function BestWorstBarChart({
               fill={entry.pnlPercent >= 0 ? "url(#bwWinFill)" : "url(#bwLossFill)"}
             />
           ))}
+          <LabelList dataKey="pnlPercent" content={makeBestWorstLabel(data)} />
         </Bar>
       </BarChart>
     </ResponsiveContainer>
