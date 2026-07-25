@@ -2,7 +2,17 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { ArrowDown, ArrowUp, ArrowUpDown, Pencil, Plus, Search, Trash2, X } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  Megaphone,
+  Pencil,
+  Plus,
+  Search,
+  Trash2,
+  X,
+} from "lucide-react";
 import { formatSignalDate, formatSignalTime } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -429,7 +439,18 @@ export function SubscribersTable({ subscribers }: { subscribers: SubscriberRow[]
             </SelectContent>
           </Select>
         </div>
-        <AddMemberPanel />
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-9 gap-1.5"
+            onClick={() => toast.info("Feature development underway.")}
+          >
+            <Megaphone className="h-4 w-4" />
+            Announcement
+          </Button>
+          <AddMemberPanel />
+        </div>
       </div>
 
       <div className="thc-glass overflow-hidden rounded-xl border border-white/5">
