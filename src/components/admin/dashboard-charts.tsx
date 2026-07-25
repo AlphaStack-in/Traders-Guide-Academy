@@ -282,8 +282,7 @@ export function WinRateDonutChart({
   gainPercent: number;
   lossPercent: number;
 }) {
-  const total = wins + losses;
-  const winRate = total > 0 ? (wins / total) * 100 : 0;
+  const netPercent = gainPercent + lossPercent;
   const pct = (n: number) => `${n >= 0 ? "+" : ""}${n.toFixed(1)}%`;
   const data = [
     { name: "Wins", value: wins },
@@ -333,10 +332,15 @@ export function WinRateDonutChart({
       </ResponsiveContainer>
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center pb-8">
         <div className="text-center">
-          <p className="font-heading text-2xl font-bold text-[var(--thc-win)]">
-            {winRate.toFixed(1)}%
+          <p
+            className={cn(
+              "font-heading text-2xl font-bold",
+              netPercent >= 0 ? "text-[var(--thc-win)]" : "text-[var(--thc-loss)]",
+            )}
+          >
+            {pct(netPercent)}
           </p>
-          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Win Rate</p>
+          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Net %</p>
         </div>
       </div>
     </div>
