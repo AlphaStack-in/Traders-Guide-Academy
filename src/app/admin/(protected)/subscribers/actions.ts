@@ -14,6 +14,54 @@ async function requireAdmin() {
   }
 }
 
+export interface SubscriberInput {
+  name: string;
+  phone: string;
+  email: string | null;
+  batchNumber: number | null;
+}
+
+export async function createSubscriber(input: SubscriberInput) {
+  await requireAdmin();
+
+  const name = input.name.trim();
+  const phone = input.phone.trim();
+  const email = input.email?.trim() || null;
+
+  if (!name || !phone) {
+    return { success: false, error: "Name and phone are required." };
+  }
+
+  await prisma.subscriber.create({
+    data: { name, phone, email, batchNumber: input.batchNumber },
+  });
+
+  revalidatePath("/admin/subscribers");
+
+  return { success: true };
+}
+
+export async function updateSubscriber(id: string, input: SubscriberInput) {
+  await requireAdmin();
+
+  const name = input.name.trim();
+  const phone = input.phone.trim();
+  const email = input.email?.trim() || null;
+
+  if (!name || !phone) {
+    return { success: false, error: "Name and phone are required." };
+  }
+
+  await prisma.subscriber.update({
+    where: { id },
+    data: { name, phone, email, batchNumber: input.batchNumber },
+  });
+
+  revalidatePath("/admin/subscribers");
+
+  return { success: true };
+}
+
 export async function deleteSubscriber(id: string) {
   await requireAdmin();
 

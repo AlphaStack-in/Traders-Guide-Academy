@@ -2,11 +2,12 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { Search, Trash2 } from "lucide-react";
+import { Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import { formatSignalDate, formatSignalTime } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -15,7 +16,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { deleteSubscriber } from "@/app/admin/(protected)/subscribers/actions";
+import {
+  createSubscriber,
+  deleteSubscriber,
+  updateSubscriber,
+  type SubscriberInput,
+} from "@/app/admin/(protected)/subscribers/actions";
 
 export interface SubscriberRow {
   id: string;
@@ -23,16 +29,173 @@ export interface SubscriberRow {
   phone: string;
   email: string | null;
   plan: string;
+  batchNumber: number | null;
   createdAt: string;
+}
+
+interface MemberDraft {
+  name: string;
+  phone: string;
+  email: string;
+  batchNumber: string;
+}
+
+const EMPTY_DRAFT: MemberDraft = { name: "", phone: "", email: "", batchNumber: "" };
+
+function toDraft(subscriber: SubscriberRow): MemberDraft {
+  return {
+    name: subscriber.name,
+    phone: subscriber.phone,
+    email: subscriber.email ?? "",
+    batchNumber: subscriber.batchNumber != null ? String(subscriber.batchNumber) : "",
+  };
+}
+
+function draftToInput(draft: MemberDraft): SubscriberInput | { error: string } {
+  const name = draft.name.trim();
+  const phone = draft.phone.trim();
+  if (!name || !phone) {
+    return { error: "Name and phone are required." };
+  }
+  const batchNumber = draft.batchNumber.trim() === "" ? null : parseInt(draft.batchNumber, 10);
+  if (batchNumber != null && !Number.isFinite(batchNumber)) {
+    return { error: "Batch must be a valid number." };
+  }
+  return { name, phone, email: draft.email.trim() || null, batchNumber };
 }
 
 function toWhatsAppLink(phone: string) {
   return `https://wa.me/${phone.replace(/\D/g, "")}`;
 }
 
+function MemberDraftFields({
+  draft,
+  onChange,
+}: {
+  draft: MemberDraft;
+  onChange: (draft: MemberDraft) => void;
+}) {
+  return (
+    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <Input
+        value={draft.name}
+        onChange={(e) => onChange({ ...draft, name: e.target.value })}
+        placeholder="Name"
+        className="h-8"
+      />
+      <Input
+        value={draft.phone}
+        onChange={(e) => onChange({ ...draft, phone: e.target.value })}
+        placeholder="Phone"
+        className="h-8"
+      />
+      <Input
+        value={draft.email}
+        onChange={(e) => onChange({ ...draft, email: e.target.value })}
+        placeholder="Email (optional)"
+        className="h-8"
+      />
+      <Input
+        value={draft.batchNumber}
+        onChange={(e) => onChange({ ...draft, batchNumber: e.target.value })}
+        placeholder="Batch # (optional)"
+        className="h-8"
+        inputMode="numeric"
+      />
+    </div>
+  );
+}
+
+function AddMemberPanel() {
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState<MemberDraft>(EMPTY_DRAFT);
+  const [isSaving, startSaving] = useTransition();
+
+  function handleAdd() {
+    const input = draftToInput(draft);
+    if ("error" in input) {
+      toast.error(input.error);
+      return;
+    }
+    startSaving(async () => {
+      const result = await createSubscriber(input);
+      if (result.success) {
+        toast.success(`${input.name} added.`);
+        setDraft(EMPTY_DRAFT);
+        setOpen(false);
+      } else {
+        toast.error(result.error ?? "Failed to add member.");
+      }
+    });
+  }
+
+  if (!open) {
+    return (
+      <Button size="sm" className="thc-glow thc-btn-gradient h-9 gap-1.5" onClick={() => setOpen(true)}>
+        <Plus className="h-4 w-4" />
+        Add Member
+      </Button>
+    );
+  }
+
+  return (
+    <div className="thc-glass flex flex-col gap-2 rounded-xl border border-white/5 p-3">
+      <Label className="text-xs text-muted-foreground">New member</Label>
+      <MemberDraftFields draft={draft} onChange={setDraft} />
+      <div className="flex items-center gap-2">
+        <Button
+          size="sm"
+          className="thc-glow thc-btn-gradient h-8"
+          disabled={isSaving}
+          onClick={handleAdd}
+        >
+          {isSaving ? "Adding…" : "Add"}
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-8"
+          disabled={isSaving}
+          onClick={() => {
+            setDraft(EMPTY_DRAFT);
+            setOpen(false);
+          }}
+        >
+          <X className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 function SubscriberRowItem({ subscriber }: { subscriber: SubscriberRow }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [draft, setDraft] = useState<MemberDraft>(() => toDraft(subscriber));
   const [deleteArmed, setDeleteArmed] = useState(false);
+  const [isSaving, startSaving] = useTransition();
   const [isDeleting, startDeleting] = useTransition();
+
+  function startEdit() {
+    setDraft(toDraft(subscriber));
+    setIsEditing(true);
+  }
+
+  function handleSave() {
+    const input = draftToInput(draft);
+    if ("error" in input) {
+      toast.error(input.error);
+      return;
+    }
+    startSaving(async () => {
+      const result = await updateSubscriber(subscriber.id, input);
+      if (result.success) {
+        toast.success(`${input.name} updated.`);
+        setIsEditing(false);
+      } else {
+        toast.error(result.error ?? "Failed to update member.");
+      }
+    });
+  }
 
   function handleDeleteClick() {
     if (!deleteArmed) {
@@ -48,6 +211,41 @@ function SubscriberRowItem({ subscriber }: { subscriber: SubscriberRow }) {
         toast.error("Failed to delete member.");
       }
     });
+  }
+
+  if (isEditing) {
+    return (
+      <TableRow className="border-b-white/5 bg-white/[0.02]">
+        <TableCell className="whitespace-nowrap text-muted-foreground">
+          {formatSignalDate(subscriber.createdAt)}{" "}
+          <span className="text-xs">{formatSignalTime(subscriber.createdAt)}</span>
+        </TableCell>
+        <TableCell colSpan={5}>
+          <MemberDraftFields draft={draft} onChange={setDraft} />
+        </TableCell>
+        <TableCell>
+          <div className="flex items-center gap-1.5">
+            <Button
+              size="sm"
+              className="thc-glow thc-btn-gradient h-8"
+              disabled={isSaving}
+              onClick={handleSave}
+            >
+              {isSaving ? "Saving…" : "Save"}
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8"
+              disabled={isSaving}
+              onClick={() => setIsEditing(false)}
+            >
+              <X className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </TableCell>
+      </TableRow>
+    );
   }
 
   return (
@@ -70,12 +268,24 @@ function SubscriberRowItem({ subscriber }: { subscriber: SubscriberRow }) {
           {subscriber.plan}
         </Badge>
       </TableCell>
+      <TableCell className="whitespace-nowrap text-muted-foreground">
+        {subscriber.batchNumber != null ? `Batch ${subscriber.batchNumber}` : "—"}
+      </TableCell>
       <TableCell>
         <div className="flex items-center gap-1.5">
           <Button asChild size="sm" variant="outline" className="thc-glow h-8">
             <a href={toWhatsAppLink(subscriber.phone)} target="_blank" rel="noopener noreferrer">
               Message
             </a>
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 w-8 p-0"
+            title="Edit member"
+            onClick={startEdit}
+          >
+            <Pencil className="h-3.5 w-3.5" />
           </Button>
           <Button
             size="sm"
@@ -111,14 +321,17 @@ export function SubscribersTable({ subscribers }: { subscribers: SubscriberRow[]
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="relative w-full sm:max-w-xs">
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search by name, phone, or email…"
-          className="pl-9"
-        />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="relative w-full sm:max-w-xs">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by name, phone, or email…"
+            className="pl-9"
+          />
+        </div>
+        <AddMemberPanel />
       </div>
 
       <div className="thc-glass overflow-hidden rounded-xl border border-white/5">
@@ -131,6 +344,7 @@ export function SubscribersTable({ subscribers }: { subscribers: SubscriberRow[]
                 <TableHead>Phone</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Plan</TableHead>
+                <TableHead>Batch</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -138,7 +352,7 @@ export function SubscribersTable({ subscribers }: { subscribers: SubscriberRow[]
               {filtered.length === 0 ? (
                 <TableRow className="hover:bg-transparent">
                   <TableCell
-                    colSpan={6}
+                    colSpan={7}
                     className="py-8 text-center text-sm text-muted-foreground"
                   >
                     {subscribers.length === 0
