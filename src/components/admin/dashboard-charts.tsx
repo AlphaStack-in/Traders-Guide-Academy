@@ -632,21 +632,53 @@ function makeBestWorstLabel(data: { label: string; pnlPercent: number }[]) {
     const point = data[index];
     if (!point) return null;
     const cx = Number(x) + Number(width) / 2;
+    const cy = Number(y);
+    const ch = Number(height);
     const isPositive = point.pnlPercent >= 0;
-    const cy = isPositive ? Number(y) - 6 : Number(y) + Number(height) + 14;
+    // Vertical text anchored in from the bar's own tip (clamped to the bar's
+    // height, same approach as the risk/reward chart above) so it always
+    // sits inside the bar's own footprint instead of relying on outside
+    // whitespace that shrinks or grows with the y-domain.
+    const inset = Math.min(8, ch * 0.3);
+    const anchorY = isPositive ? cy + inset : cy + ch - inset;
     return (
       <text
         x={cx}
-        y={cy}
-        textAnchor="middle"
+        y={anchorY}
+        textAnchor={isPositive ? "end" : "start"}
         fontSize={11}
         fontWeight={700}
-        fill={isPositive ? "var(--thc-win)" : "var(--thc-loss)"}
+        fill="#f5f2e8"
+        transform={`rotate(-90 ${cx} ${anchorY})`}
       >
         {`${isPositive ? "+" : ""}${point.pnlPercent.toFixed(1)}%`}
       </text>
     );
   };
+}
+
+function BestWorstAxisTick({
+  x = 0,
+  y = 0,
+  payload,
+}: {
+  x?: number;
+  y?: number;
+  payload?: { value: string };
+}) {
+  return (
+    <text
+      x={x}
+      y={y}
+      dy={4}
+      textAnchor="end"
+      fontSize={11}
+      fill="var(--muted-foreground)"
+      transform={`rotate(-90 ${x} ${y})`}
+    >
+      {payload?.value}
+    </text>
+  );
 }
 
 export function BestWorstBarChart({
@@ -656,7 +688,7 @@ export function BestWorstBarChart({
 }) {
   return (
     <ResponsiveContainer width="100%" height={280}>
-      <BarChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 24 }}>
+      <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 4 }} barCategoryGap="12%">
         <defs>
           <linearGradient id="bwWinFill" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="var(--thc-win)" stopOpacity={0.95} />
@@ -668,14 +700,7 @@ export function BestWorstBarChart({
           </linearGradient>
         </defs>
         {grid}
-        <XAxis
-          dataKey="label"
-          tick={axisTick}
-          angle={-90}
-          textAnchor="end"
-          interval={0}
-          height={70}
-        />
+        <XAxis dataKey="label" tick={<BestWorstAxisTick />} interval={0} height={90} />
         <YAxis tick={axisTick} />
         <Tooltip contentStyle={chartTooltipStyle}
           labelStyle={chartTooltipLabelStyle}
