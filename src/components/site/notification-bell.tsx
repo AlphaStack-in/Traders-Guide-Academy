@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Bell } from "lucide-react";
 import { getRecentAdminUpdates } from "@/app/admin/(protected)/signals/actions";
+import { INSTRUMENT_LABEL, type InstrumentLiteral } from "@/lib/instruments";
 
 const STORAGE_KEY = "thc-notifications-last-seen";
 
@@ -10,6 +11,7 @@ interface UpdateItem {
   id: string;
   strike: number;
   optionType: string;
+  instrument: InstrumentLiteral | null;
   message: string;
   createdAt: string;
 }
@@ -117,12 +119,14 @@ export function NotificationBell() {
                     >
                       <div className="flex items-center justify-between gap-2">
                         <span className="font-heading text-xs font-bold thc-gold-text">
+                          {item.instrument ? `${INSTRUMENT_LABEL[item.instrument]} ` : ""}
                           {item.strike} {item.optionType}
                         </span>
                         <span className="text-[10px] text-muted-foreground">
                           {new Date(item.createdAt).toLocaleTimeString("en-IN", {
                             hour: "2-digit",
                             minute: "2-digit",
+                            second: "2-digit",
                           })}
                         </span>
                       </div>

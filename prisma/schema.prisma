@@ -86,12 +86,13 @@ model Referral {
 // Append-only log of admin updates posted to users, for the notification
 // bell — Signal.adminNote only holds the current note, this is the history.
 model AdminUpdate {
-  id         String   @id @default(uuid())
+  id         String      @id @default(uuid())
   signalId   String
   strike     Int
   optionType OptionType
+  instrument Instrument?
   message    String
-  createdAt  DateTime @default(now())
+  createdAt  DateTime    @default(now())
 
   @@index([createdAt])
 }

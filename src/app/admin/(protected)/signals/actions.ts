@@ -93,6 +93,7 @@ export async function updateAdminNote(id: string, adminNote: string | null) {
         signalId: id,
         strike: signal.strike,
         optionType: signal.optionType,
+        instrument: signal.instrument,
         message: adminNote,
       },
     });
@@ -106,15 +107,26 @@ export async function updateAdminNote(id: string, adminNote: string | null) {
 }
 
 export async function getRecentAdminUpdates(limit = 50) {
-  const updates = await prisma.adminUpdate.findMany({
+  // Fetch a wider window than `limit`, then keep only each signal's latest
+  // update — an admin posting several updates on the same ongoing trade
+  // should only show its current note in the feed, not the whole history.
+  const recent = await prisma.adminUpdate.findMany({
     orderBy: { createdAt: "desc" },
-    take: limit,
+    take: limit * 4,
   });
 
-  return updates.map((u) => ({
+  const seenSignals = new Set<string>();
+  const latestPerSignal = recent.filter((u) => {
+    if (seenSignals.has(u.signalId)) return false;
+    seenSignals.add(u.signalId);
+    return true;
+  });
+
+  return latestPerSignal.slice(0, limit).map((u) => ({
     id: u.id,
     strike: u.strike,
     optionType: u.optionType,
+    instrument: u.instrument,
     message: u.message,
     createdAt: u.createdAt.toISOString(),
   }));

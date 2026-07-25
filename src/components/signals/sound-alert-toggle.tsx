@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, BellOff } from "lucide-react";
+import { AlarmClock, AlarmClockOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSoundAlert } from "@/components/site/sound-alert-provider";
 
@@ -25,7 +25,7 @@ export function SoundAlertToggle() {
         justAlerted && "animate-pulse",
       )}
     >
-      {enabled ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />}
+      {enabled ? <AlarmClock className="h-4 w-4" /> : <AlarmClockOff className="h-4 w-4" />}
     </button>
   );
 }
