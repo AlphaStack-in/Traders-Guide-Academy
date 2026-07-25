@@ -2,6 +2,7 @@ import { Navbar } from "@/components/site/navbar";
 import { Footer } from "@/components/site/footer";
 import { Button } from "@/components/ui/button";
 import { WhatsAppIcon, InstagramIcon } from "@/components/site/icons";
+import { ReferralForm } from "@/components/contact/referral-form";
 import { clientConfig } from "@/lib/client-config";
 
 function toWhatsAppLink(phone: string) {
@@ -89,6 +90,8 @@ export default function ContactPage() {
             ))}
           </div>
         </div>
+
+        <ReferralForm />
       </main>
       <Footer />
     </div>

@@ -71,3 +71,14 @@ model Subscriber {
   plan      SubscriberPlan @default(PREMIUM)
   createdAt DateTime       @default(now())
 }
+
+model Referral {
+  id            String   @id @default(uuid())
+  referrerName  String
+  referrerPhone String
+  referredName  String
+  referredPhone String
+  createdAt     DateTime @default(now())
+
+  @@index([referrerPhone])
+}

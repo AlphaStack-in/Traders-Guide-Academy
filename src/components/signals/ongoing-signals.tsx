@@ -13,6 +13,7 @@ import { OngoingRiskRewardChart } from "@/components/admin/dashboard-charts";
 import { ManageSignalsTable } from "@/components/admin/manage-signals-table";
 import type { SignalRow } from "@/components/signals/signals-explorer";
 import { INSTRUMENT_LABEL } from "@/lib/instruments";
+import { clientConfig } from "@/lib/client-config";
 
 function instrumentPrefix(signal: SignalRow) {
   return signal.instrument ? `${INSTRUMENT_LABEL[signal.instrument]} ` : "";
@@ -76,7 +77,15 @@ export function OngoingSignals({
               </span>
               <span>
                 · Entry @{" "}
-                <span className="font-heading text-base font-bold thc-gold-text">
+                <span
+                  className={cn(
+                    "font-heading text-base font-bold",
+                    // The blue gradient clip reads poorly on this small chip
+                    // for StockOps — plain bright text is more legible there,
+                    // while THC's gold gradient stays as-is.
+                    clientConfig.id === "stockops" ? "text-foreground" : "thc-gold-text",
+                  )}
+                >
                   ₹{signal.entryPrice}
                 </span>
               </span>
