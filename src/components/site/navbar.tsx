@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/site/logo";
 import { Button } from "@/components/ui/button";
+import { NotificationBell } from "@/components/site/notification-bell";
 import { clientConfig } from "@/lib/client-config";
 
 const links = [
@@ -27,6 +28,7 @@ export function Navbar() {
           ))}
         </nav>
         <div className="flex items-center gap-3">
+          <NotificationBell />
           <Link
             href={clientConfig.requireAdminAuth ? "/admin/login" : "/admin/dashboard"}
             className="hidden text-xs text-muted-foreground/70 transition-colors hover:text-primary sm:inline"

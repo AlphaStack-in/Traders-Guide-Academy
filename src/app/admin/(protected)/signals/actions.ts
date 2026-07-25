@@ -87,11 +87,37 @@ export async function updateAdminNote(id: string, adminNote: string | null) {
     data: { adminNote },
   });
 
+  if (adminNote) {
+    await prisma.adminUpdate.create({
+      data: {
+        signalId: id,
+        strike: signal.strike,
+        optionType: signal.optionType,
+        message: adminNote,
+      },
+    });
+  }
+
   revalidatePath("/admin/signals");
   revalidatePath("/admin/signals/new");
   revalidatePath("/signals");
 
   return { success: true };
+}
+
+export async function getRecentAdminUpdates(limit = 50) {
+  const updates = await prisma.adminUpdate.findMany({
+    orderBy: { createdAt: "desc" },
+    take: limit,
+  });
+
+  return updates.map((u) => ({
+    id: u.id,
+    strike: u.strike,
+    optionType: u.optionType,
+    message: u.message,
+    createdAt: u.createdAt.toISOString(),
+  }));
 }
 
 export async function deleteSignal(id: string) {
