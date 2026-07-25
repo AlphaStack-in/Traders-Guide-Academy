@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { Trash2 } from "lucide-react";
+import { Search, Trash2 } from "lucide-react";
 import { formatSignalDate, formatSignalTime } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -80,30 +81,59 @@ function ReferralRowItem({ referral }: { referral: ReferralRow }) {
 }
 
 export function ReferralsTable({ referrals }: { referrals: ReferralRow[] }) {
+  const [query, setQuery] = useState("");
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return referrals;
+    return referrals.filter((r) =>
+      [r.referrerName, r.referrerPhone, r.referredName, r.referredPhone].some((field) =>
+        field.toLowerCase().includes(q),
+      ),
+    );
+  }, [referrals, query]);
+
   return (
-    <div className="thc-glass overflow-hidden rounded-xl border border-white/5">
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow className="border-b-white/10 hover:bg-transparent">
-              <TableHead>Date</TableHead>
-              <TableHead>Referrer</TableHead>
-              <TableHead>Referred</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {referrals.length === 0 ? (
-              <TableRow className="hover:bg-transparent">
-                <TableCell colSpan={4} className="py-8 text-center text-sm text-muted-foreground">
-                  No referrals submitted yet.
-                </TableCell>
+    <div className="flex flex-col gap-3">
+      <div className="relative w-full sm:max-w-xs">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search by name or phone…"
+          className="pl-9"
+        />
+      </div>
+
+      <div className="thc-glass overflow-hidden rounded-xl border border-white/5">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="border-b-white/10 hover:bg-transparent">
+                <TableHead>Date</TableHead>
+                <TableHead>Referrer</TableHead>
+                <TableHead>Referred</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
-            ) : (
-              referrals.map((r) => <ReferralRowItem key={r.id} referral={r} />)
-            )}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {filtered.length === 0 ? (
+                <TableRow className="hover:bg-transparent">
+                  <TableCell
+                    colSpan={4}
+                    className="py-8 text-center text-sm text-muted-foreground"
+                  >
+                    {referrals.length === 0
+                      ? "No referrals submitted yet."
+                      : "No referrals match your search."}
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filtered.map((r) => <ReferralRowItem key={r.id} referral={r} />)
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </div>
   );

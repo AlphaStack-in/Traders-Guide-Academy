@@ -108,29 +108,29 @@ export function NotificationBell() {
           ) : (
             <div className="flex flex-col gap-3">
               {groups.map((group) => (
-                <div key={group.label} className="flex flex-col gap-1.5">
+                <div key={group.label} className="flex flex-col gap-1">
                   <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                     {group.label}
                   </p>
                   {group.items.map((item) => (
                     <div
                       key={item.id}
-                      className="rounded-lg border border-white/5 bg-black/20 p-2.5"
+                      className="flex items-baseline justify-between gap-2 border-b border-white/5 py-1.5 text-xs last:border-b-0"
                     >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="font-heading text-xs font-bold thc-gold-text">
+                      <p className="min-w-0 text-foreground/90">
+                        <span className="font-heading font-bold thc-gold-text">
                           {item.instrument ? `${INSTRUMENT_LABEL[item.instrument]} ` : ""}
-                          {item.strike} {item.optionType}
-                        </span>
-                        <span className="text-[10px] text-muted-foreground">
-                          {new Date(item.createdAt).toLocaleTimeString("en-IN", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            second: "2-digit",
-                          })}
-                        </span>
-                      </div>
-                      <p className="mt-1 text-xs text-foreground/90">{item.message}</p>
+                          {item.strike} {item.optionType}:
+                        </span>{" "}
+                        {item.message}
+                      </p>
+                      <span className="shrink-0 text-[10px] text-muted-foreground">
+                        {new Date(item.createdAt).toLocaleTimeString("en-IN", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          second: "2-digit",
+                        })}
+                      </span>
                     </div>
                   ))}
                 </div>
