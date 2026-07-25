@@ -220,7 +220,7 @@ export function WinLossBarChart({ data }: { data: DayPnl[] }) {
                 fontWeight={700}
                 fill={d.netPercent >= 0 ? "var(--thc-win)" : "var(--thc-loss)"}
               >
-                {`${d.netPercent >= 0 ? "+" : ""}${d.netPercent}%`}
+                {`${d.netPercent >= 0 ? "+" : ""}${Math.round(d.netPercent)}%`}
               </text>
               <text
                 x={cx}
@@ -248,11 +248,11 @@ export function WinLossBarChart({ data }: { data: DayPnl[] }) {
           }}
         >
           <p className="mb-1 font-semibold">{formatDdMmm(data[hovered].date)}</p>
-          <p style={{ color: "var(--thc-win)" }}>Profit: +{data[hovered].profitPercent}%</p>
-          <p style={{ color: "var(--thc-loss)" }}>Loss: {data[hovered].lossPercent}%</p>
+          <p style={{ color: "var(--thc-win)" }}>Profit: +{Math.round(data[hovered].profitPercent)}%</p>
+          <p style={{ color: "var(--thc-loss)" }}>Loss: {Math.round(data[hovered].lossPercent)}%</p>
           <p>
             Net: {data[hovered].netPercent >= 0 ? "+" : ""}
-            {data[hovered].netPercent}%
+            {Math.round(data[hovered].netPercent)}%
           </p>
         </div>
       )}
