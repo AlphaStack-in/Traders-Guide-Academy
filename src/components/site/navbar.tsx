@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Logo } from "@/components/site/logo";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/site/notification-bell";
+import { IndexTicker } from "@/components/site/index-ticker";
 import { clientConfig } from "@/lib/client-config";
 
 const links = [
@@ -51,6 +52,7 @@ export function Navbar() {
           </Link>
         ))}
       </nav>
+      <IndexTicker />
     </header>
   );
 }
