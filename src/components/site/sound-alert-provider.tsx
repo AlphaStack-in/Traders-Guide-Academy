@@ -70,7 +70,7 @@ const SoundAlertContext = createContext<SoundAlertContextValue | null>(null);
 
 export function SoundAlertProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const [enabled, setEnabled] = useState(false);
+  const [enabled, setEnabled] = useState(true);
   const [justAlerted, setJustAlerted] = useState(false);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const enabledRef = useRef(enabled);
@@ -80,11 +80,12 @@ export function SoundAlertProvider({ children }: { children: ReactNode }) {
   }, [enabled]);
 
   useEffect(() => {
-    if (localStorage.getItem(STORAGE_KEY) === "true") {
-      setEnabled(true);
-      if (!audioCtxRef.current) {
-        audioCtxRef.current = new AudioContext();
-      }
+    // Sound alerts default to on for every visitor; only an explicit past
+    // toggle-off ("false") should keep them muted on return visits.
+    const shouldEnable = localStorage.getItem(STORAGE_KEY) !== "false";
+    setEnabled(shouldEnable);
+    if (shouldEnable && !audioCtxRef.current) {
+      audioCtxRef.current = new AudioContext();
     }
   }, []);
 

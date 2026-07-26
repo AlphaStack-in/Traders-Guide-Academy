@@ -11,6 +11,7 @@ const CLEARED_AT_KEY = "thc-notifications-cleared-at";
 
 interface UpdateItem {
   id: string;
+  signalId: string;
   strike: number;
   optionType: string;
   instrument: InstrumentLiteral | null;
@@ -69,10 +70,9 @@ export function NotificationBell() {
     load();
   }, []);
 
-  // Each admin update is its own row (see getRecentAdminUpdates), so a new
-  // one always arrives as a brand-new entry here — never merged into a
-  // previous message — and pushes instantly via realtime instead of waiting
-  // for the bell to be reopened.
+  // Collapsed to one entry per signal — a new update for a trade that
+  // already has a notification replaces it instead of stacking, and pushes
+  // instantly via realtime instead of waiting for the bell to be reopened.
   useEffect(() => {
     const supabase = createSupabaseBrowserClient();
     const channel = supabase
@@ -83,6 +83,7 @@ export function NotificationBell() {
         (payload) => {
           const row = payload.new as {
             id: string;
+            signalId: string;
             strike: number;
             optionType: string;
             instrument: InstrumentLiteral | null;
@@ -91,13 +92,14 @@ export function NotificationBell() {
           };
           const item: UpdateItem = {
             id: row.id,
+            signalId: row.signalId,
             strike: row.strike,
             optionType: row.optionType,
             instrument: row.instrument,
             message: row.message,
             createdAt: row.createdAt,
           };
-          setUpdates((prev) => (prev.some((u) => u.id === item.id) ? prev : [item, ...prev]));
+          setUpdates((prev) => [item, ...prev.filter((u) => u.signalId !== item.signalId)]);
           if (!openRef.current) {
             setUnreadCount((prev) => prev + 1);
           }

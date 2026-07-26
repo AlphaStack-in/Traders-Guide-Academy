@@ -54,7 +54,7 @@ export function IndexTicker() {
     >
       <div
         className="thc-marquee-track flex w-max"
-        style={{ ["--thc-marquee-duration" as string]: "40s" }}
+        style={{ ["--thc-marquee-duration" as string]: "80s" }}
       >
         {items.map((q, i) => {
           const isUp = q.change >= 0;

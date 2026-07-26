@@ -107,21 +107,32 @@ export async function updateAdminNote(id: string, adminNote: string | null) {
 }
 
 export async function getRecentAdminUpdates(limit = 50) {
-  // Full chronological log, like a chat — every update shown individually
-  // with its own timestamp, not collapsed to one per signal.
+  // Collapsed to the latest update per signal — scan a wider recent window,
+  // then keep only the newest row for each signalId so a trade with several
+  // notes doesn't crowd out other trades' notifications.
   const updates = await prisma.adminUpdate.findMany({
     orderBy: { createdAt: "desc" },
-    take: limit,
+    take: limit * 4,
   });
 
-  return updates.map((u) => ({
-    id: u.id,
-    strike: u.strike,
-    optionType: u.optionType,
-    instrument: u.instrument,
-    message: u.message,
-    createdAt: u.createdAt.toISOString(),
-  }));
+  const latestPerSignal = new Map<string, (typeof updates)[number]>();
+  for (const u of updates) {
+    if (!latestPerSignal.has(u.signalId)) {
+      latestPerSignal.set(u.signalId, u);
+    }
+  }
+
+  return Array.from(latestPerSignal.values())
+    .slice(0, limit)
+    .map((u) => ({
+      id: u.id,
+      signalId: u.signalId,
+      strike: u.strike,
+      optionType: u.optionType,
+      instrument: u.instrument,
+      message: u.message,
+      createdAt: u.createdAt.toISOString(),
+    }));
 }
 
 export async function deleteSignal(id: string) {
