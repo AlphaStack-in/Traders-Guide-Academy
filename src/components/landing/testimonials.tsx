@@ -1,4 +1,8 @@
 import { clientConfig } from "@/lib/client-config";
+import { repeatForMarquee } from "@/lib/marquee";
+
+// w-80 (320px) card + mr-4 (16px).
+const CARD_WIDTH_PX = 336;
 
 const AVATAR_COLORS = [
   "var(--thc-gold-start)",
@@ -17,7 +21,8 @@ function initials(name: string) {
 }
 
 export function Testimonials() {
-  const items = [...clientConfig.testimonials, ...clientConfig.testimonials];
+  const repeated = repeatForMarquee(clientConfig.testimonials, CARD_WIDTH_PX);
+  const items = [...repeated, ...repeated];
 
   return (
     <section className="py-16">
@@ -36,7 +41,10 @@ export function Testimonials() {
           maskImage: "linear-gradient(90deg, transparent, black 8%, black 92%, transparent)",
         }}
       >
-        <div className="thc-marquee-track flex w-max">
+        <div
+          className="thc-marquee-track flex w-max"
+          style={{ ["--thc-marquee-duration" as string]: "56s" }}
+        >
           {items.map((t, i) => (
             <div
               key={`${t.name}-${i}`}

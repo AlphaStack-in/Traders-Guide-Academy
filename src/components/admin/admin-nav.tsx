@@ -3,8 +3,14 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { UserRound } from "lucide-react";
+import { ChevronDown, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
@@ -12,7 +18,10 @@ const links = [
   { href: "/admin/dashboard", label: "Dashboard" },
   { href: "/admin/signals/new", label: "Add Signal" },
   { href: "/admin/signals", label: "Manage Signals" },
-  { href: "/admin/subscribers", label: "Members" },
+];
+
+const membersLinks = [
+  { href: "/admin/subscribers", label: "View Members" },
   { href: "/admin/referrals", label: "Referrals" },
 ];
 
@@ -57,6 +66,24 @@ export function AdminNav() {
             {link.label}
           </Link>
         ))}
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            className={cn(
+              "flex items-center gap-1 text-sm font-medium text-muted-foreground outline-none transition-colors hover:text-primary",
+              membersLinks.some((link) => link.href === pathname) && "text-primary",
+            )}
+          >
+            Members
+            <ChevronDown className="h-3.5 w-3.5" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            {membersLinks.map((link) => (
+              <DropdownMenuItem key={link.href} asChild>
+                <Link href={link.href}>{link.label}</Link>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </nav>
       {username && (
         <div className="flex items-center gap-2">
@@ -78,7 +105,7 @@ export function AdminMobileNav() {
 
   return (
     <nav className="flex items-center gap-4 overflow-x-auto border-t border-white/5 px-4 py-2 sm:hidden">
-      {links.map((link) => (
+      {[...links, ...membersLinks].map((link) => (
         <Link
           key={link.href}
           href={link.href}

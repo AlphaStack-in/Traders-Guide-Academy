@@ -1,44 +1,43 @@
 import Link from "next/link";
 import { Logo } from "@/components/site/logo";
-import { FacebookIcon, InstagramIcon, WhatsAppIcon } from "@/components/site/icons";
+import {
+  FacebookIcon,
+  InstagramIcon,
+  WhatsAppIcon,
+  TwitterIcon,
+  YouTubeIcon,
+  LinkedInIcon,
+} from "@/components/site/icons";
 import { clientConfig } from "@/lib/client-config";
 
 export function Footer() {
+  const socialLinks = [
+    { href: clientConfig.instagramUrl, Icon: InstagramIcon, label: "Instagram" },
+    { href: clientConfig.whatsappUrl, Icon: WhatsAppIcon, label: "WhatsApp" },
+    { href: clientConfig.facebookUrl, Icon: FacebookIcon, label: "Facebook" },
+    { href: clientConfig.twitterUrl, Icon: TwitterIcon, label: "Twitter" },
+    { href: clientConfig.youtubeUrl, Icon: YouTubeIcon, label: "YouTube" },
+    { href: clientConfig.linkedinUrl, Icon: LinkedInIcon, label: "LinkedIn" },
+  ].filter((link) => link.href);
+
   return (
     <footer className="border-t border-white/5 bg-card/40">
       <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-12 sm:px-6 lg:px-8">
         <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
           <Logo />
           <div className="flex items-center gap-4">
-            <a
-              href={clientConfig.instagramUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`${clientConfig.siteName} on Instagram`}
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
-            >
-              <InstagramIcon className="h-5 w-5" />
-            </a>
-            <a
-              href={clientConfig.whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`Join ${clientConfig.siteName} on WhatsApp`}
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
-            >
-              <WhatsAppIcon className="h-5 w-5" />
-            </a>
-            {clientConfig.facebookUrl && (
+            {socialLinks.map(({ href, Icon, label }) => (
               <a
-                href={clientConfig.facebookUrl}
+                key={label}
+                href={href}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label={`${clientConfig.siteName} on Facebook`}
+                aria-label={`${clientConfig.siteName} on ${label}`}
                 className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
               >
-                <FacebookIcon className="h-5 w-5" />
+                <Icon className="h-5 w-5" />
               </a>
-            )}
+            ))}
           </div>
         </div>
 

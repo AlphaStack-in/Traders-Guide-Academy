@@ -37,7 +37,7 @@ export function DashboardContent({
                 className="absolute inset-x-0 top-0 h-[3px]"
                 style={{ backgroundImage: "var(--thc-gold-gradient)" }}
               />
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">
+              <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
                 Total % Won this Batch
               </p>
               <p
@@ -54,7 +54,7 @@ export function DashboardContent({
             <CumulativeLineChart data={metrics.cumulativeSeries} />
           </div>
           <div className="thc-glass rounded-xl border border-white/5 p-4">
-            <p className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">
+            <p className="mb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
               Total % Won
             </p>
             <InstrumentCaptureDonutChart data={metrics.instrumentCapture} />

@@ -12,6 +12,7 @@ export default async function AdminSubscribersPage() {
     phone: s.phone,
     email: s.email,
     plan: s.plan,
+    batchNumber: s.batchNumber,
     createdAt: s.createdAt.toISOString(),
   }));
 

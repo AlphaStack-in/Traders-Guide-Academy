@@ -35,9 +35,14 @@ function ContinuePremiumPanel({
   if (!open) {
     return (
       <Button
-        variant="outline"
+        variant={clientConfig.logoAccent ? undefined : "outline"}
         size="lg"
-        className="thc-glow mt-3 w-full"
+        className="thc-glow mt-3 w-full border-0"
+        style={
+          clientConfig.logoAccent
+            ? { backgroundColor: clientConfig.logoAccent, color: "#fff" }
+            : undefined
+        }
         onClick={() => setOpen(true)}
       >
         Continue Premium
@@ -216,18 +221,6 @@ export function Pricing() {
             </span>
           </div>
 
-          <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-[var(--thc-win)]/40 bg-[var(--thc-win)]/10 px-3 py-1.5 text-xs">
-            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--thc-win)]" />
-            <span className="text-foreground/90">
-              2nd month onwards for Existing members:{" "}
-              <span className="font-semibold text-[var(--thc-win)]">
-                ₹{batchInfo.existingMemberPriceInr.toLocaleString("en-IN")} only
-              </span>
-            </span>
-          </div>
-
-          <ContinuePremiumPanel existingMemberPriceInr={batchInfo.existingMemberPriceInr} />
-
           <ul className="mt-6 flex flex-col gap-2.5 text-sm">
             {batchInfo.benefits.map((benefit) => (
               <li key={benefit} className="flex items-start gap-2.5">
@@ -239,12 +232,12 @@ export function Pricing() {
 
           <div className="mt-6 grid gap-3 border-t border-white/5 pt-6 text-xs text-muted-foreground sm:grid-cols-2">
             <div>
-              <p className="font-medium text-foreground">Live Zoom timings</p>
-              <p>{batchInfo.zoomTimings.join(" · ")}</p>
-            </div>
-            <div>
               <p className="font-medium text-foreground">WhatsApp signal hours</p>
               <p>{batchInfo.whatsappTimings}</p>
+            </div>
+            <div>
+              <p className="font-medium text-foreground">Live Zoom timings</p>
+              <p>{batchInfo.zoomTimings.join(" · ")}</p>
             </div>
           </div>
 
@@ -262,6 +255,8 @@ export function Pricing() {
           <Button asChild size="lg" className="thc-glow thc-btn-gradient mt-6 w-full">
             <Link href="/register">Register for this Batch</Link>
           </Button>
+
+          <ContinuePremiumPanel existingMemberPriceInr={batchInfo.existingMemberPriceInr} />
         </motion.div>
 
           {clientConfig.dhanOfferEnabled && <DhanOfferCard />}

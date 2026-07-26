@@ -1,19 +1,21 @@
 import Image from "next/image";
 import { clientConfig } from "@/lib/client-config";
+import { repeatForMarquee } from "@/lib/marquee";
+import { cn } from "@/lib/utils";
+
+// w-48 (192px) portrait card + mr-4 (16px); w-64 (256px) landscape card + mr-4,
+// both using the wider sm: breakpoint size.
+const PORTRAIT_CARD_WIDTH_PX = 208;
+const LANDSCAPE_CARD_WIDTH_PX = 272;
 
 export function InstagramGrid() {
-  // Duplicated 4x (not 2x): with only 5 thumbnails, one copy is narrower than
-  // most desktop viewports, so a 2x loop ran out of content and visibly
-  // paused/jumped right before resetting. 4 copies keeps the -50% keyframe
-  // (still exactly "one half of the track") wide enough to always fill the
-  // viewport during the whole animation cycle.
-  const { instagramThumbnails } = clientConfig;
-  const items = [
-    ...instagramThumbnails,
-    ...instagramThumbnails,
-    ...instagramThumbnails,
-    ...instagramThumbnails,
-  ];
+  const { instagramThumbnails, reelsSourceLabel = "Instagram" } = clientConfig;
+  const isLandscape = reelsSourceLabel !== "Instagram";
+  const repeated = repeatForMarquee(
+    instagramThumbnails,
+    isLandscape ? LANDSCAPE_CARD_WIDTH_PX : PORTRAIT_CARD_WIDTH_PX,
+  );
+  const items = [...repeated, ...repeated];
 
   return (
     <section className="py-16">
@@ -22,7 +24,7 @@ export function InstagramGrid() {
           Watch us <span className="thc-gold-text">in action</span>
         </h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          Reels from our Instagram — tap any thumbnail to watch.
+          Videos from our {reelsSourceLabel} — tap any thumbnail to watch.
         </p>
       </div>
 
@@ -43,9 +45,14 @@ export function InstagramGrid() {
               href={item.videoUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="thc-glow group mr-4 w-40 shrink-0 overflow-hidden rounded-xl border border-white/5 sm:w-48"
+              className={cn(
+                "thc-glow group mr-4 shrink-0 overflow-hidden rounded-xl border border-white/5",
+                isLandscape ? "w-56 sm:w-64" : "w-40 sm:w-48",
+              )}
             >
-              <div className="relative aspect-[4/5] w-full bg-card">
+              <div
+                className={cn("relative w-full bg-card", isLandscape ? "aspect-video" : "aspect-[4/5]")}
+              >
                 <Image
                   src={item.thumbnailUrl}
                   alt={item.label}

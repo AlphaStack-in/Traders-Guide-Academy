@@ -64,12 +64,13 @@ model Signal {
 }
 
 model Subscriber {
-  id        String         @id @default(uuid())
-  name      String
-  phone     String
-  email     String?
-  plan      SubscriberPlan @default(PREMIUM)
-  createdAt DateTime       @default(now())
+  id          String         @id @default(uuid())
+  name        String
+  phone       String
+  email       String?
+  plan        SubscriberPlan @default(PREMIUM)
+  batchNumber Int?
+  createdAt   DateTime       @default(now())
 }
 
 model Referral {

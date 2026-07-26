@@ -407,7 +407,7 @@ function ManageSignalRowItem({ signal }: { signal: ManageSignalRow }) {
       <TableRow className="border-b-white/5 hover:bg-transparent">
         <TableCell
           colSpan={10}
-          className="max-w-0 whitespace-normal break-words py-2 text-xs text-muted-foreground"
+          className="max-w-0 whitespace-pre-line break-words py-2 text-xs text-muted-foreground"
         >
           <span className="font-semibold text-foreground">Admin update:</span> {signal.adminNote}
         </TableCell>

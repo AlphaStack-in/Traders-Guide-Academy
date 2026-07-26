@@ -45,14 +45,16 @@ function NoteEditor({ trade }: { trade: OngoingTrade }) {
   const [isPending, startTransition] = useTransition();
 
   function appendPhrase(phrase: string) {
-    setNote((prev) => (prev.trim() ? `${prev.trim()} · ${phrase}` : phrase));
+    setNote((prev) => (prev.trim() ? `${prev.trim()}\n${phrase}` : phrase));
   }
 
   function handleSend() {
     const trimmed = note.trim();
+    if (trimmed === "") return;
     startTransition(async () => {
-      const result = await updateAdminNote(trade.id, trimmed === "" ? null : trimmed);
+      const result = await updateAdminNote(trade.id, trimmed);
       if (result.success) {
+        setNote("");
         toast.success(`Update posted for ${instrumentPrefix(trade)}${trade.strike} ${trade.optionType}.`);
       } else {
         toast.error(result.error ?? "Failed to save update.");

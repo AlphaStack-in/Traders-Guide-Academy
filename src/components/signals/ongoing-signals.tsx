@@ -160,7 +160,9 @@ export function OngoingSignals({
                     <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
                       Update on {instrumentPrefix(signal)}{signal.strike} {signal.optionType}
                     </p>
-                    <p className="mt-1 text-sm text-foreground">{signal.adminNote}</p>
+                    <p className="mt-1 whitespace-pre-line text-sm text-foreground">
+                      {signal.adminNote}
+                    </p>
                   </div>
                 ))}
             </div>
