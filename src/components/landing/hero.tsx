@@ -60,11 +60,11 @@ export function Hero() {
         >
           {clientConfig.id === "thc" && (
             <Image
-              src="/thc-hero-emblem.png"
+              src="/thc-hero-emblem.webp"
               alt={clientConfig.siteName}
-              width={240}
-              height={240}
-              className="h-40 w-auto shrink-0 object-contain sm:h-52 lg:h-[22rem] lg:w-auto lg:self-stretch"
+              width={1389}
+              height={1965}
+              className="h-[15rem] w-auto shrink-0 object-contain sm:h-[19.5rem] lg:h-[33rem] lg:w-auto lg:self-stretch"
               priority
             />
           )}
