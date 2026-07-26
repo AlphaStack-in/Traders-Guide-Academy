@@ -54,7 +54,7 @@ export function Hero() {
         <div
           className={
             clientConfig.id === "thc"
-              ? "flex flex-col items-center gap-6 lg:flex-row lg:items-center lg:text-left"
+              ? "flex flex-col items-center gap-6 lg:flex-row lg:items-stretch lg:text-left"
               : ""
           }
         >
@@ -64,7 +64,7 @@ export function Hero() {
               alt={clientConfig.siteName}
               width={240}
               height={240}
-              className="w-40 shrink-0 sm:w-52 lg:w-60"
+              className="h-40 w-auto shrink-0 object-contain sm:h-52 lg:h-full lg:w-auto"
               priority
             />
           )}
