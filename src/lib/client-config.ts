@@ -128,8 +128,8 @@ const CLIENTS: Record<ClientId, ClientConfig> = {
         { vpa: "Q805542603@ybl", name: "Ragul V" },
       ],
       managers: [
-        { name: "Vikram", phone: "+91 7603969363" },
-        { name: "Ragul", phone: "+91 8524079447" },
+        { name: "Admin", phone: "+91 7603969363" },
+        { name: "Support", phone: "+91 8524079447" },
       ],
     },
     // Quotes are still placeholder text — swap for real subscriber reviews

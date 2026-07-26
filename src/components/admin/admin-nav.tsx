@@ -18,6 +18,7 @@ const links = [
   { href: "/admin/dashboard", label: "Dashboard" },
   { href: "/admin/signals/new", label: "Add Signal" },
   { href: "/admin/signals", label: "Manage Signals" },
+  { href: "/admin/messages", label: "Messages" },
 ];
 
 const membersLinks = [

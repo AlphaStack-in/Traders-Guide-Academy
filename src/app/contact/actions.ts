@@ -47,3 +47,27 @@ export async function getReferralsByPhone(phone: string) {
     })),
   };
 }
+
+export interface ContactMessageInput {
+  name: string;
+  phone: string;
+  email?: string;
+  message: string;
+}
+
+export async function submitContactMessage(input: ContactMessageInput) {
+  const name = input.name.trim();
+  const phone = input.phone.trim();
+  const email = input.email?.trim() ?? "";
+  const message = input.message.trim();
+
+  if (!name || !phone || !message) {
+    return { success: false, error: "Name, phone, and message are required." };
+  }
+
+  await prisma.contactMessage.create({
+    data: { name, phone, email: email || null, message },
+  });
+
+  return { success: true };
+}

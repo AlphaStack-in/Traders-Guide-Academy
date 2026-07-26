@@ -204,7 +204,7 @@ export function Pricing() {
           </p>
         </div>
 
-        <div className="mt-10 flex flex-col gap-6 lg:flex-row lg:items-stretch lg:justify-center">
+        <div className="mt-10 flex flex-col gap-6 lg:flex-row lg:items-stretch lg:justify-center lg:gap-2">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -258,6 +258,22 @@ export function Pricing() {
 
           <ContinuePremiumPanel existingMemberPriceInr={batchInfo.existingMemberPriceInr} />
         </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.5 }}
+            className="relative z-10 mx-auto shrink-0 self-center lg:-mx-8"
+          >
+            <Image
+              src="/bull-3d.png"
+              alt="Bull market"
+              width={736}
+              height={734}
+              className="h-40 w-40 object-contain drop-shadow-[0_0_30px_rgba(212,175,55,0.35)] sm:h-56 sm:w-56 lg:h-64 lg:w-64"
+            />
+          </motion.div>
 
           {clientConfig.dhanOfferEnabled && <DhanOfferCard />}
         </div>

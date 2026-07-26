@@ -97,3 +97,23 @@ model AdminUpdate {
 
   @@index([createdAt])
 }
+
+enum ContactMessageStatus {
+  NEW
+  REPLIED
+}
+
+model ContactMessage {
+  id        String               @id @default(uuid())
+  name      String
+  phone     String
+  email     String?
+  message   String
+  status    ContactMessageStatus @default(NEW)
+  replyText String?
+  repliedAt DateTime?
+  createdAt DateTime             @default(now())
+
+  @@index([status])
+  @@index([createdAt])
+}
