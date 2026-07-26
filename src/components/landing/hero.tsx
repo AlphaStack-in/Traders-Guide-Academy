@@ -64,7 +64,7 @@ export function Hero() {
               alt={clientConfig.siteName}
               width={240}
               height={240}
-              className="h-40 w-auto shrink-0 object-contain sm:h-52 lg:h-full lg:w-auto"
+              className="h-40 w-auto shrink-0 object-contain sm:h-52 lg:h-[22rem] lg:w-auto lg:self-stretch"
               priority
             />
           )}
