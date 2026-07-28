@@ -72,11 +72,11 @@ export async function createSignals(inputs: SignalInput[]) {
     return { success: false, error: "Every signal needs a valid expiry date." };
   }
 
-  await prisma.signal.createMany({
-    data: inputs.map(toSignalCreateData),
-  });
-
+  // Created one at a time (not createMany) so each new signal's id is known
+  // immediately — needed to post its "new signal" AdminUpdate row.
   for (const input of inputs) {
+    const signal = await prisma.signal.create({ data: toSignalCreateData(input) });
+
     if (input.sellPrice != null) {
       const pnlPercent = calcPnlPercent(input.entryPrice, input.sellPrice);
       const status = deriveStatus({
@@ -90,6 +90,17 @@ export async function createSignals(inputs: SignalInput[]) {
       );
     } else {
       await sendTelegramMessage(formatNewSignalMessage(input));
+      // So a brand-new ongoing trade shows up in the notification panel
+      // immediately, not only once the admin sends a status update for it.
+      await prisma.adminUpdate.create({
+        data: {
+          signalId: signal.id,
+          strike: signal.strike,
+          optionType: signal.optionType,
+          instrument: signal.instrument,
+          message: `New signal — Entry ${input.entryPrice} | SL ${input.stopLoss} | Target ${input.targets.join(", ")}`,
+        },
+      });
     }
   }
 
