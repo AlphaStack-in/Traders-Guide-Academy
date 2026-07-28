@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Bell, ChevronDown } from "lucide-react";
 import { getRecentAdminUpdates } from "@/app/admin/(protected)/signals/actions";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -104,16 +104,18 @@ export function NotificationBell() {
     openRef.current = open;
   }, [open]);
 
-  async function load() {
+  // Stable (empty deps) so the realtime effect below doesn't need to
+  // resubscribe every time this identity would otherwise change.
+  const load = useCallback(async () => {
     const data = await getRecentAdminUpdates();
     setUpdates(data);
-  }
+  }, []);
 
   useEffect(() => {
     setClearedAt(localStorage.getItem(CLEARED_AT_KEY));
     setReadIds(loadReadIds());
     load();
-  }, []);
+  }, [load]);
 
   useEffect(() => {
     const supabase = createSupabaseBrowserClient();
@@ -122,26 +124,15 @@ export function NotificationBell() {
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "AdminUpdate" },
-        (payload) => {
-          const row = payload.new as {
-            id: string;
-            signalId: string;
-            strike: number;
-            optionType: string;
-            instrument: InstrumentLiteral | null;
-            message: string;
-            createdAt: string;
-          };
-          const item: UpdateItem = {
-            id: row.id,
-            signalId: row.signalId,
-            strike: row.strike,
-            optionType: row.optionType,
-            instrument: row.instrument,
-            message: row.message,
-            createdAt: row.createdAt,
-          };
-          setUpdates((prev) => [item, ...prev]);
+        () => {
+          // Re-fetch from the server rather than splicing the payload into
+          // local state — updateAdminNote() also writes Signal.adminNote,
+          // which fires sound-alert-provider's separate Signal-table
+          // listener and triggers router.refresh(). That refresh re-renders
+          // the async Navbar this component lives under, which can reset
+          // local state out from under a manually-spliced update. A fresh
+          // fetch is correct regardless of what else remounts around it.
+          load();
           playUpdateAlert();
           if (!openRef.current) {
             setOpen(true);
@@ -153,7 +144,7 @@ export function NotificationBell() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [playUpdateAlert]);
+  }, [playUpdateAlert, load]);
 
   // Whatever's loaded while the panel is open fades from unread to read
   // shortly after — long enough to actually notice the highlight first.
