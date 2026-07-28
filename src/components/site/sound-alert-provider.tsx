@@ -64,6 +64,7 @@ interface SoundAlertContextValue {
   enabled: boolean;
   justAlerted: boolean;
   toggle: () => void;
+  playUpdateAlert: () => void;
 }
 
 const SoundAlertContext = createContext<SoundAlertContextValue | null>(null);
@@ -165,8 +166,20 @@ export function SoundAlertProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  // Callable from anywhere (e.g. the notification bell's own AdminUpdate
+  // realtime listener) so admin-note updates get sound without opening a
+  // second Supabase channel just to play a tone. Fails silently if sound is
+  // off or the AudioContext hasn't been created/resumed yet.
+  function playUpdateAlert() {
+    if (!enabledRef.current || !audioCtxRef.current) return;
+    if (audioCtxRef.current.state === "suspended") return;
+    playAlertTone(audioCtxRef.current);
+    setJustAlerted(true);
+    setTimeout(() => setJustAlerted(false), 1500);
+  }
+
   return (
-    <SoundAlertContext.Provider value={{ enabled, justAlerted, toggle }}>
+    <SoundAlertContext.Provider value={{ enabled, justAlerted, toggle, playUpdateAlert }}>
       {children}
     </SoundAlertContext.Provider>
   );

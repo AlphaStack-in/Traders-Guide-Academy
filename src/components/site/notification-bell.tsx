@@ -1,13 +1,17 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { Bell } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Bell, ChevronDown } from "lucide-react";
 import { getRecentAdminUpdates } from "@/app/admin/(protected)/signals/actions";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { useSoundAlert } from "@/components/site/sound-alert-provider";
 import { INSTRUMENT_LABEL, type InstrumentLiteral } from "@/lib/instruments";
+import { cn } from "@/lib/utils";
 
-const STORAGE_KEY = "thc-notifications-last-seen";
 const CLEARED_AT_KEY = "thc-notifications-cleared-at";
+const READ_IDS_KEY = "thc-notifications-read-ids";
+const READ_IDS_CAP = 500;
+const MARK_READ_DELAY_MS = 1500;
 
 interface UpdateItem {
   id: string;
@@ -17,6 +21,29 @@ interface UpdateItem {
   instrument: InstrumentLiteral | null;
   message: string;
   createdAt: string;
+}
+
+interface SignalGroup {
+  signalId: string;
+  latest: UpdateItem;
+  messages: UpdateItem[]; // chronological, oldest first
+  unreadCount: number;
+}
+
+function loadReadIds(): Set<string> {
+  try {
+    const raw = localStorage.getItem(READ_IDS_KEY);
+    if (!raw) return new Set();
+    return new Set(JSON.parse(raw) as string[]);
+  } catch {
+    return new Set();
+  }
+}
+
+function persistReadIds(ids: Set<string>) {
+  const arr = Array.from(ids);
+  const trimmed = arr.length > READ_IDS_CAP ? arr.slice(arr.length - READ_IDS_CAP) : arr;
+  localStorage.setItem(READ_IDS_KEY, JSON.stringify(trimmed));
 }
 
 function dayLabel(iso: string): string {
@@ -30,24 +57,45 @@ function dayLabel(iso: string): string {
   return date.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 }
 
-function groupByDay(items: UpdateItem[]): { label: string; items: UpdateItem[] }[] {
-  const groups: { label: string; items: UpdateItem[] }[] = [];
+function timeLabel(iso: string): string {
+  return new Date(iso).toLocaleTimeString("en-IN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+}
+
+function groupBySignal(items: UpdateItem[], readIds: Set<string>): SignalGroup[] {
+  const order: string[] = [];
+  const bySignal = new Map<string, UpdateItem[]>();
   for (const item of items) {
-    const label = dayLabel(item.createdAt);
-    const last = groups[groups.length - 1];
-    if (last && last.label === label) {
-      last.items.push(item);
-    } else {
-      groups.push({ label, items: [item] });
+    if (!bySignal.has(item.signalId)) {
+      order.push(item.signalId);
+      bySignal.set(item.signalId, []);
     }
+    bySignal.get(item.signalId)!.push(item);
   }
-  return groups;
+  return order.map((signalId) => {
+    const newestFirst = bySignal.get(signalId)!;
+    return {
+      signalId,
+      latest: newestFirst[0],
+      messages: [...newestFirst].reverse(),
+      unreadCount: newestFirst.filter((u) => !readIds.has(u.id)).length,
+    };
+  });
+}
+
+function signalLabel(item: UpdateItem) {
+  return `${item.instrument ? `${INSTRUMENT_LABEL[item.instrument]} ` : ""}${item.strike} ${item.optionType}`;
 }
 
 export function NotificationBell() {
+  const { playUpdateAlert } = useSoundAlert();
   const [open, setOpen] = useState(false);
   const [updates, setUpdates] = useState<UpdateItem[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [readIds, setReadIds] = useState<Set<string>>(new Set());
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [clearedAt, setClearedAt] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const openRef = useRef(open);
@@ -59,20 +107,14 @@ export function NotificationBell() {
   async function load() {
     const data = await getRecentAdminUpdates();
     setUpdates(data);
-
-    const lastSeen = localStorage.getItem(STORAGE_KEY);
-    const lastSeenTime = lastSeen ? new Date(lastSeen).getTime() : 0;
-    setUnreadCount(data.filter((u) => new Date(u.createdAt).getTime() > lastSeenTime).length);
   }
 
   useEffect(() => {
     setClearedAt(localStorage.getItem(CLEARED_AT_KEY));
+    setReadIds(loadReadIds());
     load();
   }, []);
 
-  // Collapsed to one entry per signal — a new update for a trade that
-  // already has a notification replaces it instead of stacking, and pushes
-  // instantly via realtime instead of waiting for the bell to be reopened.
   useEffect(() => {
     const supabase = createSupabaseBrowserClient();
     const channel = supabase
@@ -99,9 +141,10 @@ export function NotificationBell() {
             message: row.message,
             createdAt: row.createdAt,
           };
-          setUpdates((prev) => [item, ...prev.filter((u) => u.signalId !== item.signalId)]);
+          setUpdates((prev) => [item, ...prev]);
+          playUpdateAlert();
           if (!openRef.current) {
-            setUnreadCount((prev) => prev + 1);
+            setOpen(true);
           }
         },
       )
@@ -110,7 +153,28 @@ export function NotificationBell() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [playUpdateAlert]);
+
+  // Whatever's loaded while the panel is open fades from unread to read
+  // shortly after — long enough to actually notice the highlight first.
+  useEffect(() => {
+    if (!open || updates.length === 0) return;
+    const timer = setTimeout(() => {
+      setReadIds((prev) => {
+        let changed = false;
+        const next = new Set(prev);
+        for (const u of updates) {
+          if (!next.has(u.id)) {
+            next.add(u.id);
+            changed = true;
+          }
+        }
+        if (changed) persistReadIds(next);
+        return changed ? next : prev;
+      });
+    }, MARK_READ_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [open, updates]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -125,11 +189,7 @@ export function NotificationBell() {
   function handleToggle() {
     const next = !open;
     setOpen(next);
-    if (next) {
-      load();
-      localStorage.setItem(STORAGE_KEY, new Date().toISOString());
-      setUnreadCount(0);
-    }
+    if (next) load();
   }
 
   function handleClear() {
@@ -138,9 +198,32 @@ export function NotificationBell() {
     setClearedAt(now);
   }
 
+  function toggleExpanded(signalId: string) {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(signalId)) next.delete(signalId);
+      else next.add(signalId);
+      return next;
+    });
+  }
+
   const clearedAtTime = clearedAt ? new Date(clearedAt).getTime() : 0;
   const visibleUpdates = updates.filter((u) => new Date(u.createdAt).getTime() > clearedAtTime);
-  const groups = groupByDay(visibleUpdates);
+  const groups = useMemo(() => groupBySignal(visibleUpdates, readIds), [visibleUpdates, readIds]);
+  const totalUnread = groups.reduce((sum, g) => sum + g.unreadCount, 0);
+
+  function dayGroups(items: SignalGroup[]) {
+    const out: { label: string; items: SignalGroup[] }[] = [];
+    for (const item of items) {
+      const label = dayLabel(item.latest.createdAt);
+      const last = out[out.length - 1];
+      if (last && last.label === label) last.items.push(item);
+      else out.push({ label, items: [item] });
+    }
+    return out;
+  }
+
+  const dayed = dayGroups(groups);
 
   return (
     <div ref={containerRef} className="relative">
@@ -151,9 +234,9 @@ export function NotificationBell() {
         className="relative flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
       >
         <Bell className="h-4 w-4" />
-        {unreadCount > 0 && (
+        {totalUnread > 0 && (
           <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--thc-loss)] px-1 text-[9px] font-bold text-white">
-            {unreadCount > 9 ? "9+" : unreadCount}
+            {totalUnread > 9 ? "9+" : totalUnread}
           </span>
         )}
       </button>
@@ -165,7 +248,7 @@ export function NotificationBell() {
         >
           <div className="mb-2 flex items-center justify-between">
             <p className="font-heading text-sm font-normal">Updates from Admin</p>
-            {visibleUpdates.length > 0 && (
+            {groups.length > 0 && (
               <button
                 type="button"
                 onClick={handleClear}
@@ -175,38 +258,82 @@ export function NotificationBell() {
               </button>
             )}
           </div>
-          {groups.length === 0 ? (
+          {dayed.length === 0 ? (
             <p className="py-6 text-center text-xs text-muted-foreground">
               No updates yet — they&apos;ll show up here as trades are updated.
             </p>
           ) : (
             <div className="flex flex-col gap-4">
-              {groups.map((group) => (
-                <div key={group.label} className="flex flex-col gap-2">
+              {dayed.map((day) => (
+                <div key={day.label} className="flex flex-col gap-2">
                   <p className="text-[10px] font-normal uppercase tracking-wide text-muted-foreground">
-                    {group.label}
+                    {day.label}
                   </p>
-                  {group.items.map((item) => (
-                    <div
-                      key={item.id}
-                      className="rounded-xl border border-primary/15 bg-primary/5 px-3 py-2 text-xs"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="font-heading font-normal thc-gold-text">
-                          {item.instrument ? `${INSTRUMENT_LABEL[item.instrument]} ` : ""}
-                          {item.strike} {item.optionType}
-                        </span>
-                        <span className="shrink-0 text-[10px] text-muted-foreground">
-                          {new Date(item.createdAt).toLocaleTimeString("en-IN", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            second: "2-digit",
-                          })}
-                        </span>
+                  {day.items.map((group) => {
+                    const isExpanded = expanded.has(group.signalId);
+                    const isUnread = group.unreadCount > 0;
+                    return (
+                      <div
+                        key={group.signalId}
+                        className={cn(
+                          "rounded-xl border px-3 py-2 text-xs transition-colors",
+                          isUnread
+                            ? "border-primary/40 bg-primary/10"
+                            : "border-primary/15 bg-primary/5",
+                        )}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => toggleExpanded(group.signalId)}
+                          className="flex w-full items-center justify-between gap-2 text-left"
+                        >
+                          <span className="flex items-center gap-1.5 font-heading font-normal thc-gold-text">
+                            {isUnread && (
+                              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--thc-loss)]" />
+                            )}
+                            {signalLabel(group.latest)}
+                          </span>
+                          <span className="flex shrink-0 items-center gap-1 text-[10px] text-muted-foreground">
+                            {timeLabel(group.latest.createdAt)}
+                            {group.messages.length > 1 && (
+                              <ChevronDown
+                                className={cn(
+                                  "h-3 w-3 transition-transform",
+                                  isExpanded && "rotate-180",
+                                )}
+                              />
+                            )}
+                          </span>
+                        </button>
+                        {isExpanded ? (
+                          <div className="mt-2 flex flex-col gap-2 border-l border-white/10 pl-2">
+                            {group.messages.map((m) => (
+                              <div
+                                key={m.id}
+                                className={cn(
+                                  "rounded-lg px-2 py-1",
+                                  !readIds.has(m.id) && "bg-primary/10",
+                                )}
+                              >
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className="whitespace-pre-line text-foreground/90">
+                                    {m.message}
+                                  </span>
+                                  <span className="shrink-0 text-[10px] text-muted-foreground">
+                                    {timeLabel(m.createdAt)}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="mt-1 whitespace-pre-line text-foreground/90">
+                            {group.latest.message}
+                          </p>
+                        )}
                       </div>
-                      <p className="mt-1 whitespace-pre-line text-foreground/90">{item.message}</p>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ))}
             </div>

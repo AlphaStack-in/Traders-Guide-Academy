@@ -106,33 +106,24 @@ export async function updateAdminNote(id: string, adminNote: string | null) {
   return { success: true };
 }
 
-export async function getRecentAdminUpdates(limit = 50) {
-  // Collapsed to the latest update per signal — scan a wider recent window,
-  // then keep only the newest row for each signalId so a trade with several
-  // notes doesn't crowd out other trades' notifications.
+export async function getRecentAdminUpdates(limit = 200) {
+  // Full history, newest first — the notification panel groups these by
+  // signal itself (most-recently-active signal's group first, messages
+  // within a group in chronological order).
   const updates = await prisma.adminUpdate.findMany({
     orderBy: { createdAt: "desc" },
-    take: limit * 4,
+    take: limit,
   });
 
-  const latestPerSignal = new Map<string, (typeof updates)[number]>();
-  for (const u of updates) {
-    if (!latestPerSignal.has(u.signalId)) {
-      latestPerSignal.set(u.signalId, u);
-    }
-  }
-
-  return Array.from(latestPerSignal.values())
-    .slice(0, limit)
-    .map((u) => ({
-      id: u.id,
-      signalId: u.signalId,
-      strike: u.strike,
-      optionType: u.optionType,
-      instrument: u.instrument,
-      message: u.message,
-      createdAt: u.createdAt.toISOString(),
-    }));
+  return updates.map((u) => ({
+    id: u.id,
+    signalId: u.signalId,
+    strike: u.strike,
+    optionType: u.optionType,
+    instrument: u.instrument,
+    message: u.message,
+    createdAt: u.createdAt.toISOString(),
+  }));
 }
 
 export async function deleteSignal(id: string) {
