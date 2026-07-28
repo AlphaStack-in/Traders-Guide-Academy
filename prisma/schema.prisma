@@ -13,6 +13,134 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+model Signal {
+  id            String       @id @default(uuid())
+  strike        Int
+  optionType    OptionType
+  entryPrice    Float
+  stopLoss      Float
+  targets       Float[]
+  priceAtSignal Float
+  sellPrice     Float?
+  status        SignalStatus @default(OPEN)
+  pnlPercent    Float?
+  signalTime    DateTime     @default(now())
+  closedTime    DateTime?
+  rawMessage    String
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  adminNote     String?
+  instrument    Instrument?
+  // Options expiry date, admin-set at signal creation — needed to resolve
+  // this signal to an exact tradable Dhan contract (see broker connect
+  // feature). Nullable since older signals predate this field.
+  expiry        DateTime?
+  // Set by the Manage Signals edit form so the realtime listener can tell
+  // "admin corrected a field" apart from a genuine new/closed signal and
+  // skip the sound alert for it (still refreshes page content either way).
+  silentUpdateAt DateTime?
+
+  @@index([signalTime])
+  @@index([status])
+}
+
+model Subscriber {
+  id          String         @id @default(uuid())
+  name        String
+  phone       String
+  email       String?
+  plan        SubscriberPlan @default(PREMIUM)
+  createdAt   DateTime       @default(now())
+  batchNumber Int?
+  couponCode  String?
+  // Supabase Auth user id, linked the first time this subscriber completes
+  // email+OTP login (see src/lib/subscriber-auth.ts). Null until then.
+  authUserId       String?           @unique
+  brokerConnection BrokerConnection?
+}
+
+// One Dhan account per subscriber. connectMethod is PERSONAL_TOKEN today (a
+// pasted self-generated Dhan access token — no partner approval needed);
+// PARTNER_OAUTH is reserved for once THC's Dhan partner_id/secret arrive, at
+// which point only the connect flow changes, not this model or anything
+// downstream (order placement, square-off).
+model BrokerConnection {
+  id             String              @id @default(uuid())
+  subscriberId   String              @unique
+  subscriber     Subscriber          @relation(fields: [subscriberId], references: [id])
+  dhanClientId   String
+  dhanClientName String?
+  connectMethod  BrokerConnectMethod @default(PERSONAL_TOKEN)
+  // AES-256-GCM encrypted Dhan access token (see src/lib/broker/crypto.ts).
+  accessTokenEnc String
+  tokenExpiresAt DateTime
+  status         BrokerConnectionStatus @default(ACTIVE)
+  lastError      String?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+}
+
+enum BrokerConnectMethod {
+  PERSONAL_TOKEN
+  PARTNER_OAUTH
+}
+
+enum BrokerConnectionStatus {
+  ACTIVE
+  EXPIRED
+  REVOKED
+}
+
+model Referral {
+  id            String   @id @default(uuid())
+  referrerName  String
+  referrerPhone String
+  referredName  String
+  referredPhone String
+  createdAt     DateTime @default(now())
+
+  @@index([referrerPhone])
+}
+
+// Append-only log of admin updates posted to users, for the notification
+// bell — Signal.adminNote only holds the current note, this is the history.
+model AdminUpdate {
+  id         String      @id @default(uuid())
+  signalId   String
+  strike     Int
+  optionType OptionType
+  message    String
+  createdAt  DateTime    @default(now())
+  instrument Instrument?
+
+  @@index([createdAt])
+}
+
+model ContactMessage {
+  id        String               @id @default(uuid())
+  name      String
+  phone     String
+  email     String?
+  message   String
+  status    ContactMessageStatus @default(NEW)
+  replyText String?
+  repliedAt DateTime?
+  createdAt DateTime             @default(now())
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Coupon {
+  id            String             @id
+  code          String             @unique
+  discountType  CouponDiscountType
+  discountValue Int
+  active        Boolean            @default(true)
+  expiresAt     DateTime?
+  createdAt     DateTime           @default(now())
+}
+
 enum OptionType {
   CE
   PE
@@ -36,84 +164,12 @@ enum SubscriberPlan {
   PREMIUM
 }
 
-model Signal {
-  id            String       @id @default(uuid())
-  strike        Int
-  optionType    OptionType
-  instrument    Instrument?
-  entryPrice    Float
-  stopLoss      Float
-  targets       Float[]
-  priceAtSignal Float
-  sellPrice     Float?
-  status        SignalStatus @default(OPEN)
-  pnlPercent    Float?
-  signalTime    DateTime     @default(now())
-  closedTime    DateTime?
-  rawMessage    String
-  adminNote     String?
-  // Set by the Manage Signals edit form so the realtime listener can tell
-  // "admin corrected a field" apart from a genuine new/closed signal and
-  // skip the sound alert for it (still refreshes page content either way).
-  silentUpdateAt DateTime?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-
-  @@index([signalTime])
-  @@index([status])
-}
-
-model Subscriber {
-  id          String         @id @default(uuid())
-  name        String
-  phone       String
-  email       String?
-  plan        SubscriberPlan @default(PREMIUM)
-  batchNumber Int?
-  createdAt   DateTime       @default(now())
-}
-
-model Referral {
-  id            String   @id @default(uuid())
-  referrerName  String
-  referrerPhone String
-  referredName  String
-  referredPhone String
-  createdAt     DateTime @default(now())
-
-  @@index([referrerPhone])
-}
-
-// Append-only log of admin updates posted to users, for the notification
-// bell — Signal.adminNote only holds the current note, this is the history.
-model AdminUpdate {
-  id         String      @id @default(uuid())
-  signalId   String
-  strike     Int
-  optionType OptionType
-  instrument Instrument?
-  message    String
-  createdAt  DateTime    @default(now())
-
-  @@index([createdAt])
-}
-
 enum ContactMessageStatus {
   NEW
   REPLIED
 }
 
-model ContactMessage {
-  id        String               @id @default(uuid())
-  name      String
-  phone     String
-  email     String?
-  message   String
-  status    ContactMessageStatus @default(NEW)
-  replyText String?
-  repliedAt DateTime?
-  createdAt DateTime             @default(now())
-
-  @@index([status])
-  @@index([createdAt])
+enum CouponDiscountType {
+  PERCENT
+  FLAT
 }

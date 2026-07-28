@@ -79,6 +79,9 @@ export interface ClientConfig {
   // different platform (thumbnails/links still use the same shape).
   reelsSourceLabel?: string;
   dhanOfferEnabled: boolean;
+  // Gates the "Connect Dhan" broker-connect feature (place real orders from
+  // signals). THC-only while this is being built out.
+  dhanConnectEnabled: boolean;
   batchInfo: BatchInfo;
   paymentInfo: PaymentInfo;
   testimonials: Testimonial[];
@@ -107,6 +110,7 @@ const CLIENTS: Record<ClientId, ClientConfig> = {
     youtubeUrl: "",
     linkedinUrl: "",
     dhanOfferEnabled: true,
+    dhanConnectEnabled: true,
     batchInfo: {
       batchNumber: 13,
       priceInr: 4999,
@@ -238,6 +242,7 @@ const CLIENTS: Record<ClientId, ClientConfig> = {
     linkedinUrl: "",
     pricingHeadline: "Premium Community",
     dhanOfferEnabled: false,
+    dhanConnectEnabled: false,
     batchInfo: {
       batchNumber: 1,
       priceInr: 3999,
@@ -310,6 +315,7 @@ const CLIENTS: Record<ClientId, ClientConfig> = {
     pricingHeadline: "Premium Community",
     reelsSourceLabel: "YouTube",
     dhanOfferEnabled: false,
+    dhanConnectEnabled: false,
     batchInfo: {
       batchNumber: 1,
       priceInr: 9999,

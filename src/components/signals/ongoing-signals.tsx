@@ -38,9 +38,11 @@ function toRiskReward(signal: SignalRow) {
 export function OngoingSignals({
   signals,
   editable = false,
+  isSubscriberLoggedIn = false,
 }: {
   signals: SignalRow[];
   editable?: boolean;
+  isSubscriberLoggedIn?: boolean;
 }) {
   const isEmpty = signals.length === 0;
   const chartData = signals.map(toRiskReward);
@@ -64,7 +66,7 @@ export function OngoingSignals({
           <h2 className="font-heading text-sm font-semibold">
             {signals.length} Ongoing Trade{signals.length === 1 ? "" : "s"}
           </h2>
-          <PlaceOrderButton />
+          <PlaceOrderButton isLoggedIn={isSubscriberLoggedIn} />
         </div>
         {!isEmpty &&
           signals.map((signal) => (

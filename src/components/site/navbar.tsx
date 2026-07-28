@@ -3,7 +3,9 @@ import { Logo } from "@/components/site/logo";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/site/notification-bell";
 import { IndexTicker } from "@/components/site/index-ticker";
+import { SubscriberNavStatus } from "@/components/site/subscriber-nav-status";
 import { clientConfig } from "@/lib/client-config";
+import { getCurrentSubscriber } from "@/lib/subscriber-auth";
 
 const links = [
   { href: "/", label: "Home" },
@@ -12,7 +14,9 @@ const links = [
   { href: "/contact", label: "Contact" },
 ];
 
-export function Navbar() {
+export async function Navbar() {
+  const subscriber = await getCurrentSubscriber();
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-white/5 thc-glass">
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -30,6 +34,7 @@ export function Navbar() {
         </nav>
         <div className="flex items-center gap-3">
           <NotificationBell />
+          <SubscriberNavStatus subscriberName={subscriber?.name ?? null} />
           <Link
             href={clientConfig.requireAdminAuth ? "/admin/login" : "/admin/dashboard"}
             className="hidden text-xs text-muted-foreground/70 transition-colors hover:text-primary sm:inline"

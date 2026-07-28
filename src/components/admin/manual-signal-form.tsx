@@ -14,24 +14,30 @@ import {
 } from "@/components/ui/select";
 import { createSignals, type SignalInput } from "@/app/admin/(protected)/signals/new/actions";
 import { INSTRUMENTS, INSTRUMENT_LABEL, type InstrumentLiteral } from "@/lib/instruments";
+import { nextWeeklyExpiry } from "@/lib/expiry";
 
-const EMPTY = {
-  strike: "",
-  optionType: "CE" as "CE" | "PE",
-  instrument: "NIFTY" as InstrumentLiteral,
-  entryPrice: "",
-  stopLoss: "",
-  targets: "",
-  priceAtSignal: "",
-  sellPrice: "",
-  risk: "Medium" as "Low" | "Medium" | "High",
-};
+function emptyForm() {
+  return {
+    strike: "",
+    optionType: "CE" as "CE" | "PE",
+    instrument: "NIFTY" as InstrumentLiteral,
+    entryPrice: "",
+    stopLoss: "",
+    targets: "",
+    priceAtSignal: "",
+    sellPrice: "",
+    risk: "Medium" as "Low" | "Medium" | "High",
+    expiry: nextWeeklyExpiry(),
+  };
+}
+
+type FormState = ReturnType<typeof emptyForm>;
 
 export function ManualSignalForm() {
-  const [form, setForm] = useState(EMPTY);
+  const [form, setForm] = useState<FormState>(emptyForm);
   const [isPending, startTransition] = useTransition();
 
-  function set<K extends keyof typeof EMPTY>(key: K, value: (typeof EMPTY)[K]) {
+  function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
@@ -53,9 +59,10 @@ export function ManualSignalForm() {
       !Number.isFinite(entryPrice) ||
       !Number.isFinite(stopLoss) ||
       !Number.isFinite(priceAtSignal) ||
-      targets.length === 0
+      targets.length === 0 ||
+      !form.expiry
     ) {
-      toast.error("Fill in strike, entry, SL, target(s) and now price.");
+      toast.error("Fill in strike, entry, SL, target(s), expiry and now price.");
       return;
     }
 
@@ -69,13 +76,14 @@ export function ManualSignalForm() {
       priceAtSignal,
       sellPrice: sellPrice != null && Number.isFinite(sellPrice) ? sellPrice : null,
       rawMessage: `Manual entry: ${strike} ${form.optionType}`,
+      expiry: form.expiry,
     };
 
     startTransition(async () => {
       const result = await createSignals([input]);
       if (result.success) {
         toast.success("Signal saved.");
-        setForm(EMPTY);
+        setForm(emptyForm());
       } else {
         toast.error(result.error ?? "Failed to save signal.");
       }
@@ -147,6 +155,15 @@ export function ManualSignalForm() {
         <div className="flex flex-col gap-1.5">
           <Label>Sell Price (optional)</Label>
           <Input value={form.sellPrice} onChange={(e) => set("sellPrice", e.target.value)} />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <Label>Expiry</Label>
+          <Input
+            type="date"
+            value={form.expiry}
+            onChange={(e) => set("expiry", e.target.value)}
+            required
+          />
         </div>
         <div className="flex flex-col gap-1.5">
           <Label>Risk</Label>

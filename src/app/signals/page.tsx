@@ -5,16 +5,15 @@ import { OngoingSignals } from "@/components/signals/ongoing-signals";
 import { SoundAlertToggle } from "@/components/signals/sound-alert-toggle";
 import { RefreshButton } from "@/components/site/refresh-button";
 import { prisma } from "@/lib/prisma";
+import { getCurrentSubscriber } from "@/lib/subscriber-auth";
 import type { SignalRow } from "@/components/signals/signals-explorer";
-
-export const revalidate = 60;
 
 async function getSignals() {
   return prisma.signal.findMany({ orderBy: { signalTime: "desc" } });
 }
 
 export default async function SignalsPage() {
-  const signals = await getSignals();
+  const [signals, subscriber] = await Promise.all([getSignals(), getCurrentSubscriber()]);
   const rows: SignalRow[] = signals.map((s) => ({
     id: s.id,
     strike: s.strike,
@@ -50,7 +49,7 @@ export default async function SignalsPage() {
             <SoundAlertToggle />
           </div>
         </div>
-        <OngoingSignals signals={ongoing} />
+        <OngoingSignals signals={ongoing} isSubscriberLoggedIn={!!subscriber} />
         <SignalsExplorer signals={rows} />
       </main>
       <Footer />

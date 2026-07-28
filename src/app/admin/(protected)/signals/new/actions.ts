@@ -22,6 +22,7 @@ export interface SignalInput {
   priceAtSignal: number;
   sellPrice: number | null;
   rawMessage: string;
+  expiry: string;
 }
 
 async function requireAdmin() {
@@ -56,6 +57,7 @@ function toSignalCreateData(input: SignalInput) {
     status,
     pnlPercent,
     closedTime: input.sellPrice != null ? new Date() : null,
+    expiry: new Date(input.expiry),
   };
 }
 
@@ -64,6 +66,10 @@ export async function createSignals(inputs: SignalInput[]) {
 
   if (inputs.length === 0) {
     return { success: false, error: "No signals to save." };
+  }
+
+  if (inputs.some((input) => !input.expiry || Number.isNaN(new Date(input.expiry).getTime()))) {
+    return { success: false, error: "Every signal needs a valid expiry date." };
   }
 
   await prisma.signal.createMany({

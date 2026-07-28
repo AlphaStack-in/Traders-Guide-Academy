@@ -23,6 +23,7 @@ export interface EditableDraft {
   priceAtSignal: string;
   sellPrice: string;
   risk: "Low" | "Medium" | "High";
+  expiry: string;
   rawMessage: string;
   warnings: string[];
 }
@@ -138,6 +139,14 @@ export function SignalDraftEditor({
             onChange={(e) => set("sellPrice", e.target.value)}
             inputMode="decimal"
             placeholder="Leave blank if still open"
+          />
+        </div>
+        <div className="flex flex-col gap-1">
+          <Label className="text-xs">Expiry</Label>
+          <Input
+            type="date"
+            value={draft.expiry}
+            onChange={(e) => set("expiry", e.target.value)}
           />
         </div>
         <div className="flex flex-col gap-1">

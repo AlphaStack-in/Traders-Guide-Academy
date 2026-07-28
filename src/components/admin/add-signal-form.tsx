@@ -8,6 +8,7 @@ import { SignalDraftEditor, type EditableDraft } from "@/components/admin/signal
 import { ManualSignalForm } from "@/components/admin/manual-signal-form";
 import { OngoingTradeNotes, type OngoingTrade } from "@/components/admin/ongoing-trade-notes";
 import { parseSignalMessage } from "@/lib/parser";
+import { nextWeeklyExpiry } from "@/lib/expiry";
 import { createSignals, type SignalInput } from "@/app/admin/(protected)/signals/new/actions";
 
 function toEditableDraft(index: number, raw: string): EditableDraft {
@@ -23,6 +24,7 @@ function toEditableDraft(index: number, raw: string): EditableDraft {
     priceAtSignal: parsed.priceAtSignal != null ? String(parsed.priceAtSignal) : "",
     sellPrice: parsed.sellPrice != null ? String(parsed.sellPrice) : "",
     risk: "Medium",
+    expiry: nextWeeklyExpiry(),
     rawMessage: parsed.rawMessage,
     warnings: parsed.warnings,
   };
@@ -44,7 +46,8 @@ function draftToInput(draft: EditableDraft): SignalInput | null {
     !Number.isFinite(entryPrice) ||
     !Number.isFinite(stopLoss) ||
     !Number.isFinite(priceAtSignal) ||
-    targets.length === 0
+    targets.length === 0 ||
+    !draft.expiry
   ) {
     return null;
   }
@@ -59,6 +62,7 @@ function draftToInput(draft: EditableDraft): SignalInput | null {
     priceAtSignal,
     sellPrice: sellPrice != null && Number.isFinite(sellPrice) ? sellPrice : null,
     rawMessage: draft.rawMessage,
+    expiry: draft.expiry,
   };
 }
 
