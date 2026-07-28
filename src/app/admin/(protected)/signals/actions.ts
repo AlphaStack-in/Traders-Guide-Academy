@@ -109,7 +109,7 @@ export async function updateAdminNote(id: string, adminNote: string | null) {
 export async function getRecentAdminUpdates(limit = 200) {
   // Full history, newest first — the notification panel groups these by
   // signal itself (most-recently-active signal's group first, messages
-  // within a group in chronological order).
+  // within a group newest first too).
   const updates = await prisma.adminUpdate.findMany({
     orderBy: { createdAt: "desc" },
     take: limit,

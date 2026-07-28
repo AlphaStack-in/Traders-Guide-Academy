@@ -26,7 +26,7 @@ interface UpdateItem {
 interface SignalGroup {
   signalId: string;
   latest: UpdateItem;
-  messages: UpdateItem[]; // chronological, oldest first
+  messages: UpdateItem[]; // newest first
   unreadCount: number;
 }
 
@@ -80,7 +80,7 @@ function groupBySignal(items: UpdateItem[], readIds: Set<string>): SignalGroup[]
     return {
       signalId,
       latest: newestFirst[0],
-      messages: [...newestFirst].reverse(),
+      messages: newestFirst,
       unreadCount: newestFirst.filter((u) => !readIds.has(u.id)).length,
     };
   });

@@ -2,6 +2,7 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useRef,
@@ -170,13 +171,20 @@ export function SoundAlertProvider({ children }: { children: ReactNode }) {
   // realtime listener) so admin-note updates get sound without opening a
   // second Supabase channel just to play a tone. Fails silently if sound is
   // off or the AudioContext hasn't been created/resumed yet.
-  function playUpdateAlert() {
+  //
+  // Wrapped in useCallback with no deps — it only ever reads from refs, so
+  // it must stay referentially stable. A caller (NotificationBell) depends
+  // on this identity in a realtime-subscription effect; letting it change
+  // on every render (e.g. every time justAlerted flips) was tearing down
+  // and re-subscribing that Supabase channel on every single alert, which
+  // is what caused the panel's message list to lag behind the sound.
+  const playUpdateAlert = useCallback(() => {
     if (!enabledRef.current || !audioCtxRef.current) return;
     if (audioCtxRef.current.state === "suspended") return;
     playAlertTone(audioCtxRef.current);
     setJustAlerted(true);
     setTimeout(() => setJustAlerted(false), 1500);
-  }
+  }, []);
 
   return (
     <SoundAlertContext.Provider value={{ enabled, justAlerted, toggle, playUpdateAlert }}>
