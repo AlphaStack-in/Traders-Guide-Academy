@@ -1,21 +1,24 @@
 "use client";
 
+import { Fragment } from "react";
 import { motion } from "framer-motion";
 import { ArrowDown, ArrowRight } from "lucide-react";
 
 const steps = [
   {
     title: "Register Premium",
-    description: "Share your name and phone number — takes under a minute.",
+    description:
+      "Share your name, phone and email — takes under a minute and sets up your dashboard login.",
   },
   {
     title: "Get instant signal alerts",
     description:
-      "Every call, update and exit pushes straight to your dashboard the second it's posted — real-time, with sound alerts, so you never miss an entry.",
+      "Every call, update and exit lands on your dashboard instantly — with sound alerts, so nothing gets missed.",
   },
   {
     title: "Trade the plan",
-    description: "Each signal comes with entry, stop loss and target — you decide sizing.",
+    description:
+      "Every signal on your dashboard comes with entry, stop loss and target — you decide sizing.",
   },
 ];
 
@@ -26,11 +29,11 @@ export function HowItWorks() {
         <h2 className="text-center font-heading text-2xl font-bold sm:text-3xl">
           How it <span className="thc-gold-text">works</span>
         </h2>
-        <div className="mt-10 flex flex-col items-stretch gap-4 sm:flex-row sm:items-stretch">
+        <div className="mt-10 flex flex-col items-stretch gap-4 sm:flex-row sm:items-center">
           {steps.map((step, i) => (
-            <div key={step.title} className="flex flex-col items-stretch sm:flex-1 sm:flex-row">
+            <Fragment key={step.title}>
               {i > 0 && (
-                <div className="flex items-center justify-center py-1 text-primary/60 sm:px-2 sm:py-0">
+                <div className="flex shrink-0 items-center justify-center text-primary/60">
                   <ArrowDown className="h-5 w-5 sm:hidden" />
                   <ArrowRight className="hidden h-5 w-5 sm:block" />
                 </div>
@@ -40,7 +43,7 @@ export function HowItWorks() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-80px" }}
                 transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="thc-glass thc-glow flex-1 rounded-xl border border-white/5 p-6"
+                className="thc-glass thc-glow flex-1 rounded-xl border border-white/5 p-6 text-center"
               >
                 <span className="mx-auto flex h-9 w-9 items-center justify-center rounded-full thc-gold-border font-heading text-sm font-bold text-primary">
                   {i + 1}
@@ -48,7 +51,7 @@ export function HowItWorks() {
                 <h3 className="mt-4 font-heading text-lg font-semibold">{step.title}</h3>
                 <p className="mt-2 text-sm text-muted-foreground">{step.description}</p>
               </motion.div>
-            </div>
+            </Fragment>
           ))}
         </div>
       </div>
