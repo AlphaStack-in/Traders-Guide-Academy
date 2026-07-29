@@ -223,13 +223,6 @@ export function SoundAlertProvider({ children }: { children: ReactNode }) {
             !!newRow?.closedTime &&
             Date.now() - new Date(newRow.closedTime).getTime() < RECENT_CLOSE_WINDOW_MS;
 
-          // TEMP DIAGNOSTIC — remove once the trade-alert trigger is confirmed working.
-          console.log("[trade-alert-debug]", {
-            eventType: payload.eventType,
-            newRow,
-            closedRecently,
-          });
-
           if (closedRecently && newRow?.status === "TARGET_HIT" && newRow.sellPrice != null) {
             const signalLabel = signalLabelOf(newRow);
             const targetLabel = inferHitTargetLabel(newRow.targets ?? [], newRow.sellPrice);
