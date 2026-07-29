@@ -16,6 +16,13 @@ import {
 import { clientConfig } from "@/lib/client-config";
 
 export function Hero() {
+  const isThc = clientConfig.id === "thc";
+  // Clients using the "Premium Community" pricing headline (Stockops,
+  // Goodwill) show the bull image here instead of in the Pricing section —
+  // see pricing.tsx's showBullImage.
+  const showBull = clientConfig.pricingHeadline === "Premium Community";
+  const hasHeroImage = isThc || showBull;
+
   const socialLinks = [
     { href: clientConfig.whatsappUrl, Icon: WhatsAppIcon, label: "WhatsApp" },
     { href: clientConfig.instagramUrl, Icon: InstagramIcon, label: "Instagram" },
@@ -53,18 +60,28 @@ export function Hero() {
       >
         <div
           className={
-            clientConfig.id === "thc"
+            hasHeroImage
               ? "flex flex-col items-center gap-6 lg:flex-row lg:items-stretch lg:text-left"
               : ""
           }
         >
-          {clientConfig.id === "thc" && (
+          {isThc && (
             <Image
               src="/thc-hero-emblem.webp"
               alt={clientConfig.siteName}
               width={1389}
               height={1965}
               className="h-[15rem] w-auto shrink-0 object-contain sm:h-[19.5rem] lg:h-[33rem] lg:w-auto lg:self-stretch"
+              priority
+            />
+          )}
+          {showBull && (
+            <Image
+              src="/bull-3d.png"
+              alt="Bull market"
+              width={736}
+              height={734}
+              className="h-40 w-40 shrink-0 object-contain drop-shadow-[0_0_30px_rgba(212,175,55,0.35)] sm:h-56 sm:w-56 lg:h-64 lg:w-64 lg:self-center"
               priority
             />
           )}
@@ -77,9 +94,7 @@ export function Hero() {
               <span className="thc-gold-text">consistency</span>
             </h1>
             <div
-              className={
-                clientConfig.id === "thc" ? "mt-6 max-w-3xl lg:mx-0" : "mx-auto mt-6 max-w-3xl"
-              }
+              className={hasHeroImage ? "mt-6 max-w-3xl lg:mx-0" : "mx-auto mt-6 max-w-3xl"}
             >
               <h2 className="font-heading text-2xl font-bold sm:text-3xl">
                 Precision, <span className="thc-gold-text">not luck</span>
@@ -96,7 +111,7 @@ export function Hero() {
             </div>
             <p
               className={
-                clientConfig.id === "thc"
+                hasHeroImage
                   ? "mt-5 max-w-3xl text-lg text-muted-foreground sm:text-xl lg:mx-0"
                   : "mx-auto mt-5 max-w-3xl text-lg text-muted-foreground sm:text-xl"
               }

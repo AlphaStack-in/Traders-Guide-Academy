@@ -187,6 +187,9 @@ function DhanOfferCard() {
 export function Pricing() {
   const { batchInfo } = clientConfig;
   const headline = clientConfig.pricingHeadline ?? `${batchInfo.batchNumber}th Batch`;
+  // Clients using the "Premium Community" headline now show the bull image in
+  // the Hero section instead, to the left of the hero text.
+  const showBullImage = headline !== "Premium Community";
   const dateRange = `${new Date(batchInfo.startDate).toLocaleDateString("en-IN", {
     day: "numeric",
     month: "short",
@@ -259,21 +262,23 @@ export function Pricing() {
           <ContinuePremiumPanel existingMemberPriceInr={batchInfo.existingMemberPriceInr} />
         </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-60px" }}
-            transition={{ duration: 0.5 }}
-            className="relative z-10 mx-auto shrink-0 self-center lg:-mx-8"
-          >
-            <Image
-              src="/bull-3d.png"
-              alt="Bull market"
-              width={736}
-              height={734}
-              className="h-40 w-40 object-contain drop-shadow-[0_0_30px_rgba(212,175,55,0.35)] sm:h-56 sm:w-56 lg:h-64 lg:w-64"
-            />
-          </motion.div>
+          {showBullImage && (
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 0.5 }}
+              className="relative z-10 mx-auto shrink-0 self-center lg:-mx-8"
+            >
+              <Image
+                src="/bull-3d.png"
+                alt="Bull market"
+                width={736}
+                height={734}
+                className="h-40 w-40 object-contain drop-shadow-[0_0_30px_rgba(212,175,55,0.35)] sm:h-56 sm:w-56 lg:h-64 lg:w-64"
+              />
+            </motion.div>
+          )}
 
           {clientConfig.dhanOfferEnabled && <DhanOfferCard />}
         </div>
