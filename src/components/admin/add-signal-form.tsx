@@ -10,6 +10,11 @@ import { parseSignalMessage } from "@/lib/parser";
 import { nextWeeklyExpiry } from "@/lib/expiry";
 import { createSignals, type SignalInput } from "@/app/admin/(protected)/signals/actions";
 
+// Matches the label wording the parser regexes in lib/parser.ts look for
+// (Above / SL / Trgt / Now / selling price) — line 1 is left blank for the
+// admin to fill in "[strike] [ce/pe]".
+const SMART_PASTE_TEMPLATE = "\nAbove -\nSL -\nTrgt -\nNow -\nselling price ";
+
 function toEditableDraft(index: number, raw: string): EditableDraft {
   const parsed = parseSignalMessage(raw)[index];
   return {
@@ -66,13 +71,18 @@ function draftToInput(draft: EditableDraft): SignalInput | null {
 }
 
 export function AddSignalForm() {
-  const [rawText, setRawText] = useState("");
+  const [rawText, setRawText] = useState(SMART_PASTE_TEMPLATE);
   const [drafts, setDrafts] = useState<EditableDraft[]>([]);
   const [isPending, startTransition] = useTransition();
 
   function handleParse() {
     if (rawText.trim() === "") {
       toast.error("Paste a signal first.");
+      return;
+    }
+
+    if (rawText === SMART_PASTE_TEMPLATE) {
+      toast.error("Fill in the values next to each label first.");
       return;
     }
 
@@ -98,7 +108,7 @@ export function AddSignalForm() {
       if (result.success) {
         toast.success("Signals saved.");
         setDrafts([]);
-        setRawText("");
+        setRawText(SMART_PASTE_TEMPLATE);
       } else {
         toast.error(result.error ?? "Failed to save signals.");
       }
@@ -113,9 +123,6 @@ export function AddSignalForm() {
           <Textarea
             value={rawText}
             onChange={(e) => setRawText(e.target.value)}
-            placeholder={
-              "[Strike] [CE/PE]\nAbove -[Entry Price]\nSL -[Stop Loss]\nTrgt -[Target(s)]\nNow -[Current Price]\nselling price [Sell Price]"
-            }
             className="min-h-[180px] font-mono text-sm"
           />
           <Button type="button" onClick={handleParse} className="thc-glow thc-btn-gradient w-fit">
