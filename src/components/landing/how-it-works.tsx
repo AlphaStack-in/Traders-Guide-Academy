@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { ArrowDown, ArrowRight } from "lucide-react";
 
 const steps = [
   {
@@ -25,22 +26,29 @@ export function HowItWorks() {
         <h2 className="text-center font-heading text-2xl font-bold sm:text-3xl">
           How it <span className="thc-gold-text">works</span>
         </h2>
-        <div className="mt-10 grid gap-6 sm:grid-cols-3">
+        <div className="mt-10 flex flex-col items-stretch gap-4 sm:flex-row sm:items-stretch">
           {steps.map((step, i) => (
-            <motion.div
-              key={step.title}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-80px" }}
-              transition={{ duration: 0.5, delay: i * 0.1 }}
-              className="thc-glass thc-glow rounded-xl border border-white/5 p-6"
-            >
-              <span className="flex h-9 w-9 items-center justify-center rounded-full thc-gold-border font-heading text-sm font-bold text-primary">
-                {i + 1}
-              </span>
-              <h3 className="mt-4 font-heading text-lg font-semibold">{step.title}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{step.description}</p>
-            </motion.div>
+            <div key={step.title} className="flex flex-col items-stretch sm:flex-1 sm:flex-row">
+              {i > 0 && (
+                <div className="flex items-center justify-center py-1 text-primary/60 sm:px-2 sm:py-0">
+                  <ArrowDown className="h-5 w-5 sm:hidden" />
+                  <ArrowRight className="hidden h-5 w-5 sm:block" />
+                </div>
+              )}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
+                className="thc-glass thc-glow flex-1 rounded-xl border border-white/5 p-6"
+              >
+                <span className="mx-auto flex h-9 w-9 items-center justify-center rounded-full thc-gold-border font-heading text-sm font-bold text-primary">
+                  {i + 1}
+                </span>
+                <h3 className="mt-4 font-heading text-lg font-semibold">{step.title}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">{step.description}</p>
+              </motion.div>
+            </div>
           ))}
         </div>
       </div>
