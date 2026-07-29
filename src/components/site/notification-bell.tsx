@@ -46,15 +46,28 @@ function persistReadIds(ids: Set<string>) {
   localStorage.setItem(READ_IDS_KEY, JSON.stringify(trimmed));
 }
 
+const IST = "Asia/Kolkata";
+
+// Pinned to IST explicitly (not the runtime's local timezone) so this
+// renders identically during SSR and client hydration regardless of
+// server/browser timezone — otherwise a UTC server vs. IST browser can
+// format the same instant differently and trip a hydration mismatch.
+function istDateKey(date: Date): string {
+  return date.toLocaleDateString("en-CA", { timeZone: IST }); // YYYY-MM-DD, stable to compare
+}
+
 function dayLabel(iso: string): string {
   const date = new Date(iso);
   const today = new Date();
-  const yesterday = new Date();
-  yesterday.setDate(today.getDate() - 1);
-  const sameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();
-  if (sameDay(date, today)) return "Today";
-  if (sameDay(date, yesterday)) return "Yesterday";
-  return date.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+  const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+  if (istDateKey(date) === istDateKey(today)) return "Today";
+  if (istDateKey(date) === istDateKey(yesterday)) return "Yesterday";
+  return date.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: IST,
+  });
 }
 
 function timeLabel(iso: string): string {
@@ -62,6 +75,7 @@ function timeLabel(iso: string): string {
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
+    timeZone: IST,
   });
 }
 
