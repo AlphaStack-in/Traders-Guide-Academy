@@ -134,6 +134,11 @@ export async function deleteSignal(id: string) {
     return { success: false, error: "Signal not found." };
   }
 
+  // AdminUpdate.signalId isn't a DB foreign key (see schema comment — it's
+  // an independent audit log), so this has to be deleted explicitly rather
+  // than relying on cascade — otherwise a deleted signal's notifications
+  // would keep showing in the panel forever.
+  await prisma.adminUpdate.deleteMany({ where: { signalId: id } });
   await prisma.signal.delete({ where: { id } });
 
   revalidatePath("/admin/signals");

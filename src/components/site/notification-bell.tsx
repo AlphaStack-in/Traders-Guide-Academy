@@ -139,6 +139,16 @@ export function NotificationBell() {
           }
         },
       )
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "AdminUpdate" },
+        () => {
+          // Fires when a signal is deleted from Manage Signals (its
+          // AdminUpdate rows get deleted alongside it) — no sound/auto-open,
+          // just drop the removed entries from the panel.
+          load();
+        },
+      )
       .subscribe();
 
     return () => {
