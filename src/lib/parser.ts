@@ -19,7 +19,7 @@ const BLOCK_START = /\d{4,6}\s*(?:ce|pe)/gi;
 const STRIKE_TYPE = /(\d{4,6})\s*(CE|PE)/i;
 const ENTRY = /Above\s*-?\s*(\d+(?:\.\d+)?)/i;
 const STOP_LOSS = /SL\s*-?\s*(\d+(?:\.\d+)?)/i;
-const TARGETS = /Trgt\.?\s*-?\s*([\d.,\s]+)/i;
+const TARGETS = /(?:Trgt|Target)\.?\s*-?\s*([\d.,\s]+)/i;
 const PRICE_AT_SIGNAL = /Now\s*-?\s*(\d+(?:\.\d+)?)/i;
 const SELL_PRICE = /sell(?:ing)?\s*price\s*-?\s*(\d+(?:\.\d+)?)/i;
 
@@ -89,7 +89,7 @@ export function parseSignalBlock(block: string): ParsedSignalDraft {
         .map((t) => parseFloat(t.trim()))
         .filter((t) => Number.isFinite(t))
     : [];
-  if (targets.length === 0) warnings.push("Missing target(s) (Trgt)");
+  if (targets.length === 0) warnings.push("Missing target(s) (Target)");
 
   const priceAtSignal = num(block.match(PRICE_AT_SIGNAL));
   if (priceAtSignal == null) warnings.push("Missing price at signal (Now)");
