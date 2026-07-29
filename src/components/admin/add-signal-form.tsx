@@ -6,10 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { SignalDraftEditor, type EditableDraft } from "@/components/admin/signal-draft-editor";
 import { ManualSignalForm } from "@/components/admin/manual-signal-form";
-import { OngoingTradeNotes, type OngoingTrade } from "@/components/admin/ongoing-trade-notes";
 import { parseSignalMessage } from "@/lib/parser";
 import { nextWeeklyExpiry } from "@/lib/expiry";
-import { createSignals, type SignalInput } from "@/app/admin/(protected)/signals/new/actions";
+import { createSignals, type SignalInput } from "@/app/admin/(protected)/signals/actions";
 
 function toEditableDraft(index: number, raw: string): EditableDraft {
   const parsed = parseSignalMessage(raw)[index];
@@ -66,7 +65,7 @@ function draftToInput(draft: EditableDraft): SignalInput | null {
   };
 }
 
-export function AddSignalForm({ ongoingTrades }: { ongoingTrades: OngoingTrade[] }) {
+export function AddSignalForm() {
   const [rawText, setRawText] = useState("");
   const [drafts, setDrafts] = useState<EditableDraft[]>([]);
   const [isPending, startTransition] = useTransition();
@@ -147,8 +146,6 @@ export function AddSignalForm({ ongoingTrades }: { ongoingTrades: OngoingTrade[]
           <ManualSignalForm />
         </div>
       </div>
-
-      <OngoingTradeNotes trades={ongoingTrades} />
     </div>
   );
 }

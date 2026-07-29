@@ -48,7 +48,7 @@ npm run dev
 - `/signals` — public track record grid
 - `/register` — premium lead capture form
 - `/admin/login` — Supabase Auth sign-in
-- `/admin/dashboard`, `/admin/signals/new` — auth-gated (redirects to `/admin/login` if
+- `/admin/dashboard`, `/admin/signals` — auth-gated (redirects to `/admin/login` if
   not signed in)
 
 ## 4. Deploy to Vercel

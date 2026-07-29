@@ -1,11 +1,34 @@
 import { prisma } from "@/lib/prisma";
-import { ManageSignalsTable, type ManageSignalRow } from "@/components/admin/manage-signals-table";
+import { type ManageSignalRow } from "@/components/admin/manage-signals-table";
 import { OngoingSignals } from "@/components/signals/ongoing-signals";
 import { RefreshButton } from "@/components/site/refresh-button";
+import { AddSignalSection } from "@/components/admin/add-signal-section";
+import { OngoingTradeNotes } from "@/components/admin/ongoing-trade-notes";
+import {
+  ManageSignalsFilteredTable,
+  type RangePreset,
+  type SignalsDateFilter,
+} from "@/components/admin/manage-signals-filtered-table";
 
 export const dynamic = "force-dynamic";
 
-export default async function ManageSignalsPage() {
+const RANGE_PRESETS: RangePreset[] = ["all", "today", "week", "month", "custom"];
+
+export default async function ManageSignalsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ range?: string; from?: string; to?: string }>;
+}) {
+  const params = await searchParams;
+  const range = RANGE_PRESETS.includes(params.range as RangePreset)
+    ? (params.range as RangePreset)
+    : "all";
+  const initialFilter: SignalsDateFilter = {
+    range,
+    from: params.from ?? "",
+    to: params.to ?? "",
+  };
+
   const signals = await prisma.signal.findMany({ orderBy: { signalTime: "desc" } });
 
   const rows: ManageSignalRow[] = signals.map((s) => ({
@@ -24,6 +47,13 @@ export default async function ManageSignalsPage() {
   }));
 
   const ongoing = rows.filter((r) => r.status === "OPEN");
+  const ongoingTrades = ongoing.map((r) => ({
+    id: r.id,
+    strike: r.strike,
+    optionType: r.optionType,
+    instrument: r.instrument,
+    adminNote: r.adminNote,
+  }));
 
   return (
     <div className="flex flex-col gap-6">
@@ -37,11 +67,18 @@ export default async function ManageSignalsPage() {
         </div>
         <RefreshButton />
       </div>
-      <OngoingSignals signals={ongoing} editable />
+      <AddSignalSection defaultOpen={ongoing.length === 0} />
+      <OngoingSignals
+        signals={ongoing}
+        editable
+        collapsible
+        defaultOpen={ongoing.length > 0}
+      />
       <div className="flex flex-col gap-3">
         <h2 className="font-heading text-lg font-bold">All Signals</h2>
-        <ManageSignalsTable signals={rows} />
+        <ManageSignalsFilteredTable rows={rows} initialFilter={initialFilter} />
       </div>
+      <OngoingTradeNotes trades={ongoingTrades} />
     </div>
   );
 }

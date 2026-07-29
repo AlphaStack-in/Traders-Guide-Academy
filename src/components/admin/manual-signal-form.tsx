@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { createSignals, type SignalInput } from "@/app/admin/(protected)/signals/new/actions";
+import { createSignals, type SignalInput } from "@/app/admin/(protected)/signals/actions";
 import { INSTRUMENTS, INSTRUMENT_LABEL, type InstrumentLiteral } from "@/lib/instruments";
 import { nextWeeklyExpiry } from "@/lib/expiry";
 

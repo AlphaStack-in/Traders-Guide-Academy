@@ -1,3 +1,7 @@
+"use client";
+
+import { useState } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { cn, formatSignalDate, formatSignalTime } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { PlaceOrderButton } from "@/components/signals/place-order-button";
@@ -39,11 +43,17 @@ export function OngoingSignals({
   signals,
   editable = false,
   isSubscriberLoggedIn = false,
+  collapsible = false,
+  defaultOpen = true,
 }: {
   signals: SignalRow[];
   editable?: boolean;
   isSubscriberLoggedIn?: boolean;
+  collapsible?: boolean;
+  defaultOpen?: boolean;
 }) {
+  const [open, setOpen] = useState(defaultOpen);
+  const showBody = !collapsible || open;
   const isEmpty = signals.length === 0;
   const chartData = signals.map(toRiskReward);
   const avgGain = chartData.length
@@ -55,46 +65,61 @@ export function OngoingSignals({
 
   return (
     <div className="thc-glass thc-neutral-border mb-8 rounded-2xl border p-4 sm:p-6">
-      <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
-        <div className="flex items-center gap-2">
-          <span
-            className={cn(
-              "h-2 w-2 shrink-0 rounded-full",
-              isEmpty ? "bg-muted-foreground/40" : "bg-primary",
-            )}
-          />
-          <h2 className="font-heading text-sm font-semibold">
-            {signals.length} Ongoing Trade{signals.length === 1 ? "" : "s"}
-          </h2>
-          <PlaceOrderButton isLoggedIn={isSubscriberLoggedIn} />
-        </div>
-        {!isEmpty &&
-          signals.map((signal) => (
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+          <div className="flex items-center gap-2">
             <span
-              key={signal.id}
-              className="flex items-center gap-1.5 rounded-full border border-white/10 bg-black/20 px-3 py-1 text-sm text-muted-foreground"
-            >
-              <span className="font-heading text-base font-bold thc-gold-text">
-                {instrumentPrefix(signal)}{signal.strike} {signal.optionType}
-              </span>
-              <span>
-                · Entry @{" "}
-                <span
-                  className={cn(
-                    "font-heading text-base font-bold",
-                    // The blue gradient clip reads poorly on this small chip
-                    // for StockOps — plain bright text is more legible there,
-                    // while THC's gold gradient stays as-is.
-                    clientConfig.id === "stockops" ? "text-foreground" : "thc-gold-text",
-                  )}
-                >
-                  ₹{signal.entryPrice}
+              className={cn(
+                "h-2 w-2 shrink-0 rounded-full",
+                isEmpty ? "bg-muted-foreground/40" : "bg-primary",
+              )}
+            />
+            <h2 className="font-heading text-sm font-semibold">
+              {signals.length} Ongoing Trade{signals.length === 1 ? "" : "s"}
+            </h2>
+            <PlaceOrderButton isLoggedIn={isSubscriberLoggedIn} />
+          </div>
+          {!isEmpty &&
+            showBody &&
+            signals.map((signal) => (
+              <span
+                key={signal.id}
+                className="flex items-center gap-1.5 rounded-full border border-white/10 bg-black/20 px-3 py-1 text-sm text-muted-foreground"
+              >
+                <span className="font-heading text-base font-bold thc-gold-text">
+                  {instrumentPrefix(signal)}{signal.strike} {signal.optionType}
+                </span>
+                <span>
+                  · Entry @{" "}
+                  <span
+                    className={cn(
+                      "font-heading text-base font-bold",
+                      // The blue gradient clip reads poorly on this small chip
+                      // for StockOps — plain bright text is more legible there,
+                      // while THC's gold gradient stays as-is.
+                      clientConfig.id === "stockops" ? "text-foreground" : "thc-gold-text",
+                    )}
+                  >
+                    ₹{signal.entryPrice}
+                  </span>
                 </span>
               </span>
-            </span>
-          ))}
+            ))}
+        </div>
+        {collapsible && (
+          <button
+            type="button"
+            onClick={() => setOpen((o) => !o)}
+            className="shrink-0 text-muted-foreground transition-colors hover:text-primary"
+            aria-label={open ? "Collapse Ongoing Trades" : "Expand Ongoing Trades"}
+          >
+            {open ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+          </button>
+        )}
       </div>
 
+      {showBody && (
+        <>
       <div className="grid gap-4 lg:grid-cols-[2fr_minmax(120px,0.7fr)_2fr]">
         <div className="rounded-xl border border-white/5 bg-black/10 p-3 lg:flex lg:h-full lg:items-stretch">
           {isEmpty ? (
@@ -241,6 +266,8 @@ export function OngoingSignals({
           </div>
         )}
       </div>
+        </>
+      )}
     </div>
   );
 }
