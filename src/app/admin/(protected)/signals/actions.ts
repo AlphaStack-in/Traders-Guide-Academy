@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { calcPnlPercent, deriveStatus } from "@/lib/signal-metrics";
+import { calcPnlPercent, deriveStatus, inferHitTargetLabel } from "@/lib/signal-metrics";
 import { formatSignalUpdateMessage, sendTelegramMessage } from "@/lib/telegram";
 import { clientConfig } from "@/lib/client-config";
 import type { InstrumentLiteral } from "@/lib/instruments";
@@ -170,6 +170,24 @@ export async function closeSignal(id: string, sellPrice: number) {
     where: { id },
     data: { sellPrice, pnlPercent, status, closedTime: new Date() },
   });
+
+  // Additive panel entry for Target Hit only — the celebration animation
+  // itself is driven separately (client-side, off the Signal realtime
+  // update) so it fires even before this row lands. SL Hit intentionally
+  // gets no panel entry, matching the low-key toast-only treatment there.
+  if (status === "TARGET_HIT") {
+    const targetLabel = inferHitTargetLabel(signal.targets, sellPrice);
+    const pnlText = `${pnlPercent > 0 ? "+" : ""}${pnlPercent.toFixed(1)}%`;
+    await prisma.adminUpdate.create({
+      data: {
+        signalId: id,
+        strike: signal.strike,
+        optionType: signal.optionType,
+        instrument: signal.instrument,
+        message: `Target Hit${targetLabel ? ` (${targetLabel})` : ""} — ${pnlText} gain.`,
+      },
+    });
+  }
 
   await sendTelegramMessage(
     formatSignalUpdateMessage({

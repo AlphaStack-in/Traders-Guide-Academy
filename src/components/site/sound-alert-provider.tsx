@@ -10,9 +10,21 @@ import {
   type ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { inferHitTargetLabel } from "@/lib/signal-metrics";
+import { INSTRUMENT_LABEL, type InstrumentLiteral } from "@/lib/instruments";
+import {
+  TradeAlertOverlay,
+  type CelebrationEvent,
+  type SlHitEvent,
+} from "@/components/site/trade-alert-overlay";
 
 const STORAGE_KEY = "thc-sound-alerts-enabled";
+// How recently a signal's closedTime must be for this UPDATE event to count
+// as "just closed" rather than a later edit to an already-closed trade —
+// same window convention as the existing silentUpdateAt check below.
+const RECENT_CLOSE_WINDOW_MS = 10_000;
 
 function playAlertTone(ctx: AudioContext) {
   const now = ctx.currentTime;
@@ -61,6 +73,64 @@ function playNewSignalTone(ctx: AudioContext) {
   });
 }
 
+// Bright ascending flourish for a closed trade hitting its target — distinct
+// from playNewSignalTone so "a fresh call arrived" and "a call paid off"
+// don't sound the same.
+function playCelebrationTone(ctx: AudioContext) {
+  const now = ctx.currentTime;
+  const notes = [523.25, 659.25, 784, 1046.5, 1318.5, 1567.98];
+  const noteGap = 0.1;
+  const noteDuration = 0.3;
+
+  notes.forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "triangle";
+    osc.frequency.value = freq;
+    const start = now + i * noteGap;
+    gain.gain.setValueAtTime(0, start);
+    gain.gain.linearRampToValueAtTime(0.5, start + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, start + noteDuration);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(start);
+    osc.stop(start + noteDuration + 0.02);
+  });
+}
+
+// Soft, quiet two-note descent for a stop-loss hit — deliberately muted
+// rather than harsh, since this is a real-money loss notification.
+function playSlHitTone(ctx: AudioContext) {
+  const now = ctx.currentTime;
+  const notes = [392, 329.63];
+  const noteGap = 0.18;
+  const noteDuration = 0.32;
+
+  notes.forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.value = freq;
+    const start = now + i * noteGap;
+    gain.gain.setValueAtTime(0, start);
+    gain.gain.linearRampToValueAtTime(0.22, start + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, start + noteDuration);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(start);
+    osc.stop(start + noteDuration + 0.02);
+  });
+}
+
+function signalLabelOf(row: {
+  instrument?: InstrumentLiteral | null;
+  strike?: number;
+  optionType?: string;
+}) {
+  const prefix = row.instrument ? `${INSTRUMENT_LABEL[row.instrument]} ` : "";
+  return `${prefix}${row.strike ?? ""} ${row.optionType ?? ""}`.trim();
+}
+
 interface SoundAlertContextValue {
   enabled: boolean;
   justAlerted: boolean;
@@ -74,6 +144,8 @@ export function SoundAlertProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [enabled, setEnabled] = useState(true);
   const [justAlerted, setJustAlerted] = useState(false);
+  const [celebration, setCelebration] = useState<CelebrationEvent | null>(null);
+  const [slHitAlert, setSlHitAlert] = useState<SlHitEvent | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const enabledRef = useRef(enabled);
 
@@ -133,6 +205,62 @@ export function SoundAlertProvider({ children }: { children: ReactNode }) {
 
           if (isSilentEdit) return;
 
+          const newRow =
+            payload.eventType === "UPDATE"
+              ? (payload.new as {
+                  status?: string;
+                  closedTime?: string | null;
+                  sellPrice?: number | null;
+                  pnlPercent?: number | null;
+                  targets?: number[];
+                  strike?: number;
+                  optionType?: string;
+                  instrument?: InstrumentLiteral | null;
+                })
+              : null;
+
+          const closedRecently =
+            !!newRow?.closedTime &&
+            Date.now() - new Date(newRow.closedTime).getTime() < RECENT_CLOSE_WINDOW_MS;
+
+          if (closedRecently && newRow?.status === "TARGET_HIT" && newRow.sellPrice != null) {
+            const signalLabel = signalLabelOf(newRow);
+            const targetLabel = inferHitTargetLabel(newRow.targets ?? [], newRow.sellPrice);
+            const pnlPercent = newRow.pnlPercent ?? 0;
+            const pnlText = `${pnlPercent > 0 ? "+" : ""}${pnlPercent.toFixed(1)}%`;
+
+            setCelebration({
+              key: `${payload.commit_timestamp}`,
+              signalLabel,
+              targetLabel,
+              pnlPercent,
+            });
+            setTimeout(() => setCelebration(null), 3000);
+
+            toast.success(
+              `Target Hit${targetLabel ? ` (${targetLabel})` : ""}! ${pnlText} gain on ${signalLabel}`,
+            );
+
+            if (enabledRef.current && audioCtxRef.current) {
+              playCelebrationTone(audioCtxRef.current);
+            }
+            return;
+          }
+
+          if (closedRecently && newRow?.status === "SL_HIT" && newRow.sellPrice != null) {
+            const signalLabel = signalLabelOf(newRow);
+
+            setSlHitAlert({ key: `${payload.commit_timestamp}`, signalLabel, sellPrice: newRow.sellPrice });
+            setTimeout(() => setSlHitAlert(null), 2500);
+
+            toast.warning(`Stop Loss Hit — ${signalLabel} closed at ${newRow.sellPrice}`);
+
+            if (enabledRef.current && audioCtxRef.current) {
+              playSlHitTone(audioCtxRef.current);
+            }
+            return;
+          }
+
           if (enabledRef.current && audioCtxRef.current) {
             if (payload.eventType === "INSERT") {
               playNewSignalTone(audioCtxRef.current);
@@ -189,6 +317,7 @@ export function SoundAlertProvider({ children }: { children: ReactNode }) {
   return (
     <SoundAlertContext.Provider value={{ enabled, justAlerted, toggle, playUpdateAlert }}>
       {children}
+      <TradeAlertOverlay celebration={celebration} slHitAlert={slHitAlert} />
     </SoundAlertContext.Provider>
   );
 }

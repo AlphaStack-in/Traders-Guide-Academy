@@ -14,11 +14,16 @@ export function deriveStatus(input: {
   const { entryPrice, stopLoss, targets, sellPrice } = input;
   if (sellPrice == null) return "OPEN";
 
-  const bestTarget = targets.length > 0 ? Math.max(...targets) : null;
-  const isBuy = (bestTarget ?? entryPrice) >= entryPrice;
+  const maxTarget = targets.length > 0 ? Math.max(...targets) : null;
+  const minTarget = targets.length > 0 ? Math.min(...targets) : null;
+  const isBuy = (maxTarget ?? entryPrice) >= entryPrice;
 
-  if (bestTarget != null) {
-    const hitTarget = isBuy ? sellPrice >= bestTarget : sellPrice <= bestTarget;
+  // Hitting the NEAREST target in the profit direction counts as a target
+  // hit — not just reaching the furthest one — so a T1-only exit (targets
+  // like [120, 140], sold at 120) is correctly classified as TARGET_HIT
+  // rather than falling through to CLOSED_MANUAL.
+  if (minTarget != null && maxTarget != null) {
+    const hitTarget = isBuy ? sellPrice >= minTarget : sellPrice <= maxTarget;
     if (hitTarget) return "TARGET_HIT";
   }
 
@@ -26,6 +31,24 @@ export function deriveStatus(input: {
   if (hitStopLoss) return "SL_HIT";
 
   return "CLOSED_MANUAL";
+}
+
+// There's no stored "which target" field — targets are entered in order
+// (T1, T2, ...) so this infers the label positionally by finding the
+// closest target to the actual sell price. Best-effort, not authoritative.
+export function inferHitTargetLabel(targets: number[], sellPrice: number): string | null {
+  if (targets.length <= 1) return null;
+
+  let closestIndex = 0;
+  let closestDiff = Math.abs(targets[0] - sellPrice);
+  for (let i = 1; i < targets.length; i++) {
+    const diff = Math.abs(targets[i] - sellPrice);
+    if (diff < closestDiff) {
+      closestDiff = diff;
+      closestIndex = i;
+    }
+  }
+  return `T${closestIndex + 1}`;
 }
 
 export type SignalForMetrics = Pick<
