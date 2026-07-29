@@ -71,6 +71,11 @@ export function AddSignalForm() {
   const [isPending, startTransition] = useTransition();
 
   function handleParse() {
+    if (rawText.trim() === "") {
+      toast.error("Paste a signal first.");
+      return;
+    }
+
     const parsedCount = parseSignalMessage(rawText).length;
     if (parsedCount === 0) {
       toast.error("Couldn't find any signal blocks in that text.");
@@ -108,7 +113,9 @@ export function AddSignalForm() {
           <Textarea
             value={rawText}
             onChange={(e) => setRawText(e.target.value)}
-            placeholder={"77300 ce\nAbove -150\nSL -145\nTrgt -170\nNow -145\nselling price 170"}
+            placeholder={
+              "[Strike] [CE/PE]\nAbove -[Entry Price]\nSL -[Stop Loss]\nTrgt -[Target(s)]\nNow -[Current Price]\nselling price [Sell Price]"
+            }
             className="min-h-[180px] font-mono text-sm"
           />
           <Button type="button" onClick={handleParse} className="thc-glow thc-btn-gradient w-fit">
