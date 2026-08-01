@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { clientConfig } from "@/lib/client-config";
 
 const links = [
   { href: "/admin/dashboard", label: "Dashboard" },
@@ -23,6 +24,9 @@ const links = [
 const membersLinks = [
   { href: "/admin/subscribers", label: "View Members" },
   { href: "/admin/referrals", label: "Referrals" },
+  ...(clientConfig.dhanConnectEnabled
+    ? [{ href: "/admin/broker-sessions", label: "Broker Sessions" }]
+    : []),
 ];
 
 function useUsername() {

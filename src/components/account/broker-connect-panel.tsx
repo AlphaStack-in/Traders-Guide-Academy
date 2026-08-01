@@ -97,7 +97,8 @@ export function BrokerConnectPanel({
     <form onSubmit={handleConnect} className="flex flex-col gap-4">
       <p className="text-xs text-muted-foreground">
         Generate an access token from your Dhan account (Profile → DhanHQ Trading APIs) and paste
-        it below. Tokens are valid up to 30 days — you&apos;ll need to reconnect once it expires.
+        it below. Tokens are valid for 24 hours — we&apos;ll auto-renew it each morning, and only
+        ask you to reconnect if that fails.
       </p>
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="dhanClientId">Dhan Client ID</Label>

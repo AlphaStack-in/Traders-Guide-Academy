@@ -74,11 +74,11 @@ export default async function ManageSignalsPage({
         collapsible
         defaultOpen={ongoing.length > 0}
       />
+      <OngoingTradeNotes trades={ongoingTrades} />
       <div className="flex flex-col gap-3">
         <h2 className="font-heading text-lg font-bold">All Signals</h2>
         <ManageSignalsFilteredTable rows={rows} initialFilter={initialFilter} />
       </div>
-      <OngoingTradeNotes trades={ongoingTrades} />
     </div>
   );
 }

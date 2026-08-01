@@ -57,6 +57,7 @@ model Subscriber {
   // email+OTP login (see src/lib/subscriber-auth.ts). Null until then.
   authUserId       String?           @unique
   brokerConnection BrokerConnection?
+  orderAuditLogs   OrderAuditLog[]
 }
 
 // One Dhan account per subscriber. connectMethod is PERSONAL_TOKEN today (a
@@ -76,6 +77,13 @@ model BrokerConnection {
   tokenExpiresAt DateTime
   status         BrokerConnectionStatus @default(ACTIVE)
   lastError      String?
+  // Set on each successful daily auto-renew (see /v2/RenewToken cron) — null
+  // if this connection has never been renewed (still on its original token).
+  lastRenewedAt  DateTime?
+  // Whether we've successfully called Dhan's /v2/ip/setIP for this
+  // subscriber yet (one-time per subscriber; Dhan only allows changing it
+  // once every 7 days after that, so we don't retry this once it's true).
+  ipWhitelisted  Boolean             @default(false)
   createdAt      DateTime            @default(now())
   updatedAt      DateTime            @updatedAt
 }
@@ -89,6 +97,64 @@ enum BrokerConnectionStatus {
   ACTIVE
   EXPIRED
   REVOKED
+}
+
+// Daily-refreshed cache of Dhan's scrip master CSV, filtered to the option
+// contracts we care about — resolves a Signal (underlying + expiry + strike
+// + optionType) to the exact Dhan securityId/exchangeSegment an order needs.
+// Refreshed wholesale each morning (see the instrument-sync job) rather than
+// fetched live per order, since Dhan's master file is a daily publish, not
+// intraday.
+model DhanInstrument {
+  id              String     @id @default(uuid())
+  underlying      Instrument
+  expiry          DateTime
+  strike          Int
+  optionType      OptionType
+  securityId      String
+  exchangeSegment String
+  tradingSymbol   String
+  // Exchange lot size for this contract (e.g. 75) — subscribers enter a
+  // number of lots, Dhan's order API wants raw quantity, so orders multiply
+  // the entered lot count by this.
+  lotSize         Int
+  updatedAt       DateTime   @updatedAt
+
+  @@unique([underlying, expiry, strike, optionType])
+  @@index([updatedAt])
+}
+
+// One row per Place Order attempt (success or failure) — the audit trail
+// admins can see per subscriber, and what powers the inline order form's
+// success/error message.
+model OrderAuditLog {
+  id                 String           @id @default(uuid())
+  // Not a DB foreign key, same reasoning as AdminUpdate.signalId — this is
+  // an independent audit trail, so instrument/strike/optionType are
+  // snapshotted below rather than joined, and stay readable even if the
+  // signal is later deleted.
+  signalId           String
+  instrument         Instrument?
+  strike             Int
+  optionType         OptionType
+  subscriberId       String
+  subscriber         Subscriber       @relation(fields: [subscriberId], references: [id])
+  brokerConnectionId String
+  lotSize            Int
+  dhanOrderId        String?
+  status             OrderAuditStatus
+  dhanResponse       Json?
+  errorMessage       String?
+  placedAt           DateTime         @default(now())
+
+  @@index([subscriberId])
+  @@index([signalId])
+}
+
+enum OrderAuditStatus {
+  PLACED
+  REJECTED
+  ERROR
 }
 
 model Referral {

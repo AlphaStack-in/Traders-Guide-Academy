@@ -7,6 +7,8 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useSoundAlert } from "@/components/site/sound-alert-provider";
 import { INSTRUMENT_LABEL, type InstrumentLiteral } from "@/lib/instruments";
 import { cn } from "@/lib/utils";
+import { clientConfig } from "@/lib/client-config";
+import { InlineOrderForm } from "@/components/account/inline-order-form";
 
 const CLEARED_AT_KEY = "thc-notifications-cleared-at";
 const READ_IDS_KEY = "thc-notifications-read-ids";
@@ -345,6 +347,9 @@ export function NotificationBell() {
                           <p className="mt-1 whitespace-pre-line text-foreground/90">
                             {group.latest.message}
                           </p>
+                        )}
+                        {clientConfig.dhanConnectEnabled && (
+                          <InlineOrderForm signalId={group.signalId} />
                         )}
                       </div>
                     );
