@@ -85,6 +85,7 @@ export function OrderExpansionPanel({ signalId }: { signalId: string }) {
   const required = quantity * details.entryPrice;
 
   async function handlePlaceOrder() {
+    if (placing || result?.success) return;
     setPlacing(true);
     setResult(null);
     const res = await placeOrderForSignal(signalId, lots, productType);
@@ -154,14 +155,16 @@ export function OrderExpansionPanel({ signalId }: { signalId: string }) {
           Qty <span className="font-medium text-foreground">{quantity} units</span>
         </span>
         <span className="text-muted-foreground">
-          Required{" "}
-          <span className="font-medium text-foreground">₹{required.toLocaleString("en-IN")}</span>
+          Required (@ entry price){" "}
+          <span className="font-medium text-foreground">
+            ₹{required.toLocaleString("en-IN", { maximumFractionDigits: 2 })}
+          </span>
         </span>
         <span className="text-muted-foreground">
           Available{" "}
           <span className="font-medium text-foreground">
             {details.availableBalance != null
-              ? `₹${details.availableBalance.toLocaleString("en-IN")}`
+              ? `₹${details.availableBalance.toLocaleString("en-IN", { maximumFractionDigits: 2 })}`
               : "—"}
           </span>
         </span>
@@ -176,11 +179,11 @@ export function OrderExpansionPanel({ signalId }: { signalId: string }) {
       <div className="flex justify-end">
         <Button
           type="button"
-          disabled={placing}
+          disabled={placing || result?.success}
           onClick={handlePlaceOrder}
           className="thc-glow thc-btn-gradient"
         >
-          {placing ? "Placing…" : "Place Order"}
+          {placing ? "Placing…" : result?.success ? "Order Placed" : "Place Order"}
         </Button>
       </div>
     </div>
