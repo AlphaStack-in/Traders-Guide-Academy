@@ -67,7 +67,7 @@ export function OrderExpansionPanel({ signalId }: { signalId: string }) {
           <p className="text-xs text-muted-foreground">Connect your Dhan account to place this order.</p>
         </div>
         <Button asChild size="sm" className="thc-glow thc-btn-gradient shrink-0">
-          <Link href="/account/broker">Connect Now</Link>
+          <Link href="/account/profile">Connect Now</Link>
         </Button>
       </div>
     );

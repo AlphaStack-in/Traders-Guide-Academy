@@ -1,12 +1,11 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { Navbar } from "@/components/site/navbar";
 import { Footer } from "@/components/site/footer";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { BrokerConnectPanel } from "@/components/account/broker-connect-panel";
 import { getCurrentSubscriber } from "@/lib/subscriber-auth";
 import { prisma } from "@/lib/prisma";
 import { clientConfig } from "@/lib/client-config";
+import { formatSignalDate } from "@/lib/utils";
 
 export default async function ProfilePage() {
   const subscriber = await getCurrentSubscriber();
@@ -17,16 +16,9 @@ export default async function ProfilePage() {
   const connection = clientConfig.dhanConnectEnabled
     ? await prisma.brokerConnection.findUnique({
         where: { subscriberId: subscriber.id },
-        select: { status: true, tokenExpiresAt: true },
+        select: { dhanClientId: true, dhanClientName: true, status: true, tokenExpiresAt: true },
       })
     : null;
-
-  const statusVariant =
-    connection?.status === "ACTIVE"
-      ? "default"
-      : connection?.status === "EXPIRED"
-        ? "destructive"
-        : "outline";
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -51,26 +43,40 @@ export default async function ProfilePage() {
               <p className="font-heading font-semibold">{subscriber.email}</p>
             </div>
           )}
+          <div>
+            <p className="text-xs text-muted-foreground">Batch</p>
+            <p className="font-heading font-semibold">
+              {subscriber.batchNumber != null ? `Batch ${subscriber.batchNumber}` : "—"}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Joined</p>
+            <p className="font-heading font-semibold">{formatSignalDate(subscriber.createdAt)}</p>
+          </div>
         </div>
 
         {clientConfig.dhanConnectEnabled && (
-          <div className="thc-glass thc-neutral-border flex items-center justify-between gap-3 rounded-2xl border p-5">
-            <div>
-              <p className="font-heading text-sm font-semibold">Dhan Broker</p>
-              <div className="mt-1.5 flex items-center gap-2">
-                <Badge variant={statusVariant}>
-                  {connection ? (connection.status === "ACTIVE" ? "Connected" : connection.status) : "Not Connected"}
-                </Badge>
-                {connection?.status === "ACTIVE" && (
-                  <span className="text-xs text-muted-foreground">
-                    Valid until {new Date(connection.tokenExpiresAt).toLocaleString()}
-                  </span>
-                )}
-              </div>
+          <div className="thc-glass thc-gold-border rounded-2xl border p-5">
+            <h2 className="font-heading text-lg font-bold">
+              Broker <span className="thc-gold-text">Connect</span>
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Connect your Dhan account to place orders straight from ongoing trade signals.
+            </p>
+            <div className="mt-6">
+              <BrokerConnectPanel
+                initialConnection={
+                  connection
+                    ? {
+                        dhanClientId: connection.dhanClientId,
+                        dhanClientName: connection.dhanClientName,
+                        status: connection.status,
+                        tokenExpiresAt: connection.tokenExpiresAt.toISOString(),
+                      }
+                    : null
+                }
+              />
             </div>
-            <Button asChild size="sm" variant="outline" className="shrink-0">
-              <Link href="/account/broker">{connection ? "Manage" : "Connect"}</Link>
-            </Button>
           </div>
         )}
       </main>
