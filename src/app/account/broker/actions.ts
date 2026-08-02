@@ -3,6 +3,7 @@
 import { requireSubscriber } from "@/lib/subscriber-auth";
 import { prisma } from "@/lib/prisma";
 import { encryptSecret } from "@/lib/broker/crypto";
+import { clientConfig } from "@/lib/client-config";
 
 interface DhanProfile {
   dhanClientId: string;
@@ -29,6 +30,10 @@ export async function connectDhanPersonalToken(input: {
   dhanClientId: string;
   accessToken: string;
 }): Promise<{ success: boolean; error?: string }> {
+  if (!clientConfig.dhanConnectEnabled) {
+    return { success: false, error: "Broker connect isn't available on this platform." };
+  }
+
   const subscriber = await requireSubscriber();
 
   const dhanClientId = input.dhanClientId.trim();
@@ -95,6 +100,10 @@ export async function connectDhanPersonalToken(input: {
 }
 
 export async function disconnectDhan(): Promise<{ success: boolean; error?: string }> {
+  if (!clientConfig.dhanConnectEnabled) {
+    return { success: false, error: "Broker connect isn't available on this platform." };
+  }
+
   const subscriber = await requireSubscriber();
 
   await prisma.brokerConnection.deleteMany({ where: { subscriberId: subscriber.id } });
@@ -103,6 +112,8 @@ export async function disconnectDhan(): Promise<{ success: boolean; error?: stri
 }
 
 export async function getBrokerConnectionStatus() {
+  if (!clientConfig.dhanConnectEnabled) return null;
+
   const subscriber = await requireSubscriber();
 
   const connection = await prisma.brokerConnection.findUnique({

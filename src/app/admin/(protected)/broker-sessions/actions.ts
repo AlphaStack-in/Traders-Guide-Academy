@@ -15,6 +15,10 @@ async function requireAdmin() {
 }
 
 export async function revokeBrokerConnection(subscriberId: string) {
+  if (!clientConfig.dhanConnectEnabled) {
+    return { success: false, error: "Broker connect isn't available on this platform." };
+  }
+
   await requireAdmin();
 
   await prisma.brokerConnection.updateMany({
