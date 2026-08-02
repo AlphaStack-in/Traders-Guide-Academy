@@ -141,6 +141,7 @@ model OrderAuditLog {
   subscriber         Subscriber       @relation(fields: [subscriberId], references: [id])
   brokerConnectionId String
   lotSize            Int
+  productType        DhanProductType  @default(INTRADAY)
   dhanOrderId        String?
   status             OrderAuditStatus
   dhanResponse       Json?
@@ -149,6 +150,11 @@ model OrderAuditLog {
 
   @@index([subscriberId])
   @@index([signalId])
+}
+
+enum DhanProductType {
+  INTRADAY
+  MARGIN
 }
 
 enum OrderAuditStatus {

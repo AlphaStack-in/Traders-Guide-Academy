@@ -8,7 +8,8 @@ import { useSoundAlert } from "@/components/site/sound-alert-provider";
 import { INSTRUMENT_LABEL, type InstrumentLiteral } from "@/lib/instruments";
 import { cn } from "@/lib/utils";
 import { clientConfig } from "@/lib/client-config";
-import { PlaceOrderLink } from "@/components/account/place-order-link";
+import { PlaceOrderTrigger } from "@/components/account/place-order-trigger";
+import { OrderExpansionPanel } from "@/components/account/order-expansion-panel";
 
 const CLEARED_AT_KEY = "thc-notifications-cleared-at";
 const READ_IDS_KEY = "thc-notifications-read-ids";
@@ -112,6 +113,7 @@ export function NotificationBell() {
   const [updates, setUpdates] = useState<UpdateItem[]>([]);
   const [readIds, setReadIds] = useState<Set<string>>(new Set());
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [orderExpanded, setOrderExpanded] = useState<Set<string>>(new Set());
   const [clearedAt, setClearedAt] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const openRef = useRef(open);
@@ -213,6 +215,15 @@ export function NotificationBell() {
     const now = new Date().toISOString();
     localStorage.setItem(CLEARED_AT_KEY, now);
     setClearedAt(now);
+  }
+
+  function toggleOrderExpanded(signalId: string) {
+    setOrderExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(signalId)) next.delete(signalId);
+      else next.add(signalId);
+      return next;
+    });
   }
 
   function toggleExpanded(signalId: string) {
@@ -349,8 +360,17 @@ export function NotificationBell() {
                           </p>
                         )}
                         {clientConfig.dhanConnectEnabled && (
-                          <div className="mt-2">
-                            <PlaceOrderLink signalId={group.signalId} />
+                          <div className="mt-2 flex flex-col gap-2">
+                            <div className="flex justify-end">
+                              <PlaceOrderTrigger
+                                signalId={group.signalId}
+                                expanded={orderExpanded.has(group.signalId)}
+                                onToggle={() => toggleOrderExpanded(group.signalId)}
+                              />
+                            </div>
+                            {orderExpanded.has(group.signalId) && (
+                              <OrderExpansionPanel signalId={group.signalId} />
+                            )}
                           </div>
                         )}
                       </div>

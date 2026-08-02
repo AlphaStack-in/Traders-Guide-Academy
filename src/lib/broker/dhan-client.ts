@@ -124,7 +124,7 @@ export interface DhanOrderInput {
   dhanClientId: string;
   transactionType: "BUY" | "SELL";
   exchangeSegment: "NSE_FNO" | "BSE_FNO";
-  productType: "INTRADAY";
+  productType: "INTRADAY" | "MARGIN";
   orderType: "MARKET" | "LIMIT";
   validity: "DAY";
   securityId: string;

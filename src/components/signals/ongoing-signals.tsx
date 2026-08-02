@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { cn, formatSignalDate, formatSignalTime } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { PlaceOrderLink } from "@/components/account/place-order-link";
+import { PlaceOrderTrigger } from "@/components/account/place-order-trigger";
+import { OrderExpansionPanel } from "@/components/account/order-expansion-panel";
 import {
   Table,
   TableBody,
@@ -51,7 +52,17 @@ export function OngoingSignals({
   defaultOpen?: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
+  const [expandedOrderIds, setExpandedOrderIds] = useState<Set<string>>(new Set());
   const showBody = !collapsible || open;
+
+  function toggleOrderExpanded(signalId: string) {
+    setExpandedOrderIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(signalId)) next.delete(signalId);
+      else next.add(signalId);
+      return next;
+    });
+  }
   const isEmpty = signals.length === 0;
   const chartData = signals.map(toRiskReward);
   const avgGain = chartData.length
@@ -229,39 +240,52 @@ export function OngoingSignals({
                   </TableRow>
                 ) : (
                   signals.map((signal) => (
-                    <TableRow key={signal.id} className="border-b-white/5">
-                      <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
-                        {signal.instrument ? INSTRUMENT_LABEL[signal.instrument] : "—"}
-                      </TableCell>
-                      <TableCell className="whitespace-nowrap font-medium">
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-heading font-bold">{signal.strike}</span>
-                          <Badge
-                            variant="outline"
-                            className={cn(
-                              "px-1.5 py-0 text-[10px] font-bold",
-                              signal.optionType === "CE"
-                                ? "border-[var(--thc-ce)]/50 text-[var(--thc-ce)]"
-                                : "border-[var(--thc-pe)]/50 text-[var(--thc-pe)]",
-                            )}
-                          >
-                            {signal.optionType}
-                          </Badge>
-                        </div>
-                      </TableCell>
-                      <TableCell className="font-bold">{signal.entryPrice}</TableCell>
-                      <TableCell>{signal.stopLoss}</TableCell>
-                      <TableCell>{signal.targets.join(", ")}</TableCell>
-                      <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
-                        {formatSignalDate(signal.signalTime)}{" "}
-                        {formatSignalTime(signal.signalTime)}
-                      </TableCell>
-                      {clientConfig.dhanConnectEnabled && (
-                        <TableCell>
-                          <PlaceOrderLink signalId={signal.id} />
+                    <Fragment key={signal.id}>
+                      <TableRow className="border-b-white/5">
+                        <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
+                          {signal.instrument ? INSTRUMENT_LABEL[signal.instrument] : "—"}
                         </TableCell>
+                        <TableCell className="whitespace-nowrap font-medium">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-heading font-bold">{signal.strike}</span>
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                "px-1.5 py-0 text-[10px] font-bold",
+                                signal.optionType === "CE"
+                                  ? "border-[var(--thc-ce)]/50 text-[var(--thc-ce)]"
+                                  : "border-[var(--thc-pe)]/50 text-[var(--thc-pe)]",
+                              )}
+                            >
+                              {signal.optionType}
+                            </Badge>
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-bold">{signal.entryPrice}</TableCell>
+                        <TableCell>{signal.stopLoss}</TableCell>
+                        <TableCell>{signal.targets.join(", ")}</TableCell>
+                        <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
+                          {formatSignalDate(signal.signalTime)}{" "}
+                          {formatSignalTime(signal.signalTime)}
+                        </TableCell>
+                        {clientConfig.dhanConnectEnabled && (
+                          <TableCell>
+                            <PlaceOrderTrigger
+                              signalId={signal.id}
+                              expanded={expandedOrderIds.has(signal.id)}
+                              onToggle={() => toggleOrderExpanded(signal.id)}
+                            />
+                          </TableCell>
+                        )}
+                      </TableRow>
+                      {clientConfig.dhanConnectEnabled && expandedOrderIds.has(signal.id) && (
+                        <TableRow className="border-b-white/5 hover:bg-transparent">
+                          <TableCell colSpan={7} className="bg-black/10 py-3">
+                            <OrderExpansionPanel signalId={signal.id} />
+                          </TableCell>
+                        </TableRow>
                       )}
-                    </TableRow>
+                    </Fragment>
                   ))
                 )}
               </TableBody>
