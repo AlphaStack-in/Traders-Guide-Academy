@@ -6,7 +6,7 @@ import { getRecentAdminUpdates } from "@/app/admin/(protected)/signals/actions";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useSoundAlert } from "@/components/site/sound-alert-provider";
 import { INSTRUMENT_LABEL, type InstrumentLiteral } from "@/lib/instruments";
-import { cn } from "@/lib/utils";
+import { cn, formatUpdateTime } from "@/lib/utils";
 import { clientConfig } from "@/lib/client-config";
 import { PlaceOrderTrigger } from "@/components/account/place-order-trigger";
 import { OrderExpansionPanel } from "@/components/account/order-expansion-panel";
@@ -69,15 +69,6 @@ function dayLabel(iso: string): string {
     day: "numeric",
     month: "short",
     year: "numeric",
-    timeZone: IST,
-  });
-}
-
-function timeLabel(iso: string): string {
-  return new Date(iso).toLocaleTimeString("en-IN", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
     timeZone: IST,
   });
 }
@@ -322,7 +313,7 @@ export function NotificationBell() {
                             {signalLabel(group.latest)}
                           </span>
                           <span className="flex shrink-0 items-center gap-1 text-[10px] text-muted-foreground">
-                            {timeLabel(group.latest.createdAt)}
+                            {formatUpdateTime(group.latest.createdAt)}
                             {group.messages.length > 1 && (
                               <ChevronDown
                                 className={cn(
@@ -348,7 +339,7 @@ export function NotificationBell() {
                                     {m.message}
                                   </span>
                                   <span className="shrink-0 text-[10px] text-muted-foreground">
-                                    {timeLabel(m.createdAt)}
+                                    {formatUpdateTime(m.createdAt)}
                                   </span>
                                 </div>
                               </div>

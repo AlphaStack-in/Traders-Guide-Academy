@@ -221,6 +221,29 @@ export async function getRecentAdminUpdates(limit = 200) {
   }));
 }
 
+// Latest AdminUpdate.createdAt per signal — used by the Ongoing Trades
+// tables (Trade Log + Manage Signals) to timestamp the note shown there,
+// since Signal.adminNote is just a string with no timestamp of its own.
+export async function getLatestAdminUpdateTimestamps(
+  signalIds: string[],
+): Promise<Record<string, string>> {
+  if (signalIds.length === 0) return {};
+
+  const updates = await prisma.adminUpdate.findMany({
+    where: { signalId: { in: signalIds } },
+    orderBy: { createdAt: "desc" },
+    select: { signalId: true, createdAt: true },
+  });
+
+  const latest: Record<string, string> = {};
+  for (const u of updates) {
+    if (!(u.signalId in latest)) {
+      latest[u.signalId] = u.createdAt.toISOString();
+    }
+  }
+  return latest;
+}
+
 export async function deleteSignal(id: string) {
   await requireAdmin();
 

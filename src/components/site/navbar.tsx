@@ -41,9 +41,11 @@ export async function Navbar() {
           >
             Admin
           </Link>
-          <Button asChild size="sm" className="thc-glow thc-btn-gradient">
-            <Link href="/register">Register Premium</Link>
-          </Button>
+          {!subscriber && (
+            <Button asChild size="sm" className="thc-glow thc-btn-gradient">
+              <Link href="/register">Register Premium</Link>
+            </Button>
+          )}
         </div>
       </div>
       <nav className="flex items-center gap-4 overflow-x-auto border-t border-white/5 px-4 py-2 md:hidden">

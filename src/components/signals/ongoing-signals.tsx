@@ -2,7 +2,7 @@
 
 import { Fragment, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { cn, formatSignalDate, formatSignalTime } from "@/lib/utils";
+import { cn, formatSignalDate, formatSignalTime, formatUpdateTime } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { PlaceOrderTrigger } from "@/components/account/place-order-trigger";
 import { OrderExpansionPanel } from "@/components/account/order-expansion-panel";
@@ -192,9 +192,16 @@ export function OngoingSignals({
                     key={signal.id}
                     className="thc-glass mb-3 break-inside-avoid-column rounded-xl border border-primary/20 bg-primary/5 p-3"
                   >
-                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                      Update on {instrumentPrefix(signal)}{signal.strike} {signal.optionType}
-                    </p>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                        Update on {instrumentPrefix(signal)}{signal.strike} {signal.optionType}
+                      </p>
+                      {signal.adminNoteAt && (
+                        <p className="shrink-0 text-[10px] text-muted-foreground">
+                          {formatUpdateTime(signal.adminNoteAt)}
+                        </p>
+                      )}
+                    </div>
                     <p className="mt-1 whitespace-pre-line text-sm text-foreground">
                       {signal.adminNote}
                     </p>

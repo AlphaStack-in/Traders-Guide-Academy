@@ -3,6 +3,12 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function SubscriberNavStatus({ subscriberName }: { subscriberName: string | null }) {
   const router = useRouter();
@@ -24,22 +30,22 @@ export function SubscriberNavStatus({ subscriberName }: { subscriberName: string
     router.refresh();
   }
 
+  const initial = subscriberName.trim().charAt(0).toUpperCase() || "?";
+
   return (
-    <div className="hidden items-center gap-2 sm:flex">
-      <span className="text-xs text-muted-foreground/70">Hi, {subscriberName.split(" ")[0]}</span>
-      <Link
-        href="/account/broker"
-        className="text-xs text-muted-foreground/70 transition-colors hover:text-primary"
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        aria-label={`${subscriberName}'s account menu`}
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-primary/40 bg-primary/10 font-heading font-bold thc-gold-text outline-none transition-colors hover:border-primary/70"
       >
-        Broker
-      </Link>
-      <button
-        type="button"
-        onClick={handleLogout}
-        className="text-xs text-muted-foreground/70 underline-offset-2 transition-colors hover:text-primary hover:underline"
-      >
-        Log out
-      </button>
-    </div>
+        {initial}
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem asChild>
+          <Link href="/account/profile">Profile</Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleLogout}>Log out</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

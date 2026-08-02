@@ -25,3 +25,15 @@ export function formatSignalTime(date: string | Date) {
     timeZone: "Asia/Kolkata",
   })
 }
+
+// Used for admin-update timestamps (notification bell, Ongoing Trades) —
+// distinct from formatSignalTime above (24h, no seconds): this includes
+// seconds and 12h am/pm, e.g. "11:22:23 pm".
+export function formatUpdateTime(date: string | Date) {
+  return new Date(date).toLocaleTimeString("en-IN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    timeZone: "Asia/Kolkata",
+  })
+}

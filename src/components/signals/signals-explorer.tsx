@@ -34,6 +34,7 @@ export interface SignalRow {
   status: "OPEN" | "TARGET_HIT" | "SL_HIT" | "CLOSED_MANUAL";
   signalTime: string;
   adminNote: string | null;
+  adminNoteAt: string | null;
 }
 
 const STATUS_LABEL: Record<SignalRow["status"], string> = {

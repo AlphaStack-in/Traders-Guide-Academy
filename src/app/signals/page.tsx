@@ -5,6 +5,7 @@ import { OngoingSignals } from "@/components/signals/ongoing-signals";
 import { SoundAlertToggle } from "@/components/signals/sound-alert-toggle";
 import { RefreshButton } from "@/components/site/refresh-button";
 import { prisma } from "@/lib/prisma";
+import { getLatestAdminUpdateTimestamps } from "@/app/admin/(protected)/signals/actions";
 import type { SignalRow } from "@/components/signals/signals-explorer";
 
 async function getSignals() {
@@ -13,6 +14,8 @@ async function getSignals() {
 
 export default async function SignalsPage() {
   const signals = await getSignals();
+  const openIds = signals.filter((s) => s.status === "OPEN").map((s) => s.id);
+  const adminNoteTimestamps = await getLatestAdminUpdateTimestamps(openIds);
   const rows: SignalRow[] = signals.map((s) => ({
     id: s.id,
     strike: s.strike,
@@ -26,6 +29,7 @@ export default async function SignalsPage() {
     status: s.status,
     signalTime: s.signalTime.toISOString(),
     adminNote: s.adminNote,
+    adminNoteAt: adminNoteTimestamps[s.id] ?? null,
   }));
   const ongoing = rows.filter((r) => r.status === "OPEN");
 

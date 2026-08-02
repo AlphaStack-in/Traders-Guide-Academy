@@ -9,6 +9,7 @@ import {
   type RangePreset,
   type SignalsDateFilter,
 } from "@/components/admin/manage-signals-filtered-table";
+import { getLatestAdminUpdateTimestamps } from "@/app/admin/(protected)/signals/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +31,8 @@ export default async function ManageSignalsPage({
   };
 
   const signals = await prisma.signal.findMany({ orderBy: { signalTime: "desc" } });
+  const openIds = signals.filter((s) => s.status === "OPEN").map((s) => s.id);
+  const adminNoteTimestamps = await getLatestAdminUpdateTimestamps(openIds);
 
   const rows: ManageSignalRow[] = signals.map((s) => ({
     id: s.id,
@@ -44,6 +47,7 @@ export default async function ManageSignalsPage({
     status: s.status,
     signalTime: s.signalTime.toISOString(),
     adminNote: s.adminNote,
+    adminNoteAt: adminNoteTimestamps[s.id] ?? null,
   }));
 
   const ongoing = rows.filter((r) => r.status === "OPEN");
