@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { cn, formatSignalDate, formatSignalTime } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { InlineOrderForm } from "@/components/account/inline-order-form";
+import { PlaceOrderLink } from "@/components/account/place-order-link";
 import {
   Table,
   TableBody,
@@ -257,8 +257,8 @@ export function OngoingSignals({
                         {formatSignalTime(signal.signalTime)}
                       </TableCell>
                       {clientConfig.dhanConnectEnabled && (
-                        <TableCell className="min-w-[220px]">
-                          <InlineOrderForm signalId={signal.id} />
+                        <TableCell>
+                          <PlaceOrderLink signalId={signal.id} />
                         </TableCell>
                       )}
                     </TableRow>

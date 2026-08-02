@@ -8,7 +8,7 @@ import { useSoundAlert } from "@/components/site/sound-alert-provider";
 import { INSTRUMENT_LABEL, type InstrumentLiteral } from "@/lib/instruments";
 import { cn } from "@/lib/utils";
 import { clientConfig } from "@/lib/client-config";
-import { InlineOrderForm } from "@/components/account/inline-order-form";
+import { PlaceOrderLink } from "@/components/account/place-order-link";
 
 const CLEARED_AT_KEY = "thc-notifications-cleared-at";
 const READ_IDS_KEY = "thc-notifications-read-ids";
@@ -349,7 +349,9 @@ export function NotificationBell() {
                           </p>
                         )}
                         {clientConfig.dhanConnectEnabled && (
-                          <InlineOrderForm signalId={group.signalId} />
+                          <div className="mt-2">
+                            <PlaceOrderLink signalId={group.signalId} />
+                          </div>
                         )}
                       </div>
                     );

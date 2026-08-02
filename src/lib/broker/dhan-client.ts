@@ -91,6 +91,34 @@ export function renewDhanToken(input: DhanRenewTokenInput) {
   });
 }
 
+export interface DhanFundLimitInput {
+  accessToken: string;
+}
+
+export interface DhanFundLimitData {
+  dhanClientId: string;
+  // Dhan's own field name/typo, not ours — kept as-is to match their response.
+  availabelBalance: number;
+}
+
+// Data-only endpoint (like /v2/profile) — no static-IP requirement, so this
+// intentionally does NOT go through the QuotaGuard proxy.
+export async function getDhanFundLimit(
+  input: DhanFundLimitInput,
+): Promise<DhanApiResult<DhanFundLimitData>> {
+  const res = await fetch(`${DHAN_BASE_URL}/v2/fundlimit`, {
+    headers: { Accept: "application/json", "access-token": input.accessToken },
+  });
+  const rawBody = await res.text();
+  let data: DhanFundLimitData | null = null;
+  try {
+    data = rawBody ? (JSON.parse(rawBody) as DhanFundLimitData) : null;
+  } catch {
+    data = null;
+  }
+  return { ok: res.ok, status: res.status, data, rawBody };
+}
+
 export interface DhanOrderInput {
   accessToken: string;
   dhanClientId: string;
