@@ -5,7 +5,6 @@ import { OngoingSignals } from "@/components/signals/ongoing-signals";
 import { SoundAlertToggle } from "@/components/signals/sound-alert-toggle";
 import { RefreshButton } from "@/components/site/refresh-button";
 import { prisma } from "@/lib/prisma";
-import { getCurrentSubscriber } from "@/lib/subscriber-auth";
 import type { SignalRow } from "@/components/signals/signals-explorer";
 
 async function getSignals() {
@@ -13,7 +12,7 @@ async function getSignals() {
 }
 
 export default async function SignalsPage() {
-  const [signals, subscriber] = await Promise.all([getSignals(), getCurrentSubscriber()]);
+  const signals = await getSignals();
   const rows: SignalRow[] = signals.map((s) => ({
     id: s.id,
     strike: s.strike,
@@ -49,7 +48,7 @@ export default async function SignalsPage() {
             <SoundAlertToggle />
           </div>
         </div>
-        <OngoingSignals signals={ongoing} isSubscriberLoggedIn={!!subscriber} />
+        <OngoingSignals signals={ongoing} />
         <SignalsExplorer signals={rows} />
       </main>
       <Footer />

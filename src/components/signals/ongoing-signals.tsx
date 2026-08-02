@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { cn, formatSignalDate, formatSignalTime } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { PlaceOrderButton } from "@/components/signals/place-order-button";
+import { InlineOrderForm } from "@/components/account/inline-order-form";
 import {
   Table,
   TableBody,
@@ -42,13 +42,11 @@ function toRiskReward(signal: SignalRow) {
 export function OngoingSignals({
   signals,
   editable = false,
-  isSubscriberLoggedIn = false,
   collapsible = false,
   defaultOpen = true,
 }: {
   signals: SignalRow[];
   editable?: boolean;
-  isSubscriberLoggedIn?: boolean;
   collapsible?: boolean;
   defaultOpen?: boolean;
 }) {
@@ -77,7 +75,6 @@ export function OngoingSignals({
             <h2 className="font-heading text-sm font-semibold">
               {signals.length} Ongoing Trade{signals.length === 1 ? "" : "s"}
             </h2>
-            <PlaceOrderButton isLoggedIn={isSubscriberLoggedIn} />
           </div>
           {!isEmpty &&
             showBody &&
@@ -217,13 +214,14 @@ export function OngoingSignals({
                   <TableHead>SL</TableHead>
                   <TableHead>Target(s)</TableHead>
                   <TableHead>Since</TableHead>
+                  {clientConfig.dhanConnectEnabled && <TableHead>Action</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isEmpty ? (
                   <TableRow className="hover:bg-transparent">
                     <TableCell
-                      colSpan={6}
+                      colSpan={clientConfig.dhanConnectEnabled ? 7 : 6}
                       className="py-6 text-center text-xs text-muted-foreground"
                     >
                       No ongoing trades at the moment.
@@ -258,6 +256,11 @@ export function OngoingSignals({
                         {formatSignalDate(signal.signalTime)}{" "}
                         {formatSignalTime(signal.signalTime)}
                       </TableCell>
+                      {clientConfig.dhanConnectEnabled && (
+                        <TableCell className="min-w-[220px]">
+                          <InlineOrderForm signalId={signal.id} />
+                        </TableCell>
+                      )}
                     </TableRow>
                   ))
                 )}
