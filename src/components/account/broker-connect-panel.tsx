@@ -32,27 +32,36 @@ export function BrokerConnectPanel({
     setError(null);
     setLoading(true);
 
-    const result = await connectDhanPersonalToken({ dhanClientId, accessToken });
+    try {
+      const result = await connectDhanPersonalToken({ dhanClientId, accessToken });
 
-    setLoading(false);
+      if (!result.success) {
+        setError(result.error ?? "Couldn't connect that account.");
+        return;
+      }
 
-    if (!result.success) {
-      setError(result.error ?? "Couldn't connect that account.");
-      return;
+      toast.success("Dhan account connected!");
+      setDhanClientId("");
+      setAccessToken("");
+      router.refresh();
+    } catch {
+      setError("Something went wrong connecting that account. Try again.");
+    } finally {
+      setLoading(false);
     }
-
-    toast.success("Dhan account connected!");
-    setDhanClientId("");
-    setAccessToken("");
-    router.refresh();
   }
 
   async function handleDisconnect() {
     setLoading(true);
-    await disconnectDhan();
-    setLoading(false);
-    toast.success("Disconnected.");
-    router.refresh();
+    try {
+      await disconnectDhan();
+      toast.success("Disconnected.");
+      router.refresh();
+    } catch {
+      toast.error("Couldn't disconnect — try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   if (initialConnection) {
