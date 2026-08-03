@@ -45,6 +45,8 @@ export default function RootLayout({
             --chart-4: ${clientConfig.goldEnd};
             --thc-gold-start: ${clientConfig.goldStart};
             --thc-gold-end: ${clientConfig.goldEnd};
+            --thc-logo-accent: ${clientConfig.logoAccent ?? clientConfig.goldStart};
+            --thc-logo-accent-mix: ${clientConfig.logoAccent ? "18%" : "0%"};
           }
         `}</style>
         <div className="thc-mesh-bg" aria-hidden="true" />
