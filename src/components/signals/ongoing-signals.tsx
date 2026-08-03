@@ -18,7 +18,9 @@ import { OngoingRiskRewardChart } from "@/components/admin/dashboard-charts";
 import { ManageSignalsTable } from "@/components/admin/manage-signals-table";
 import type { SignalRow } from "@/components/signals/signals-explorer";
 import { INSTRUMENT_LABEL } from "@/lib/instruments";
-import { clientConfig } from "@/lib/client-config";
+import { clientConfig, getActiveOrderBroker } from "@/lib/client-config";
+
+const ORDER_BROKER = getActiveOrderBroker();
 
 function instrumentPrefix(signal: SignalRow) {
   return signal.instrument ? `${INSTRUMENT_LABEL[signal.instrument]} ` : "";
@@ -232,14 +234,14 @@ export function OngoingSignals({
                   <TableHead>SL</TableHead>
                   <TableHead>Target(s)</TableHead>
                   <TableHead>Since</TableHead>
-                  {clientConfig.dhanConnectEnabled && <TableHead>Action</TableHead>}
+                  {ORDER_BROKER && <TableHead>Action</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isEmpty ? (
                   <TableRow className="hover:bg-transparent">
                     <TableCell
-                      colSpan={clientConfig.dhanConnectEnabled ? 7 : 6}
+                      colSpan={ORDER_BROKER ? 7 : 6}
                       className="py-6 text-center text-xs text-muted-foreground"
                     >
                       No ongoing trades at the moment.
@@ -275,20 +277,21 @@ export function OngoingSignals({
                           {formatSignalDate(signal.signalTime)}{" "}
                           {formatSignalTime(signal.signalTime)}
                         </TableCell>
-                        {clientConfig.dhanConnectEnabled && (
+                        {ORDER_BROKER && (
                           <TableCell>
                             <PlaceOrderTrigger
                               signalId={signal.id}
+                              brokerType={ORDER_BROKER}
                               expanded={expandedOrderIds.has(signal.id)}
                               onToggle={() => toggleOrderExpanded(signal.id)}
                             />
                           </TableCell>
                         )}
                       </TableRow>
-                      {clientConfig.dhanConnectEnabled && expandedOrderIds.has(signal.id) && (
+                      {ORDER_BROKER && expandedOrderIds.has(signal.id) && (
                         <TableRow className="border-b-white/5 hover:bg-transparent">
                           <TableCell colSpan={7} className="bg-black/10 py-3">
-                            <OrderExpansionPanel signalId={signal.id} />
+                            <OrderExpansionPanel signalId={signal.id} brokerType={ORDER_BROKER} />
                           </TableCell>
                         </TableRow>
                       )}

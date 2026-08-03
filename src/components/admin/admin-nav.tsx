@@ -27,6 +27,9 @@ const membersLinks = [
   ...(clientConfig.dhanConnectEnabled
     ? [{ href: "/admin/broker-sessions", label: "Broker Sessions" }]
     : []),
+  ...(clientConfig.goodwillBrokerEnabled
+    ? [{ href: "/admin/goodwill-orders", label: "Order Requests" }]
+    : []),
 ];
 
 function useUsername() {

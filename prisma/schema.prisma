@@ -14,27 +14,27 @@ datasource db {
 }
 
 model Signal {
-  id            String       @id @default(uuid())
-  strike        Int
-  optionType    OptionType
-  entryPrice    Float
-  stopLoss      Float
-  targets       Float[]
-  priceAtSignal Float
-  sellPrice     Float?
-  status        SignalStatus @default(OPEN)
-  pnlPercent    Float?
-  signalTime    DateTime     @default(now())
-  closedTime    DateTime?
-  rawMessage    String
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-  adminNote     String?
-  instrument    Instrument?
+  id             String       @id @default(uuid())
+  strike         Int
+  optionType     OptionType
+  entryPrice     Float
+  stopLoss       Float
+  targets        Float[]
+  priceAtSignal  Float
+  sellPrice      Float?
+  status         SignalStatus @default(OPEN)
+  pnlPercent     Float?
+  signalTime     DateTime     @default(now())
+  closedTime     DateTime?
+  rawMessage     String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  adminNote      String?
+  instrument     Instrument?
   // Options expiry date, admin-set at signal creation — needed to resolve
   // this signal to an exact tradable Dhan contract (see broker connect
   // feature). Nullable since older signals predate this field.
-  expiry        DateTime?
+  expiry         DateTime?
   // Set by the Manage Signals edit form so the realtime listener can tell
   // "admin corrected a field" apart from a genuine new/closed signal and
   // skip the sound alert for it (still refreshes page content either way).
@@ -45,19 +45,20 @@ model Signal {
 }
 
 model Subscriber {
-  id          String         @id @default(uuid())
-  name        String
-  phone       String
-  email       String?
-  plan        SubscriberPlan @default(PREMIUM)
-  createdAt   DateTime       @default(now())
-  batchNumber Int?
-  couponCode  String?
+  id                    String                 @id @default(uuid())
+  name                  String
+  phone                 String
+  email                 String?
+  plan                  SubscriberPlan         @default(PREMIUM)
+  createdAt             DateTime               @default(now())
+  batchNumber           Int?
+  couponCode            String?
   // Supabase Auth user id, linked the first time this subscriber completes
   // email+OTP login (see src/lib/subscriber-auth.ts). Null until then.
-  authUserId       String?           @unique
-  brokerConnection BrokerConnection?
-  orderAuditLogs   OrderAuditLog[]
+  authUserId            String?                @unique
+  brokerConnection      BrokerConnection?
+  orderAuditLogs        OrderAuditLog[]
+  goodwillOrderRequests GoodwillOrderRequest[]
 }
 
 // One Dhan account per subscriber. connectMethod is PERSONAL_TOKEN today (a
@@ -66,12 +67,12 @@ model Subscriber {
 // which point only the connect flow changes, not this model or anything
 // downstream (order placement, square-off).
 model BrokerConnection {
-  id             String              @id @default(uuid())
-  subscriberId   String              @unique
-  subscriber     Subscriber          @relation(fields: [subscriberId], references: [id])
+  id             String                 @id @default(uuid())
+  subscriberId   String                 @unique
+  subscriber     Subscriber             @relation(fields: [subscriberId], references: [id])
   dhanClientId   String
   dhanClientName String?
-  connectMethod  BrokerConnectMethod @default(PERSONAL_TOKEN)
+  connectMethod  BrokerConnectMethod    @default(PERSONAL_TOKEN)
   // AES-256-GCM encrypted Dhan access token (see src/lib/broker/crypto.ts).
   accessTokenEnc String
   tokenExpiresAt DateTime
@@ -83,9 +84,9 @@ model BrokerConnection {
   // Whether we've successfully called Dhan's /v2/ip/setIP for this
   // subscriber yet (one-time per subscriber; Dhan only allows changing it
   // once every 7 days after that, so we don't retry this once it's true).
-  ipWhitelisted  Boolean             @default(false)
-  createdAt      DateTime            @default(now())
-  updatedAt      DateTime            @updatedAt
+  ipWhitelisted  Boolean                @default(false)
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
 }
 
 enum BrokerConnectMethod {
@@ -161,6 +162,33 @@ enum OrderAuditStatus {
   PLACED
   REJECTED
   ERROR
+}
+
+// One row per Goodwill "Place Order" request. GIGAPRO (Goodwill's broker)
+// has no order-placement API integration yet, so this is only a request log
+// for the ops team to action manually per the OTP-confirmation-first
+// rollout plan — not a real order audit trail like OrderAuditLog above,
+// which is Dhan-specific (real order IDs, broker responses).
+model GoodwillOrderRequest {
+  id           String              @id @default(uuid())
+  // Not a DB foreign key, same reasoning as OrderAuditLog.signalId above.
+  signalId     String
+  instrument   Instrument?
+  strike       Int
+  optionType   OptionType
+  subscriberId String
+  subscriber   Subscriber          @relation(fields: [subscriberId], references: [id])
+  lotSize      Int
+  productType  GoodwillProductType @default(INTRADAY)
+  requestedAt  DateTime            @default(now())
+
+  @@index([subscriberId])
+  @@index([signalId])
+}
+
+enum GoodwillProductType {
+  INTRADAY
+  MARGIN
 }
 
 model Referral {

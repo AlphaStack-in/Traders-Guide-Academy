@@ -82,6 +82,11 @@ export interface ClientConfig {
   // Gates the "Connect Dhan" broker-connect feature (place real orders from
   // signals). THC-only while this is being built out.
   dhanConnectEnabled: boolean;
+  // Gates Goodwill's own "Place Order" UI (their broker is GIGAPRO, not
+  // Dhan — no personal-token connect step, and no real order API yet). For
+  // now this only logs an order *request* for the team to process manually.
+  // Goodwill-only; must never be true alongside dhanConnectEnabled.
+  goodwillBrokerEnabled: boolean;
   batchInfo: BatchInfo;
   paymentInfo: PaymentInfo;
   testimonials: Testimonial[];
@@ -111,6 +116,7 @@ const CLIENTS: Record<ClientId, ClientConfig> = {
     linkedinUrl: "",
     dhanOfferEnabled: true,
     dhanConnectEnabled: true,
+    goodwillBrokerEnabled: false,
     batchInfo: {
       batchNumber: 13,
       priceInr: 4999,
@@ -243,6 +249,7 @@ const CLIENTS: Record<ClientId, ClientConfig> = {
     pricingHeadline: "Premium Community",
     dhanOfferEnabled: false,
     dhanConnectEnabled: false,
+    goodwillBrokerEnabled: false,
     batchInfo: {
       batchNumber: 1,
       priceInr: 3999,
@@ -316,6 +323,7 @@ const CLIENTS: Record<ClientId, ClientConfig> = {
     reelsSourceLabel: "YouTube",
     dhanOfferEnabled: false,
     dhanConnectEnabled: false,
+    goodwillBrokerEnabled: true,
     batchInfo: {
       batchNumber: 1,
       priceInr: 9999,
@@ -459,3 +467,14 @@ const CLIENT_ID = ((process.env.NEXT_PUBLIC_CLIENT as ClientId | undefined) ?? "
   : "thc";
 
 export const clientConfig: ClientConfig = CLIENTS[CLIENT_ID];
+
+export type OrderBroker = "dhan" | "goodwill";
+
+// Single source of truth for which broker's order-placement UI this
+// deployment shows, since the two flags are meant to be mutually exclusive
+// (each client has at most one broker wired up at a time).
+export function getActiveOrderBroker(): OrderBroker | null {
+  if (clientConfig.dhanConnectEnabled) return "dhan";
+  if (clientConfig.goodwillBrokerEnabled) return "goodwill";
+  return null;
+}

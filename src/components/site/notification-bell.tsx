@@ -7,9 +7,11 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useSoundAlert } from "@/components/site/sound-alert-provider";
 import { INSTRUMENT_LABEL, type InstrumentLiteral } from "@/lib/instruments";
 import { cn, formatUpdateTime } from "@/lib/utils";
-import { clientConfig } from "@/lib/client-config";
+import { getActiveOrderBroker } from "@/lib/client-config";
 import { PlaceOrderTrigger } from "@/components/account/place-order-trigger";
 import { OrderExpansionPanel } from "@/components/account/order-expansion-panel";
+
+const ORDER_BROKER = getActiveOrderBroker();
 
 const CLEARED_AT_KEY = "thc-notifications-cleared-at";
 const READ_IDS_KEY = "thc-notifications-read-ids";
@@ -350,17 +352,18 @@ export function NotificationBell() {
                             {group.latest.message}
                           </p>
                         )}
-                        {clientConfig.dhanConnectEnabled && (
+                        {ORDER_BROKER && (
                           <div className="mt-2 flex flex-col gap-2">
                             <div className="flex justify-end">
                               <PlaceOrderTrigger
                                 signalId={group.signalId}
+                                brokerType={ORDER_BROKER}
                                 expanded={orderExpanded.has(group.signalId)}
                                 onToggle={() => toggleOrderExpanded(group.signalId)}
                               />
                             </div>
                             {orderExpanded.has(group.signalId) && (
-                              <OrderExpansionPanel signalId={group.signalId} />
+                              <OrderExpansionPanel signalId={group.signalId} brokerType={ORDER_BROKER} />
                             )}
                           </div>
                         )}

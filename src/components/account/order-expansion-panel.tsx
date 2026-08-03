@@ -15,30 +15,65 @@ import {
 import {
   getOrderExpansionDetails,
   placeOrderForSignal,
-  type DhanProductType,
   type OrderExpansionDetails,
 } from "@/app/account/broker/order-actions";
+import {
+  getGoodwillOrderExpansionDetails,
+  requestGoodwillOrderConfirmation,
+} from "@/app/account/broker/goodwill-order-actions";
+import type { OrderBroker } from "@/lib/client-config";
+
+type ProductType = "INTRADAY" | "MARGIN";
+
+// Normalized shape both brokers' details fit into — Dhan's brokerStatus/
+// availableBalance collapse to sensible defaults for Goodwill, which has no
+// connect step or fund-limit lookup.
+interface PanelDetails {
+  brokerStatus: OrderExpansionDetails["brokerStatus"];
+  entryPrice: number;
+  lotSize: number | null;
+  contractError: string | null;
+  availableBalance: number | null;
+}
 
 // The shared expanded content — identical in the Trade Log table and the
 // notification panel. Each parent conditionally renders this wherever fits
 // its own DOM structure once a signal's PlaceOrderTrigger is toggled on.
-export function OrderExpansionPanel({ signalId }: { signalId: string }) {
-  const [details, setDetails] = useState<OrderExpansionDetails | null>(null);
+//
+// brokerType branches which server actions this calls — Dhan's (real order
+// placement, broker-connect gated) or Goodwill's (placeholder request log,
+// no connect step). Never both at once; see getActiveOrderBroker.
+export function OrderExpansionPanel({
+  signalId,
+  brokerType,
+}: {
+  signalId: string;
+  brokerType: OrderBroker;
+}) {
+  const [details, setDetails] = useState<PanelDetails | null>(null);
   const [lots, setLots] = useState(1);
-  const [productType, setProductType] = useState<DhanProductType>("INTRADAY");
+  const [productType, setProductType] = useState<ProductType>("INTRADAY");
   const [placing, setPlacing] = useState(false);
   const [result, setResult] = useState<{ success: boolean; text: string } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    getOrderExpansionDetails(signalId)
+    const request =
+      brokerType === "dhan"
+        ? getOrderExpansionDetails(signalId)
+        : getGoodwillOrderExpansionDetails(signalId).then((d) => ({
+            brokerStatus: "ACTIVE" as const,
+            ...d,
+            availableBalance: null,
+          }));
+    request
       .then((d) => {
         if (!cancelled) setDetails(d);
       })
       .catch(() => {
         if (!cancelled) {
           setDetails({
-            brokerStatus: "NOT_CONNECTED",
+            brokerStatus: brokerType === "dhan" ? "NOT_CONNECTED" : "ACTIVE",
             entryPrice: 0,
             lotSize: null,
             contractError: "Couldn't load order details.",
@@ -49,7 +84,7 @@ export function OrderExpansionPanel({ signalId }: { signalId: string }) {
     return () => {
       cancelled = true;
     };
-  }, [signalId]);
+  }, [signalId, brokerType]);
 
   if (!details) {
     return (
@@ -59,7 +94,7 @@ export function OrderExpansionPanel({ signalId }: { signalId: string }) {
     );
   }
 
-  if (details.brokerStatus !== "ACTIVE") {
+  if (brokerType === "dhan" && details.brokerStatus !== "ACTIVE") {
     return (
       <div className="thc-glass thc-gold-border flex items-center justify-between gap-3 rounded-xl border p-3">
         <div>
@@ -88,7 +123,10 @@ export function OrderExpansionPanel({ signalId }: { signalId: string }) {
     if (placing || result?.success) return;
     setPlacing(true);
     setResult(null);
-    const res = await placeOrderForSignal(signalId, lots, productType);
+    const res =
+      brokerType === "dhan"
+        ? await placeOrderForSignal(signalId, lots, productType)
+        : await requestGoodwillOrderConfirmation(signalId, lots, productType);
     setPlacing(false);
 
     if (res.success) {
@@ -109,7 +147,7 @@ export function OrderExpansionPanel({ signalId }: { signalId: string }) {
           </label>
           <Select
             value={productType}
-            onValueChange={(v) => setProductType(v as DhanProductType)}
+            onValueChange={(v) => setProductType(v as ProductType)}
             disabled={placing}
           >
             <SelectTrigger className="h-8 w-32 text-xs">
