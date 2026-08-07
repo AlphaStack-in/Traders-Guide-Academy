@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { formatUpdateTime } from "@/lib/utils";
 import { updateAdminNote } from "@/app/admin/(protected)/signals/actions";
 import { INSTRUMENT_LABEL, type InstrumentLiteral } from "@/lib/instruments";
 
@@ -34,6 +35,7 @@ export interface OngoingTrade {
   optionType: "CE" | "PE";
   instrument: InstrumentLiteral | null;
   adminNote: string | null;
+  adminNoteAt?: string | null;
 }
 
 function instrumentPrefix(trade: OngoingTrade) {
@@ -71,12 +73,19 @@ function NoteEditor({ trade }: { trade: OngoingTrade }) {
 
   return (
     <div className="thc-glass rounded-xl border border-white/5 p-4">
-      <p className="mb-2 text-sm font-medium">
-        Update on{" "}
-        <span className="font-heading font-bold thc-gold-text">
-          {instrumentPrefix(trade)}{trade.strike} {trade.optionType}
-        </span>
-      </p>
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <p className="text-sm font-medium">
+          Update on{" "}
+          <span className="font-heading font-bold thc-gold-text">
+            {instrumentPrefix(trade)}{trade.strike} {trade.optionType}
+          </span>
+        </p>
+        {trade.adminNoteAt && (
+          <p className="shrink-0 text-xs text-muted-foreground">
+            {formatUpdateTime(trade.adminNoteAt)}
+          </p>
+        )}
+      </div>
       <div className="mb-3 flex flex-wrap gap-1.5">
         {QUICK_PHRASES.map((phrase) => (
           <button

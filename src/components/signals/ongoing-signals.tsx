@@ -183,10 +183,7 @@ export function OngoingSignals({
 
         <div className="rounded-xl border border-white/5 bg-black/10 p-3 lg:flex lg:h-full lg:flex-col">
           {signals.some((signal) => (signal.adminUpdates && signal.adminUpdates.length > 0) || signal.adminNote) ? (
-            <div
-              className="h-full gap-3 overflow-y-auto [column-fill:auto] lg:columns-2"
-              style={{ columnGap: "12px" }}
-            >
+            <div className="flex w-full flex-col gap-3">
               {signals
                 .filter((signal) => (signal.adminUpdates && signal.adminUpdates.length > 0) || signal.adminNote)
                 .map((signal) => {
@@ -199,21 +196,21 @@ export function OngoingSignals({
                   return (
                     <div
                       key={signal.id}
-                      className="thc-glass mb-3 break-inside-avoid-column rounded-xl border border-primary/20 bg-primary/5 p-3"
+                      className="thc-glass rounded-xl border border-primary/20 bg-primary/5 p-3"
                     >
                       <div className="mb-2 flex items-center justify-between gap-2 border-b border-white/5 pb-1.5">
                         <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                           Update on {instrumentPrefix(signal)}{signal.strike} {signal.optionType}
                         </p>
                       </div>
-                      <div className="flex flex-col gap-2.5">
+                      <div className="max-h-[240px] overflow-y-auto pr-1 flex flex-col gap-2.5">
                         {updates.map((update, idx) => (
                           <div key={update.id || idx} className={cn(idx > 0 && "border-t border-white/5 pt-2")}>
                             <div className="flex items-start justify-between gap-2">
-                              <p className="whitespace-pre-line text-sm text-foreground">
+                              <p className="whitespace-pre-line text-xs text-foreground/90">
                                 {update.message}
                               </p>
-                              <p className="shrink-0 text-[10px] text-muted-foreground pt-0.5">
+                              <p className="shrink-0 text-xs text-muted-foreground pt-0.5">
                                 {formatUpdateTime(update.createdAt)}
                               </p>
                             </div>

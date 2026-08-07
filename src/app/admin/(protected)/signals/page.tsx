@@ -61,6 +61,7 @@ export default async function ManageSignalsPage({
     optionType: r.optionType,
     instrument: r.instrument,
     adminNote: r.adminNote,
+    adminNoteAt: r.adminNoteAt,
   }));
 
   return (
