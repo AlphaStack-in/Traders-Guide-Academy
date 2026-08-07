@@ -182,33 +182,47 @@ export function OngoingSignals({
         </div>
 
         <div className="rounded-xl border border-white/5 bg-black/10 p-3 lg:flex lg:h-full lg:flex-col">
-          {signals.some((signal) => signal.adminNote) ? (
+          {signals.some((signal) => (signal.adminUpdates && signal.adminUpdates.length > 0) || signal.adminNote) ? (
             <div
               className="h-full gap-3 overflow-y-auto [column-fill:auto] lg:columns-2"
               style={{ columnGap: "12px" }}
             >
               {signals
-                .filter((signal) => signal.adminNote)
-                .map((signal) => (
-                  <div
-                    key={signal.id}
-                    className="thc-glass mb-3 break-inside-avoid-column rounded-xl border border-primary/20 bg-primary/5 p-3"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                        Update on {instrumentPrefix(signal)}{signal.strike} {signal.optionType}
-                      </p>
-                      {signal.adminNoteAt && (
-                        <p className="shrink-0 text-[10px] text-muted-foreground">
-                          {formatUpdateTime(signal.adminNoteAt)}
+                .filter((signal) => (signal.adminUpdates && signal.adminUpdates.length > 0) || signal.adminNote)
+                .map((signal) => {
+                  const updates =
+                    signal.adminUpdates && signal.adminUpdates.length > 0
+                      ? signal.adminUpdates
+                      : signal.adminNote
+                        ? [{ id: signal.id, message: signal.adminNote, createdAt: signal.adminNoteAt ?? signal.signalTime }]
+                        : [];
+                  return (
+                    <div
+                      key={signal.id}
+                      className="thc-glass mb-3 break-inside-avoid-column rounded-xl border border-primary/20 bg-primary/5 p-3"
+                    >
+                      <div className="mb-2 flex items-center justify-between gap-2 border-b border-white/5 pb-1.5">
+                        <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                          Update on {instrumentPrefix(signal)}{signal.strike} {signal.optionType}
                         </p>
-                      )}
+                      </div>
+                      <div className="flex flex-col gap-2.5">
+                        {updates.map((update, idx) => (
+                          <div key={update.id || idx} className={cn(idx > 0 && "border-t border-white/5 pt-2")}>
+                            <div className="flex items-start justify-between gap-2">
+                              <p className="whitespace-pre-line text-sm text-foreground">
+                                {update.message}
+                              </p>
+                              <p className="shrink-0 text-[10px] text-muted-foreground pt-0.5">
+                                {formatUpdateTime(update.createdAt)}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    <p className="mt-1 whitespace-pre-line text-sm text-foreground">
-                      {signal.adminNote}
-                    </p>
-                  </div>
-                ))}
+                  );
+                })}
             </div>
           ) : (
             <div className="flex h-[140px] w-full flex-col items-center justify-center gap-1 text-center lg:h-full">

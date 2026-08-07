@@ -9,7 +9,7 @@ import {
   type RangePreset,
   type SignalsDateFilter,
 } from "@/components/admin/manage-signals-filtered-table";
-import { getLatestAdminUpdateTimestamps } from "@/app/admin/(protected)/signals/actions";
+import { getAdminUpdatesForSignals } from "@/app/admin/(protected)/signals/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -31,24 +31,28 @@ export default async function ManageSignalsPage({
   };
 
   const signals = await prisma.signal.findMany({ orderBy: { signalTime: "desc" } });
-  const openIds = signals.filter((s) => s.status === "OPEN").map((s) => s.id);
-  const adminNoteTimestamps = await getLatestAdminUpdateTimestamps(openIds);
+  const allIds = signals.map((s) => s.id);
+  const adminUpdatesMap = await getAdminUpdatesForSignals(allIds);
 
-  const rows: ManageSignalRow[] = signals.map((s) => ({
-    id: s.id,
-    strike: s.strike,
-    optionType: s.optionType,
-    instrument: s.instrument,
-    entryPrice: s.entryPrice,
-    stopLoss: s.stopLoss,
-    targets: s.targets,
-    sellPrice: s.sellPrice,
-    pnlPercent: s.pnlPercent,
-    status: s.status,
-    signalTime: s.signalTime.toISOString(),
-    adminNote: s.adminNote,
-    adminNoteAt: adminNoteTimestamps[s.id] ?? null,
-  }));
+  const rows: ManageSignalRow[] = signals.map((s) => {
+    const updates = adminUpdatesMap[s.id] ?? [];
+    return {
+      id: s.id,
+      strike: s.strike,
+      optionType: s.optionType,
+      instrument: s.instrument,
+      entryPrice: s.entryPrice,
+      stopLoss: s.stopLoss,
+      targets: s.targets,
+      sellPrice: s.sellPrice,
+      pnlPercent: s.pnlPercent,
+      status: s.status,
+      signalTime: s.signalTime.toISOString(),
+      adminNote: s.adminNote,
+      adminNoteAt: updates[0]?.createdAt ?? null,
+      adminUpdates: updates,
+    };
+  });
 
   const ongoing = rows.filter((r) => r.status === "OPEN");
   const ongoingTrades = ongoing.map((r) => ({

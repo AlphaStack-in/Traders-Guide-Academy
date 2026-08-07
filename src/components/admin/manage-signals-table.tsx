@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Pencil, Trash2, X } from "lucide-react";
-import { cn, formatSignalDate, formatSignalTime } from "@/lib/utils";
+import { cn, formatSignalDate, formatSignalTime, formatUpdateTime } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +28,7 @@ import {
   closeSignal,
   deleteSignal,
   updateSignal,
+  type AdminUpdateItem,
   type SignalUpdateInput,
 } from "@/app/admin/(protected)/signals/actions";
 import { INSTRUMENTS, INSTRUMENT_LABEL, type InstrumentLiteral } from "@/lib/instruments";
@@ -46,6 +47,7 @@ export interface ManageSignalRow {
   signalTime: string;
   adminNote: string | null;
   adminNoteAt: string | null;
+  adminUpdates?: AdminUpdateItem[];
 }
 
 const STATUS_LABEL: Record<ManageSignalRow["status"], string> = {
@@ -404,13 +406,37 @@ function ManageSignalRowItem({ signal }: { signal: ManageSignalRow }) {
         </div>
       </TableCell>
     </TableRow>
-    {signal.adminNote && (
+    {((signal.adminUpdates && signal.adminUpdates.length > 0) || signal.adminNote) && (
       <TableRow className="border-b-white/5 hover:bg-transparent">
         <TableCell
           colSpan={10}
           className="max-w-0 whitespace-pre-line break-words py-2 text-xs text-muted-foreground"
         >
-          <span className="font-semibold text-foreground">Admin update:</span> {signal.adminNote}
+          <div className="flex flex-col gap-1.5">
+            {signal.adminUpdates && signal.adminUpdates.length > 0 ? (
+              signal.adminUpdates.map((update) => (
+                <div key={update.id} className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5">
+                  <div>
+                    <span className="font-semibold text-foreground">Admin update:</span> {update.message}
+                  </div>
+                  <span className="shrink-0 text-[10px] text-muted-foreground">
+                    {formatUpdateTime(update.createdAt)}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5">
+                <div>
+                  <span className="font-semibold text-foreground">Admin update:</span> {signal.adminNote}
+                </div>
+                {signal.adminNoteAt && (
+                  <span className="shrink-0 text-[10px] text-muted-foreground">
+                    {formatUpdateTime(signal.adminNoteAt)}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
         </TableCell>
       </TableRow>
     )}

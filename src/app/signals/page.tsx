@@ -5,7 +5,7 @@ import { OngoingSignals } from "@/components/signals/ongoing-signals";
 import { SoundAlertToggle } from "@/components/signals/sound-alert-toggle";
 import { RefreshButton } from "@/components/site/refresh-button";
 import { prisma } from "@/lib/prisma";
-import { getLatestAdminUpdateTimestamps } from "@/app/admin/(protected)/signals/actions";
+import { getAdminUpdatesForSignals } from "@/app/admin/(protected)/signals/actions";
 import type { SignalRow } from "@/components/signals/signals-explorer";
 
 async function getSignals() {
@@ -14,23 +14,27 @@ async function getSignals() {
 
 export default async function SignalsPage() {
   const signals = await getSignals();
-  const openIds = signals.filter((s) => s.status === "OPEN").map((s) => s.id);
-  const adminNoteTimestamps = await getLatestAdminUpdateTimestamps(openIds);
-  const rows: SignalRow[] = signals.map((s) => ({
-    id: s.id,
-    strike: s.strike,
-    optionType: s.optionType,
-    instrument: s.instrument,
-    entryPrice: s.entryPrice,
-    stopLoss: s.stopLoss,
-    targets: s.targets,
-    sellPrice: s.sellPrice,
-    pnlPercent: s.pnlPercent,
-    status: s.status,
-    signalTime: s.signalTime.toISOString(),
-    adminNote: s.adminNote,
-    adminNoteAt: adminNoteTimestamps[s.id] ?? null,
-  }));
+  const allIds = signals.map((s) => s.id);
+  const adminUpdatesMap = await getAdminUpdatesForSignals(allIds);
+  const rows: SignalRow[] = signals.map((s) => {
+    const updates = adminUpdatesMap[s.id] ?? [];
+    return {
+      id: s.id,
+      strike: s.strike,
+      optionType: s.optionType,
+      instrument: s.instrument,
+      entryPrice: s.entryPrice,
+      stopLoss: s.stopLoss,
+      targets: s.targets,
+      sellPrice: s.sellPrice,
+      pnlPercent: s.pnlPercent,
+      status: s.status,
+      signalTime: s.signalTime.toISOString(),
+      adminNote: s.adminNote,
+      adminNoteAt: updates[0]?.createdAt ?? null,
+      adminUpdates: updates,
+    };
+  });
   const ongoing = rows.filter((r) => r.status === "OPEN");
 
   return (

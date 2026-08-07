@@ -21,6 +21,12 @@ import {
 } from "@/components/ui/table";
 import { INSTRUMENTS, INSTRUMENT_LABEL, type InstrumentLiteral } from "@/lib/instruments";
 
+export interface AdminUpdateItem {
+  id: string;
+  message: string;
+  createdAt: string;
+}
+
 export interface SignalRow {
   id: string;
   strike: number;
@@ -35,6 +41,7 @@ export interface SignalRow {
   signalTime: string;
   adminNote: string | null;
   adminNoteAt: string | null;
+  adminUpdates?: AdminUpdateItem[];
 }
 
 const STATUS_LABEL: Record<SignalRow["status"], string> = {

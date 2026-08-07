@@ -201,6 +201,12 @@ export async function updateAdminNote(id: string, adminNote: string | null) {
   return { success: true };
 }
 
+export interface AdminUpdateItem {
+  id: string;
+  message: string;
+  createdAt: string;
+}
+
 export async function getRecentAdminUpdates(limit = 200) {
   // Full history, newest first — the notification panel groups these by
   // signal itself (most-recently-active signal's group first, messages
@@ -221,24 +227,41 @@ export async function getRecentAdminUpdates(limit = 200) {
   }));
 }
 
+export async function getAdminUpdatesForSignals(
+  signalIds: string[],
+): Promise<Record<string, AdminUpdateItem[]>> {
+  if (signalIds.length === 0) return {};
+
+  const updates = await prisma.adminUpdate.findMany({
+    where: { signalId: { in: signalIds } },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const map: Record<string, AdminUpdateItem[]> = {};
+  for (const u of updates) {
+    if (!map[u.signalId]) {
+      map[u.signalId] = [];
+    }
+    map[u.signalId].push({
+      id: u.id,
+      message: u.message,
+      createdAt: u.createdAt.toISOString(),
+    });
+  }
+  return map;
+}
+
 // Latest AdminUpdate.createdAt per signal — used by the Ongoing Trades
 // tables (Trade Log + Manage Signals) to timestamp the note shown there,
 // since Signal.adminNote is just a string with no timestamp of its own.
 export async function getLatestAdminUpdateTimestamps(
   signalIds: string[],
 ): Promise<Record<string, string>> {
-  if (signalIds.length === 0) return {};
-
-  const updates = await prisma.adminUpdate.findMany({
-    where: { signalId: { in: signalIds } },
-    orderBy: { createdAt: "desc" },
-    select: { signalId: true, createdAt: true },
-  });
-
+  const updatesMap = await getAdminUpdatesForSignals(signalIds);
   const latest: Record<string, string> = {};
-  for (const u of updates) {
-    if (!(u.signalId in latest)) {
-      latest[u.signalId] = u.createdAt.toISOString();
+  for (const [id, list] of Object.entries(updatesMap)) {
+    if (list.length > 0) {
+      latest[id] = list[0].createdAt;
     }
   }
   return latest;
