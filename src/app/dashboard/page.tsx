@@ -1,31 +1,45 @@
 import { Navbar } from "@/components/site/navbar";
 import { Footer } from "@/components/site/footer";
-import { DashboardContent } from "@/components/dashboard/dashboard-content";
+import { DashboardView, type SerializedSignal } from "@/components/dashboard/dashboard-view";
 import { InstrumentFilter } from "@/components/dashboard/instrument-filter";
 import { RefreshButton } from "@/components/site/refresh-button";
 import { prisma } from "@/lib/prisma";
-import {
-  computeBestWorstTrades,
-  computeDashboardMetrics,
-  getRecentSignals,
-} from "@/lib/signal-metrics";
-import type { InstrumentLiteral } from "@/lib/instruments";
+import { RANGE_PRESETS, type RangePreset, type SignalsDateFilter } from "@/lib/date-filter";
+import { getCurrentSubscriber } from "@/lib/subscriber-auth";
 
 export const revalidate = 60;
 
 export default async function PublicDashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ instrument?: string }>;
+  searchParams: Promise<{ instrument?: string; range?: string; from?: string; to?: string }>;
 }) {
-  const { instrument } = await searchParams;
+  const params = await searchParams;
+  const range = RANGE_PRESETS.includes(params.range as RangePreset)
+    ? (params.range as RangePreset)
+    : "all";
+  const initialFilter: SignalsDateFilter = {
+    range,
+    from: params.from ?? "",
+    to: params.to ?? "",
+  };
+
+  const subscriber = await getCurrentSubscriber();
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const referralLink = subscriber?.invitationToken
+    ? `${baseUrl}/register?ref=${subscriber.invitationToken}`
+    : undefined;
+
   const allSignals = await prisma.signal.findMany({ orderBy: { signalTime: "desc" } });
-  const signals = instrument
-    ? allSignals.filter((s) => s.instrument === (instrument as InstrumentLiteral))
-    : allSignals;
-  const metrics = computeDashboardMetrics(signals);
-  const bestWorst = computeBestWorstTrades(signals);
-  const recentSignals = getRecentSignals(signals);
+  const serializedSignals: SerializedSignal[] = allSignals.map((s) => ({
+    id: s.id,
+    strike: s.strike,
+    optionType: s.optionType,
+    instrument: s.instrument,
+    pnlPercent: s.pnlPercent,
+    status: s.status,
+    signalTime: s.signalTime.toISOString(),
+  }));
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -46,7 +60,12 @@ export default async function PublicDashboardPage({
             <RefreshButton />
           </div>
         </div>
-        <DashboardContent metrics={metrics} bestWorst={bestWorst} recentSignals={recentSignals} />
+        <DashboardView
+          signals={serializedSignals}
+          initialFilter={initialFilter}
+          instrument={params.instrument}
+          referralLink={referralLink}
+        />
       </main>
       <Footer />
     </div>

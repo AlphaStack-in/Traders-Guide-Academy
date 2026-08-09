@@ -1,3 +1,7 @@
+"use client";
+
+import { useState } from "react";
+import { Share2 } from "lucide-react";
 import { KpiCard } from "@/components/admin/kpi-card";
 import { SliderStat } from "@/components/admin/slider-stat";
 import { SectionNumber } from "@/components/admin/section-number";
@@ -11,20 +15,55 @@ import {
 } from "@/components/admin/dashboard-charts";
 import type { DashboardMetrics } from "@/lib/signal-metrics";
 import { cn } from "@/lib/utils";
+import { DateFilterChips } from "@/components/signals/date-filter-chips";
+import type { SignalsDateFilter } from "@/lib/date-filter";
+import { Button } from "@/components/ui/button";
+import { DashboardShareModal } from "@/components/dashboard/dashboard-share-modal";
 
 export function DashboardContent({
   metrics,
   bestWorst,
   recentSignals,
+  dateFilter,
+  onDateFilterChange,
+  rangeLabel = "All Time",
+  referralLink,
 }: {
   metrics: DashboardMetrics;
   bestWorst: { label: string; pnlPercent: number }[];
   recentSignals: RecentSignalItem[];
+  dateFilter?: SignalsDateFilter;
+  onDateFilterChange?: (next: SignalsDateFilter) => void;
+  rangeLabel?: string;
+  referralLink?: string;
 }) {
+  const [shareOpen, setShareOpen] = useState(false);
   const pct = (n: number) => `${n.toFixed(1)}%`;
 
   return (
     <div className="flex flex-col gap-8">
+      {dateFilter && onDateFilterChange && (
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <DateFilterChips filter={dateFilter} onFilterChange={onDateFilterChange} />
+          <Button
+            size="sm"
+            variant="outline"
+            className="thc-glow h-9 gap-1.5 self-start sm:self-auto"
+            onClick={() => setShareOpen(true)}
+          >
+            <Share2 className="h-4 w-4 text-primary" />
+            Share Performance
+          </Button>
+        </div>
+      )}
+
+      <DashboardShareModal
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        metrics={metrics}
+        rangeLabel={rangeLabel}
+        referralLink={referralLink}
+      />
       <div className="thc-glass thc-gold-border relative rounded-2xl p-6">
         <div className="mb-4 flex items-center gap-2">
           <SectionNumber n={1} />

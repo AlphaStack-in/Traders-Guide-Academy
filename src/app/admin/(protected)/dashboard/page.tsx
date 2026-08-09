@@ -1,29 +1,36 @@
 import { prisma } from "@/lib/prisma";
-import {
-  computeBestWorstTrades,
-  computeDashboardMetrics,
-  getRecentSignals,
-} from "@/lib/signal-metrics";
-import { DashboardContent } from "@/components/dashboard/dashboard-content";
+import { DashboardView, type SerializedSignal } from "@/components/dashboard/dashboard-view";
 import { InstrumentFilter } from "@/components/dashboard/instrument-filter";
 import { RefreshButton } from "@/components/site/refresh-button";
-import type { InstrumentLiteral } from "@/lib/instruments";
+import { RANGE_PRESETS, type RangePreset, type SignalsDateFilter } from "@/lib/date-filter";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ instrument?: string }>;
+  searchParams: Promise<{ instrument?: string; range?: string; from?: string; to?: string }>;
 }) {
-  const { instrument } = await searchParams;
+  const params = await searchParams;
+  const range = RANGE_PRESETS.includes(params.range as RangePreset)
+    ? (params.range as RangePreset)
+    : "all";
+  const initialFilter: SignalsDateFilter = {
+    range,
+    from: params.from ?? "",
+    to: params.to ?? "",
+  };
+
   const allSignals = await prisma.signal.findMany({ orderBy: { signalTime: "asc" } });
-  const signals = instrument
-    ? allSignals.filter((s) => s.instrument === (instrument as InstrumentLiteral))
-    : allSignals;
-  const metrics = computeDashboardMetrics(signals);
-  const bestWorst = computeBestWorstTrades(signals);
-  const recentSignals = getRecentSignals(signals);
+  const serializedSignals: SerializedSignal[] = allSignals.map((s) => ({
+    id: s.id,
+    strike: s.strike,
+    optionType: s.optionType,
+    instrument: s.instrument,
+    pnlPercent: s.pnlPercent,
+    status: s.status,
+    signalTime: s.signalTime.toISOString(),
+  }));
 
   return (
     <div className="flex flex-col gap-8">
@@ -39,7 +46,11 @@ export default async function AdminDashboardPage({
           <RefreshButton />
         </div>
       </div>
-      <DashboardContent metrics={metrics} bestWorst={bestWorst} recentSignals={recentSignals} />
+      <DashboardView
+        signals={serializedSignals}
+        initialFilter={initialFilter}
+        instrument={params.instrument}
+      />
     </div>
   );
 }

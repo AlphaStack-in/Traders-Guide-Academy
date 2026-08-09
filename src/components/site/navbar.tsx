@@ -11,6 +11,7 @@ const links = [
   { href: "/", label: "Home" },
   { href: "/dashboard", label: "Dashboard" },
   { href: "/signals", label: "Signals" },
+  { href: "/account/refer", label: "Refer & Earn" },
   { href: "/contact", label: "Contact" },
 ];
 
