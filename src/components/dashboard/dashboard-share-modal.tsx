@@ -78,7 +78,7 @@ export function DashboardShareModal({
   const brandName = clientConfig.siteName.toUpperCase();
 
   // Exciting, emotional, high-converting social share message
-  const shareMessage = `${openingHeader}\n\nThe markets have been rewarding us! 📈\n\n🎯 Win Rate: ${winRateStr}%\n🏆 Total Performance: ${totalPerfStr}\n📈 Avg. Gain / Trade: ${avgGainStr}\n⭐ Best Trade: ${bestTradeStr}\n\n💥 Consistent signals. Powerful moves. Real market results.\n📊 The numbers speak for themselves.\n🔥 The next opportunity could be just around the corner.\n\nImagine having these signals delivered to you while the next opportunity unfolds. 👀\n\n🎁 Want to be part of it? JOIN ${brandName}\n\n🔗 ${joinUrl}\n\n🚀 Don't just watch the market. Be ready for the next move.\n\n⚠️ Past performance does not guarantee future results.`;
+  const shareMessage = `${openingHeader}\n\nThe markets have been rewarding us! 📈\n\n🎯 Win Rate: ${winRateStr}%\n🏆 Total Performance: ${totalPerfStr}\n📈 Avg. Gain / Trade: ${avgGainStr}\n⭐ Best Trade: ${bestTradeStr}\n\n💥 Consistent signals. Powerful moves. Real market results.\n🔥 The next opportunity could be just around the corner.\n\nImagine having these signals delivered to you while the next opportunity unfolds. 👀\n\n🎁 Want to be part of it? JOIN ${brandName}\n\n🔗 ${joinUrl}\n\n🚀 Don't just watch the market. Be ready for the next move.\n\n⚠️ Past performance does not guarantee future results.`;
 
   const encodedMsg = encodeURIComponent(shareMessage);
   const encodedUrl = encodeURIComponent(joinUrl);
