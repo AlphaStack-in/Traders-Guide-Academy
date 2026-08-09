@@ -44,6 +44,9 @@ export function SubscriberNavStatus({ subscriberName }: { subscriberName: string
         <DropdownMenuItem asChild>
           <Link href="/account/profile">Profile</Link>
         </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/account/refer">Refer &amp; Earn</Link>
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={handleLogout}>Log out</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

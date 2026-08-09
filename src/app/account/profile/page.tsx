@@ -55,6 +55,21 @@ export default async function ProfilePage() {
           </div>
         </div>
 
+        <div className="thc-glass thc-gold-border flex flex-col gap-3 rounded-2xl border p-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-heading font-bold text-base">Refer &amp; <span className="thc-gold-text">Earn</span></h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Invite friends and earn rewards for every verified member.</p>
+            </div>
+            <a
+              href="/account/refer"
+              className="thc-glow thc-btn-gradient inline-flex h-9 items-center justify-center rounded-lg px-4 text-xs font-semibold text-black"
+            >
+              Open Referrals
+            </a>
+          </div>
+        </div>
+
         {clientConfig.dhanConnectEnabled && (
           <div className="thc-glass thc-gold-border rounded-2xl border p-5">
             <h2 className="font-heading text-lg font-bold">
