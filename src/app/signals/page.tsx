@@ -7,12 +7,31 @@ import { RefreshButton } from "@/components/site/refresh-button";
 import { prisma } from "@/lib/prisma";
 import { getAdminUpdatesForSignals } from "@/app/admin/(protected)/signals/actions";
 import type { SignalRow } from "@/components/signals/signals-explorer";
+import {
+  RANGE_PRESETS,
+  type RangePreset,
+  type SignalsDateFilter,
+} from "@/lib/date-filter";
 
 async function getSignals() {
   return prisma.signal.findMany({ orderBy: { signalTime: "desc" } });
 }
 
-export default async function SignalsPage() {
+export default async function SignalsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ range?: string; from?: string; to?: string }>;
+}) {
+  const params = await searchParams;
+  const range = RANGE_PRESETS.includes(params.range as RangePreset)
+    ? (params.range as RangePreset)
+    : "all";
+  const initialFilter: SignalsDateFilter = {
+    range,
+    from: params.from ?? "",
+    to: params.to ?? "",
+  };
+
   const signals = await getSignals();
   const allIds = signals.map((s) => s.id);
   const adminUpdatesMap = await getAdminUpdatesForSignals(allIds);
@@ -57,7 +76,7 @@ export default async function SignalsPage() {
           </div>
         </div>
         <OngoingSignals signals={ongoing} />
-        <SignalsExplorer signals={rows} />
+        <SignalsExplorer signals={rows} initialFilter={initialFilter} />
       </main>
       <Footer />
     </div>

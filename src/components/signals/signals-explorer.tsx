@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { usePathname } from "next/navigation";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { cn, formatSignalDate, formatSignalTime } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +21,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { INSTRUMENTS, INSTRUMENT_LABEL, type InstrumentLiteral } from "@/lib/instruments";
+import {
+  computeBoundaries,
+  matchesDateFilter,
+  type SignalsDateFilter,
+} from "@/lib/date-filter";
+import { DateFilterChips } from "@/components/signals/date-filter-chips";
 
 export interface AdminUpdateItem {
   id: string;
@@ -111,12 +118,39 @@ function SortButton({
   );
 }
 
-export function SignalsExplorer({ signals }: { signals: SignalRow[] }) {
+export function SignalsExplorer({
+  signals,
+  initialFilter,
+}: {
+  signals: SignalRow[];
+  initialFilter?: SignalsDateFilter;
+}) {
+  const pathname = usePathname();
+  const [dateFilter, setDateFilter] = useState<SignalsDateFilter>(
+    initialFilter ?? { range: "all", from: "", to: "" },
+  );
   const [optionFilter, setOptionFilter] = useState<OptionFilter>("ALL");
   const [instrumentFilter, setInstrumentFilter] = useState<InstrumentFilter>("ALL");
   const [resultFilter, setResultFilter] = useState<ResultFilter>("ALL");
   const [sortColumn, setSortColumn] = useState<SortColumn>("date");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+
+  const boundaries = useMemo(() => computeBoundaries(), []);
+
+  function applyDateFilter(next: SignalsDateFilter) {
+    setDateFilter(next);
+
+    const params = new URLSearchParams();
+    if (next.range !== "all") {
+      params.set("range", next.range);
+      if (next.range === "custom") {
+        if (next.from) params.set("from", next.from);
+        if (next.to) params.set("to", next.to);
+      }
+    }
+    const query = params.toString();
+    window.history.replaceState(null, "", query ? `${pathname}?${query}` : pathname);
+  }
 
   function handleSort(column: SortColumn) {
     if (column === sortColumn) {
@@ -129,6 +163,8 @@ export function SignalsExplorer({ signals }: { signals: SignalRow[] }) {
 
   const filtered = useMemo(() => {
     let list = signals;
+
+    list = list.filter((s) => matchesDateFilter(s.signalTime, dateFilter, boundaries));
 
     if (optionFilter !== "ALL") {
       list = list.filter((s) => s.optionType === optionFilter);
@@ -150,13 +186,31 @@ export function SignalsExplorer({ signals }: { signals: SignalRow[] }) {
       const diff = sortValue(a, sortColumn) - sortValue(b, sortColumn);
       return sortDirection === "asc" ? diff : -diff;
     });
-  }, [signals, optionFilter, instrumentFilter, resultFilter, sortColumn, sortDirection]);
+  }, [
+    signals,
+    dateFilter,
+    boundaries,
+    optionFilter,
+    instrumentFilter,
+    resultFilter,
+    sortColumn,
+    sortDirection,
+  ]);
 
   return (
     <div className="flex flex-col gap-4">
-      <span className="text-sm text-muted-foreground">
-        {filtered.length} signal{filtered.length === 1 ? "" : "s"}
-      </span>
+      <DateFilterChips filter={dateFilter} onFilterChange={applyDateFilter} />
+
+      {dateFilter.range !== "all" ? (
+        <span className="text-sm text-muted-foreground">
+          Showing {filtered.length} of {signals.length} signal{signals.length === 1 ? "" : "s"}
+        </span>
+      ) : (
+        <span className="text-sm text-muted-foreground">
+          {filtered.length} signal{filtered.length === 1 ? "" : "s"}
+        </span>
+      )}
+
 
       {filtered.length === 0 ? (
         <p className="py-16 text-center text-sm text-muted-foreground">
