@@ -10,6 +10,7 @@ import {
   type SnapshotData,
 } from "@/components/dashboard/dashboard-snapshot-card";
 import { getRuntimeReferralUrl } from "@/lib/utils";
+import { clientConfig } from "@/lib/client-config";
 
 function InstagramIcon({ className }: { className?: string }) {
   return (
@@ -55,8 +56,29 @@ export function DashboardShareModal({
   const avgGainStr = `${avgGainSign}${metrics.avgPercentPerTrade.toFixed(1)}%`;
   const bestTradeStr = metrics.bestTradePercent != null ? `+${metrics.bestTradePercent.toFixed(1)}%` : "—";
 
-  // Exciting, engaging performance message
-  const shareMessage = `🚀 Exciting Results! Our signals are performing strong! 🔥\n\n🎯 Win Rate: ${winRateStr}%\n🏆 Total Performance: ${totalPerfStr}\n📈 Average Gain per Trade: ${avgGainStr}\n⭐ Best Trade: ${bestTradeStr}\n\n💪 Real signals. Real performance. Real results.\n\n🎁 Join our community and get access to our premium signals.\n\n👉 Join now:\n${joinUrl}`;
+  // Context-aware dynamic opening based on selected date filter
+  const getOpeningHeader = (range: string) => {
+    const lower = range.toLowerCase();
+    if (lower.includes("today")) {
+      return "🚨🔥 TODAY'S TRADES ARE ON FIRE! 🔥🚨";
+    }
+    if (lower.includes("week")) {
+      return "🚀🔥 WHAT A WEEK FOR OUR TRADES! 🔥🚀";
+    }
+    if (lower.includes("month")) {
+      return "🏆🔥 WHAT A MONTH! OUR TRADES ARE HITTING BULLS-EYE! 🔥";
+    }
+    if (lower.includes("custom") || lower.includes("to")) {
+      return "📊🔥 HERE'S WHAT WE DELIVERED! 🔥📊";
+    }
+    return "🚀🏆 THE RESULTS SPEAK FOR THEMSELVES! 🏆🚀";
+  };
+
+  const openingHeader = getOpeningHeader(rangeLabel);
+  const brandName = clientConfig.siteName.toUpperCase();
+
+  // Exciting, emotional, high-converting social share message
+  const shareMessage = `${openingHeader}\n\nThe markets have been rewarding us! 📈\n\n🎯 Win Rate: ${winRateStr}%\n🏆 Total Performance: ${totalPerfStr}\n📈 Avg. Gain / Trade: ${avgGainStr}\n⭐ Best Trade: ${bestTradeStr}\n\n💥 Consistent signals. Powerful moves. Real market results.\n📊 The numbers speak for themselves.\n🔥 The next opportunity could be just around the corner.\n\nImagine having these signals delivered to you while the next opportunity unfolds. 👀\n\n🎁 Want to be part of it? JOIN ${brandName}\n\n🔗 ${joinUrl}\n\n🚀 Don't just watch the market. Be ready for the next move.\n\n⚠️ Past performance does not guarantee future results.`;
 
   const encodedMsg = encodeURIComponent(shareMessage);
   const encodedUrl = encodeURIComponent(joinUrl);
