@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +11,9 @@ import { clientConfig } from "@/lib/client-config";
 import { registerSubscriber } from "@/app/register/actions";
 
 export function RegisterForm() {
+  const searchParams = useSearchParams();
+  const invitationToken = searchParams.get("ref") || searchParams.get("token") || null;
+
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -22,7 +26,12 @@ export function RegisterForm() {
     setError(null);
 
     startTransition(async () => {
-      const result = await registerSubscriber({ name, phone, email: email || null });
+      const result = await registerSubscriber({
+        name,
+        phone,
+        email: email || null,
+        invitationToken,
+      });
       if (result.success) {
         setSubmitted(true);
       } else {

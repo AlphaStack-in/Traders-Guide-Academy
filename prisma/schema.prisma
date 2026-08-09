@@ -53,12 +53,22 @@ model Subscriber {
   createdAt             DateTime               @default(now())
   batchNumber           Int?
   couponCode            String?
+  referralStatus        ReferralStatus         @default(NOT_JOINED)
+  invitedAt             DateTime?
+  invitedBy             String?
+  invitationToken       String?                @unique
   // Supabase Auth user id, linked the first time this subscriber completes
   // email+OTP login (see src/lib/subscriber-auth.ts). Null until then.
   authUserId            String?                @unique
   brokerConnection      BrokerConnection?
   orderAuditLogs        OrderAuditLog[]
   goodwillOrderRequests GoodwillOrderRequest[]
+}
+
+enum ReferralStatus {
+  JOINED
+  INVITED
+  NOT_JOINED
 }
 
 // One Dhan account per subscriber. connectMethod is PERSONAL_TOKEN today (a

@@ -13,6 +13,7 @@ export default async function AdminSubscribersPage() {
     email: s.email,
     plan: s.plan,
     batchNumber: s.batchNumber,
+    referralStatus: s.referralStatus,
     createdAt: s.createdAt.toISOString(),
   }));
 

@@ -7,6 +7,7 @@ export interface RegisterInput {
   name: string;
   phone: string;
   email: string | null;
+  invitationToken?: string | null;
 }
 
 export async function checkExistingMember(phone: string) {
@@ -27,15 +28,41 @@ export async function registerSubscriber(input: RegisterInput) {
   const name = input.name.trim();
   const phone = input.phone.trim();
   const email = input.email?.trim() || null;
+  const token = input.invitationToken?.trim() || null;
 
   if (!name || !phone) {
     return { success: false, error: "Name and phone are required." };
   }
 
-  // TODO(payments): once a paid tier exists, hook Razorpay/Stripe checkout in
-  // here before persisting the subscriber as PREMIUM.
+  if (token) {
+    const invitedSubscriber = await prisma.subscriber.findUnique({
+      where: { invitationToken: token },
+    });
+
+    if (invitedSubscriber) {
+      await prisma.subscriber.update({
+        where: { id: invitedSubscriber.id },
+        data: {
+          name,
+          phone,
+          email: email || invitedSubscriber.email,
+          referralStatus: "JOINED",
+          invitationToken: null,
+        },
+      });
+      return { success: true };
+    }
+  }
+
+  // Standard registration without valid referral token defaults to NOT_JOINED
   await prisma.subscriber.create({
-    data: { name, phone, email, batchNumber: clientConfig.batchInfo.batchNumber },
+    data: {
+      name,
+      phone,
+      email,
+      batchNumber: clientConfig.batchInfo.batchNumber,
+      referralStatus: "NOT_JOINED",
+    },
   });
 
   return { success: true };

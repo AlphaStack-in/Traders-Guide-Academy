@@ -6,7 +6,10 @@ import {
   ArrowDown,
   ArrowUp,
   ArrowUpDown,
+  Download,
+  Mail,
   Megaphone,
+  MessageSquare,
   Pencil,
   Plus,
   Search,
@@ -16,6 +19,7 @@ import {
 import { formatSignalDate, formatSignalTime } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -36,9 +40,11 @@ import {
 import {
   createSubscriber,
   deleteSubscriber,
+  inviteSubscriber,
   updateSubscriber,
   type SubscriberInput,
 } from "@/app/admin/(protected)/subscribers/actions";
+import { exportMembersToExcel, type MemberExportRow } from "@/lib/export-excel";
 
 export interface SubscriberRow {
   id: string;
@@ -47,6 +53,7 @@ export interface SubscriberRow {
   email: string | null;
   plan: string;
   batchNumber: number | null;
+  referralStatus: "JOINED" | "INVITED" | "NOT_JOINED";
   createdAt: string;
 }
 
@@ -85,7 +92,7 @@ function toWhatsAppLink(phone: string) {
   return `https://wa.me/${phone.replace(/\D/g, "")}`;
 }
 
-type SortKey = "createdAt" | "name" | "batchNumber";
+type SortKey = "createdAt" | "name" | "batchNumber" | "referralStatus";
 type SortDirection = "asc" | "desc";
 interface SortState {
   key: SortKey;
@@ -126,6 +133,28 @@ function SortableHead({
   );
 }
 
+function ReferralChip({ status }: { status: SubscriberRow["referralStatus"] }) {
+  if (status === "JOINED") {
+    return (
+      <Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs">
+        Joined
+      </Badge>
+    );
+  }
+  if (status === "INVITED") {
+    return (
+      <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-400 text-xs">
+        Invited
+      </Badge>
+    );
+  }
+  return (
+    <Badge variant="outline" className="border-white/10 bg-white/5 text-muted-foreground text-xs">
+      Not Joined
+    </Badge>
+  );
+}
+
 function MemberDraftFields({
   draft,
   onChange,
@@ -134,38 +163,51 @@ function MemberDraftFields({
   onChange: (draft: MemberDraft) => void;
 }) {
   return (
-    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-      <Input
-        value={draft.name}
-        onChange={(e) => onChange({ ...draft, name: e.target.value })}
-        placeholder="Name"
-        className="h-8"
-      />
-      <Input
-        value={draft.phone}
-        onChange={(e) => onChange({ ...draft, phone: e.target.value })}
-        placeholder="Phone"
-        className="h-8"
-      />
-      <Input
-        value={draft.email}
-        onChange={(e) => onChange({ ...draft, email: e.target.value })}
-        placeholder="Email (optional)"
-        className="h-8"
-      />
-      <Input
-        value={draft.batchNumber}
-        onChange={(e) => onChange({ ...draft, batchNumber: e.target.value })}
-        placeholder="Batch # (optional)"
-        className="h-8"
-        inputMode="numeric"
-      />
+    <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
+      <div>
+        <Input
+          value={draft.name}
+          onChange={(e) => onChange({ ...draft, name: e.target.value })}
+          placeholder="Name"
+          className="h-9"
+        />
+      </div>
+      <div>
+        <Input
+          value={draft.phone}
+          onChange={(e) => onChange({ ...draft, phone: e.target.value })}
+          placeholder="Phone"
+          className="h-9"
+        />
+      </div>
+      <div>
+        <Input
+          value={draft.email}
+          onChange={(e) => onChange({ ...draft, email: e.target.value })}
+          placeholder="Email (optional)"
+          className="h-9"
+        />
+      </div>
+      <div>
+        <Input
+          value={draft.batchNumber}
+          onChange={(e) => onChange({ ...draft, batchNumber: e.target.value })}
+          placeholder="Batch # (optional)"
+          className="h-9"
+          inputMode="numeric"
+        />
+      </div>
     </div>
   );
 }
 
-function AddMemberPanel() {
-  const [open, setOpen] = useState(false);
+function AddMemberFullWidthPanel({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
   const [draft, setDraft] = useState<MemberDraft>(EMPTY_DRAFT);
   const [isSaving, startSaving] = useTransition();
 
@@ -180,35 +222,35 @@ function AddMemberPanel() {
       if (result.success) {
         toast.success(`${input.name} added.`);
         setDraft(EMPTY_DRAFT);
-        setOpen(false);
+        onOpenChange(false);
       } else {
         toast.error(result.error ?? "Failed to add member.");
       }
     });
   }
 
-  if (!open) {
-    return (
-      <Button size="sm" className="thc-glow thc-btn-gradient h-9 gap-1.5" onClick={() => setOpen(true)}>
-        <Plus className="h-4 w-4" />
-        Add Member
-      </Button>
-    );
-  }
+  if (!open) return null;
 
   return (
-    <div className="thc-glass flex flex-col gap-2 rounded-xl border border-white/5 p-3">
-      <Label className="text-xs text-muted-foreground">New member</Label>
-      <MemberDraftFields draft={draft} onChange={setDraft} />
-      <div className="flex items-center gap-2">
+    <div className="thc-glass w-full flex flex-col gap-3 rounded-xl border border-white/10 p-4 transition-all">
+      <div className="flex items-center justify-between">
+        <Label className="font-heading text-sm font-semibold text-foreground">New Member Registration</Label>
         <Button
           size="sm"
-          className="thc-glow thc-btn-gradient h-8"
-          disabled={isSaving}
-          onClick={handleAdd}
+          variant="ghost"
+          className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+          onClick={() => {
+            setDraft(EMPTY_DRAFT);
+            onOpenChange(false);
+          }}
         >
-          {isSaving ? "Adding…" : "Add"}
+          <X className="h-4 w-4" />
         </Button>
+      </div>
+
+      <MemberDraftFields draft={draft} onChange={setDraft} />
+
+      <div className="flex items-center justify-end gap-2 pt-1">
         <Button
           size="sm"
           variant="outline"
@@ -216,22 +258,39 @@ function AddMemberPanel() {
           disabled={isSaving}
           onClick={() => {
             setDraft(EMPTY_DRAFT);
-            setOpen(false);
+            onOpenChange(false);
           }}
         >
-          <X className="h-3.5 w-3.5" />
+          Cancel
+        </Button>
+        <Button
+          size="sm"
+          className="thc-glow thc-btn-gradient h-8 px-4"
+          disabled={isSaving}
+          onClick={handleAdd}
+        >
+          {isSaving ? "Adding…" : "Add Member"}
         </Button>
       </div>
     </div>
   );
 }
 
-function SubscriberRowItem({ subscriber }: { subscriber: SubscriberRow }) {
+function SubscriberRowItem({
+  subscriber,
+  selected,
+  onSelectChange,
+}: {
+  subscriber: SubscriberRow;
+  selected: boolean;
+  onSelectChange: (selected: boolean) => void;
+}) {
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState<MemberDraft>(() => toDraft(subscriber));
   const [deleteArmed, setDeleteArmed] = useState(false);
   const [isSaving, startSaving] = useTransition();
   const [isDeleting, startDeleting] = useTransition();
+  const [isInviting, startInviting] = useTransition();
 
   function startEdit() {
     setDraft(toDraft(subscriber));
@@ -271,14 +330,31 @@ function SubscriberRowItem({ subscriber }: { subscriber: SubscriberRow }) {
     });
   }
 
+  function handleInviteClick() {
+    if (!subscriber.email) {
+      toast.error("Member does not have an email address.");
+      return;
+    }
+    startInviting(async () => {
+      const origin = typeof window !== "undefined" ? window.location.origin : undefined;
+      const result = await inviteSubscriber(subscriber.id, origin);
+      if (result.success) {
+        toast.success(`Referral invitation sent to ${subscriber.email}.`);
+      } else {
+        toast.error(result.error || "Failed to send invitation.");
+      }
+    });
+  }
+
   if (isEditing) {
     return (
       <TableRow className="border-b-white/5 bg-white/[0.02]">
+        <TableCell />
         <TableCell className="whitespace-nowrap text-muted-foreground">
           {formatSignalDate(subscriber.createdAt)}{" "}
           <span className="text-xs">{formatSignalTime(subscriber.createdAt)}</span>
         </TableCell>
-        <TableCell colSpan={5}>
+        <TableCell colSpan={6}>
           <MemberDraftFields draft={draft} onChange={setDraft} />
         </TableCell>
         <TableCell>
@@ -307,7 +383,14 @@ function SubscriberRowItem({ subscriber }: { subscriber: SubscriberRow }) {
   }
 
   return (
-    <TableRow className="border-b-white/5">
+    <TableRow className={selected ? "border-b-white/5 bg-white/[0.04]" : "border-b-white/5"}>
+      <TableCell className="w-10">
+        <Checkbox
+          checked={selected}
+          onCheckedChange={(checked) => onSelectChange(!!checked)}
+          aria-label={`Select ${subscriber.name}`}
+        />
+      </TableCell>
       <TableCell className="whitespace-nowrap text-muted-foreground">
         {formatSignalDate(subscriber.createdAt)}{" "}
         <span className="text-xs">{formatSignalTime(subscriber.createdAt)}</span>
@@ -330,21 +413,58 @@ function SubscriberRowItem({ subscriber }: { subscriber: SubscriberRow }) {
         {subscriber.batchNumber != null ? `Batch ${subscriber.batchNumber}` : "—"}
       </TableCell>
       <TableCell>
-        <div className="flex items-center gap-1.5">
-          <Button asChild size="sm" variant="outline" className="thc-glow h-8">
+        <ReferralChip status={subscriber.referralStatus} />
+      </TableCell>
+      <TableCell>
+        <div className="flex items-center gap-1">
+          <Button
+            asChild
+            size="sm"
+            variant="outline"
+            className="h-8 w-8 p-0"
+            title="Send WhatsApp message"
+            aria-label="Send WhatsApp message"
+          >
             <a href={toWhatsAppLink(subscriber.phone)} target="_blank" rel="noopener noreferrer">
-              Message
+              <MessageSquare className="h-3.5 w-3.5 text-primary" />
             </a>
           </Button>
+
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 w-8 p-0"
+            disabled={isInviting}
+            title={
+              subscriber.referralStatus === "JOINED"
+                ? "Member has already joined"
+                : subscriber.email
+                  ? `Send Referral Invite to ${subscriber.email}`
+                  : "Add an email address to send invitation"
+            }
+            aria-label="Send Referral Invite"
+            onClick={handleInviteClick}
+          >
+            <Mail
+              className={
+                subscriber.referralStatus === "JOINED"
+                  ? "h-3.5 w-3.5 text-muted-foreground/40"
+                  : "h-3.5 w-3.5 text-amber-400"
+              }
+            />
+          </Button>
+
           <Button
             size="sm"
             variant="outline"
             className="h-8 w-8 p-0"
             title="Edit member"
+            aria-label="Edit member"
             onClick={startEdit}
           >
             <Pencil className="h-3.5 w-3.5" />
           </Button>
+
           <Button
             size="sm"
             variant="outline"
@@ -352,9 +472,10 @@ function SubscriberRowItem({ subscriber }: { subscriber: SubscriberRow }) {
             className={
               deleteArmed
                 ? "h-8 gap-1 px-2 border-[var(--thc-loss)]/60 text-[var(--thc-loss)]"
-                : "h-8 gap-1 px-2 text-muted-foreground"
+                : "h-8 w-8 p-0 text-muted-foreground"
             }
             title={deleteArmed ? "Click again to confirm delete" : "Remove member"}
+            aria-label="Delete member"
             onClick={handleDeleteClick}
           >
             <Trash2 className="h-3.5 w-3.5" />
@@ -370,6 +491,8 @@ export function SubscribersTable({ subscribers }: { subscribers: SubscriberRow[]
   const [query, setQuery] = useState("");
   const [batchFilter, setBatchFilter] = useState("all");
   const [sort, setSort] = useState<SortState>({ key: "createdAt", direction: "desc" });
+  const [addPanelOpen, setAddPanelOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const batchNumbers = useMemo(() => {
     const set = new Set<number>();
@@ -392,7 +515,9 @@ export function SubscribersTable({ subscribers }: { subscribers: SubscriberRow[]
     let rows = subscribers;
     if (q) {
       rows = rows.filter((s) =>
-        [s.name, s.phone, s.email ?? ""].some((field) => field.toLowerCase().includes(q)),
+        [s.name, s.phone, s.email ?? "", s.referralStatus].some((field) =>
+          field.toLowerCase().includes(q),
+        ),
       );
     }
     if (batchFilter !== "all") {
@@ -404,6 +529,7 @@ export function SubscribersTable({ subscribers }: { subscribers: SubscriberRow[]
     const sign = sort.direction === "asc" ? 1 : -1;
     return [...rows].sort((a, b) => {
       if (sort.key === "name") return sign * a.name.localeCompare(b.name);
+      if (sort.key === "referralStatus") return sign * a.referralStatus.localeCompare(b.referralStatus);
       if (sort.key === "batchNumber") {
         return sign * ((a.batchNumber ?? -1) - (b.batchNumber ?? -1));
       }
@@ -411,16 +537,76 @@ export function SubscribersTable({ subscribers }: { subscribers: SubscriberRow[]
     });
   }, [subscribers, query, batchFilter, sort]);
 
+  const allFilteredSelected =
+    filtered.length > 0 && filtered.every((s) => selectedIds.has(s.id));
+  const someFilteredSelected =
+    filtered.some((s) => selectedIds.has(s.id)) && !allFilteredSelected;
+
+  function toggleSelectAll(checked: boolean) {
+    const next = new Set(selectedIds);
+    if (checked) {
+      for (const s of filtered) next.add(s.id);
+    } else {
+      for (const s of filtered) next.delete(s.id);
+    }
+    setSelectedIds(next);
+  }
+
+  function toggleSelectRow(id: string, selected: boolean) {
+    const next = new Set(selectedIds);
+    if (selected) next.add(id);
+    else next.delete(id);
+    setSelectedIds(next);
+  }
+
+  function mapToExportRow(s: SubscriberRow): MemberExportRow {
+    return {
+      "Registered Date": `${formatSignalDate(s.createdAt)} ${formatSignalTime(s.createdAt)}`,
+      Name: s.name,
+      Phone: s.phone,
+      Email: s.email ?? "—",
+      Plan: s.plan,
+      Batch: s.batchNumber != null ? `Batch ${s.batchNumber}` : "—",
+      "Referral Status":
+        s.referralStatus === "JOINED"
+          ? "Joined"
+          : s.referralStatus === "INVITED"
+            ? "Invited"
+            : "Not Joined",
+    };
+  }
+
+  function handleExportFiltered() {
+    if (filtered.length === 0) {
+      toast.error("No members match current filters.");
+      return;
+    }
+    const exportData = filtered.map(mapToExportRow);
+    exportMembersToExcel(exportData, `Registered_Members_Filtered_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    toast.success(`Exported ${filtered.length} member(s) to Excel.`);
+  }
+
+  function handleExportSelected() {
+    const selectedRows = subscribers.filter((s) => selectedIds.has(s.id));
+    if (selectedRows.length === 0) {
+      toast.error("No members selected.");
+      return;
+    }
+    const exportData = selectedRows.map(mapToExportRow);
+    exportMembersToExcel(exportData, `Registered_Members_Selected_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    toast.success(`Exported ${selectedRows.length} selected member(s) to Excel.`);
+  }
+
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <div className="relative w-full sm:w-64">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search by name, phone, or email…"
+              placeholder="Search by name, phone, email..."
               className="pl-9"
             />
           </div>
@@ -439,31 +625,88 @@ export function SubscribersTable({ subscribers }: { subscribers: SubscriberRow[]
             </SelectContent>
           </Select>
         </div>
-        <div className="flex items-center gap-2">
+
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             size="sm"
             variant="outline"
             className="h-9 gap-1.5"
-            onClick={() => toast.info("Feature development underway.")}
+            onClick={handleExportFiltered}
+          >
+            <Download className="h-4 w-4 text-primary" />
+            Export Excel
+          </Button>
+
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-9 gap-1.5"
+            onClick={() => toast.info("Announcement feature development underway.")}
           >
             <Megaphone className="h-4 w-4" />
             Announcement
           </Button>
-          <AddMemberPanel />
+
+          <Button
+            size="sm"
+            className="thc-glow thc-btn-gradient h-9 gap-1.5"
+            onClick={() => setAddPanelOpen((prev) => !prev)}
+          >
+            <Plus className="h-4 w-4" />
+            Add Member
+          </Button>
         </div>
       </div>
+
+      <AddMemberFullWidthPanel open={addPanelOpen} onOpenChange={setAddPanelOpen} />
+
+      {selectedIds.size > 0 && (
+        <div className="thc-glass flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/10 px-4 py-2.5 text-sm">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-primary">{selectedIds.size}</span>
+            <span className="text-muted-foreground">member{selectedIds.size === 1 ? "" : "s"} selected</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8 gap-1.5 border-primary/40 bg-black/40 text-primary hover:bg-primary/20"
+              onClick={handleExportSelected}
+            >
+              <Download className="h-3.5 w-3.5" />
+              Export Selected (.xlsx)
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-8 text-xs text-muted-foreground hover:text-foreground"
+              onClick={() => setSelectedIds(new Set())}
+            >
+              Clear Selection
+            </Button>
+          </div>
+        </div>
+      )}
 
       <div className="thc-glass overflow-hidden rounded-xl border border-white/5">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow className="border-b-white/10 hover:bg-transparent">
+                <TableHead className="w-10">
+                  <Checkbox
+                    checked={allFilteredSelected ? true : someFilteredSelected ? "indeterminate" : false}
+                    onCheckedChange={(checked) => toggleSelectAll(!!checked)}
+                    aria-label="Select all visible members"
+                  />
+                </TableHead>
                 <SortableHead label="Registered" sortKey="createdAt" sort={sort} onSort={handleSort} />
                 <SortableHead label="Name" sortKey="name" sort={sort} onSort={handleSort} />
                 <TableHead>Phone</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Plan</TableHead>
                 <SortableHead label="Batch" sortKey="batchNumber" sort={sort} onSort={handleSort} />
+                <SortableHead label="Referral" sortKey="referralStatus" sort={sort} onSort={handleSort} />
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -471,16 +714,23 @@ export function SubscribersTable({ subscribers }: { subscribers: SubscriberRow[]
               {filtered.length === 0 ? (
                 <TableRow className="hover:bg-transparent">
                   <TableCell
-                    colSpan={7}
+                    colSpan={9}
                     className="py-8 text-center text-sm text-muted-foreground"
                   >
                     {subscribers.length === 0
                       ? "No members registered yet."
-                      : "No members match your filters."}
+                      : "No members match your search or filter."}
                   </TableCell>
                 </TableRow>
               ) : (
-                filtered.map((s) => <SubscriberRowItem key={s.id} subscriber={s} />)
+                filtered.map((s) => (
+                  <SubscriberRowItem
+                    key={s.id}
+                    subscriber={s}
+                    selected={selectedIds.has(s.id)}
+                    onSelectChange={(selected) => toggleSelectRow(s.id, selected)}
+                  />
+                ))
               )}
             </TableBody>
           </Table>

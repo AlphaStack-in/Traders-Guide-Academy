@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Navbar } from "@/components/site/navbar";
 import { Footer } from "@/components/site/footer";
 import { RegisterForm } from "@/components/register/register-form";
@@ -16,7 +17,9 @@ export default function RegisterPage() {
             intraday call, straight to your phone.
           </p>
           <div className="mt-6">
-            <RegisterForm />
+            <Suspense fallback={null}>
+              <RegisterForm />
+            </Suspense>
           </div>
         </div>
       </main>
