@@ -37,3 +37,19 @@ export function formatUpdateTime(date: string | Date) {
     timeZone: "Asia/Kolkata",
   })
 }
+
+// Dynamic runtime origin resolver for referral links — never hardcodes localhost
+// in staging or production environments.
+export function getRuntimeReferralUrl(token?: string | null): string {
+  let origin = "https://tradershubcenter.com"
+  if (typeof window !== "undefined" && window.location?.origin) {
+    origin = window.location.origin
+  } else if (process.env.NEXT_PUBLIC_APP_URL) {
+    origin = process.env.NEXT_PUBLIC_APP_URL
+  }
+
+  if (token) {
+    return `${origin}/register?ref=${encodeURIComponent(token)}`
+  }
+  return `${origin}/register`
+}

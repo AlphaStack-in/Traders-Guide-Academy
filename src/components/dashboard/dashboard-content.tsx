@@ -61,6 +61,7 @@ export function DashboardContent({
         open={shareOpen}
         onOpenChange={setShareOpen}
         metrics={metrics}
+        bestWorst={bestWorst}
         rangeLabel={rangeLabel}
         referralLink={referralLink}
       />

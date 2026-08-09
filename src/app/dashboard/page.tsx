@@ -6,6 +6,7 @@ import { RefreshButton } from "@/components/site/refresh-button";
 import { prisma } from "@/lib/prisma";
 import { RANGE_PRESETS, type RangePreset, type SignalsDateFilter } from "@/lib/date-filter";
 import { getCurrentSubscriber } from "@/lib/subscriber-auth";
+import { getRuntimeReferralUrl } from "@/lib/utils";
 
 export const revalidate = 60;
 
@@ -25,10 +26,7 @@ export default async function PublicDashboardPage({
   };
 
   const subscriber = await getCurrentSubscriber();
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-  const referralLink = subscriber?.invitationToken
-    ? `${baseUrl}/register?ref=${subscriber.invitationToken}`
-    : undefined;
+  const referralLink = getRuntimeReferralUrl(subscriber?.invitationToken);
 
   const allSignals = await prisma.signal.findMany({ orderBy: { signalTime: "desc" } });
   const serializedSignals: SerializedSignal[] = allSignals.map((s) => ({

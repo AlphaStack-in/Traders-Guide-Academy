@@ -4,6 +4,7 @@ import { Footer } from "@/components/site/footer";
 import { getCurrentSubscriber } from "@/lib/subscriber-auth";
 import { prisma } from "@/lib/prisma";
 import { ReferEarnView } from "@/components/refer/refer-earn-view";
+import { getRuntimeReferralUrl } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -33,9 +34,8 @@ export default async function ReferPage() {
   const totalEarnings = joinedCount * REWARD_PER_JOIN;
   const withdrawableAmount = totalEarnings;
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const token = subscriber.invitationToken || subscriber.id;
-  const referralLink = `${baseUrl}/register?ref=${token}`;
+  const referralLink = getRuntimeReferralUrl(token);
 
   const historyRows = referredSubscribers.map((s) => ({
     id: s.id,
