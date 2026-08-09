@@ -53,6 +53,7 @@ export interface SubscriberRow {
   email: string | null;
   plan: string;
   batchNumber: number | null;
+  currentBroker?: string | null;
   referralStatus: "JOINED" | "INVITED" | "NOT_JOINED";
   createdAt: string;
 }
@@ -62,16 +63,43 @@ interface MemberDraft {
   phone: string;
   email: string;
   batchNumber: string;
+  currentBroker: string;
+  customBroker: string;
 }
 
-const EMPTY_DRAFT: MemberDraft = { name: "", phone: "", email: "", batchNumber: "" };
+const EMPTY_DRAFT: MemberDraft = {
+  name: "",
+  phone: "",
+  email: "",
+  batchNumber: "13",
+  currentBroker: "Dhan",
+  customBroker: "",
+};
 
 function toDraft(subscriber: SubscriberRow): MemberDraft {
+  const isKnown = [
+    "Dhan",
+    "Zerodha",
+    "Angel One",
+    "Upstox",
+    "Groww",
+    "Goodwill",
+    "ICICI Direct",
+    "Kotak Securities",
+    "HDFC Securities",
+    "Motilal Oswal",
+    "Sharekhan",
+    "Fyers",
+    "5paisa",
+  ].includes(subscriber.currentBroker ?? "");
+
   return {
     name: subscriber.name,
     phone: subscriber.phone,
     email: subscriber.email ?? "",
     batchNumber: subscriber.batchNumber != null ? String(subscriber.batchNumber) : "",
+    currentBroker: isKnown ? (subscriber.currentBroker as string) : subscriber.currentBroker ? "Other" : "Dhan",
+    customBroker: isKnown ? "" : (subscriber.currentBroker ?? ""),
   };
 }
 
@@ -85,7 +113,12 @@ function draftToInput(draft: MemberDraft): SubscriberInput | { error: string } {
   if (batchNumber != null && !Number.isFinite(batchNumber)) {
     return { error: "Batch must be a valid number." };
   }
-  return { name, phone, email: draft.email.trim() || null, batchNumber };
+  const currentBroker =
+    draft.currentBroker === "Other"
+      ? draft.customBroker.trim() || "Other"
+      : draft.currentBroker;
+
+  return { name, phone, email: draft.email.trim() || null, batchNumber, currentBroker };
 }
 
 function toWhatsAppLink(phone: string) {
@@ -155,6 +188,25 @@ function ReferralChip({ status }: { status: SubscriberRow["referralStatus"] }) {
   );
 }
 
+function BrokerChip({ broker }: { broker: string | null | undefined }) {
+  if (!broker) {
+    return <span className="text-xs text-muted-foreground">—</span>;
+  }
+  const isDhan = broker.toLowerCase() === "dhan";
+  return (
+    <Badge
+      variant="outline"
+      className={
+        isDhan
+          ? "border-primary/40 bg-primary/10 text-primary font-semibold text-xs"
+          : "border-cyan-500/30 bg-cyan-500/10 text-cyan-400 text-xs"
+      }
+    >
+      {broker}
+    </Badge>
+  );
+}
+
 function MemberDraftFields({
   draft,
   onChange,
@@ -163,7 +215,7 @@ function MemberDraftFields({
   onChange: (draft: MemberDraft) => void;
 }) {
   return (
-    <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-5">
       <div>
         <Input
           value={draft.name}
@@ -196,6 +248,36 @@ function MemberDraftFields({
           className="h-9"
           inputMode="numeric"
         />
+      </div>
+      <div className="flex flex-col gap-1">
+        <select
+          value={draft.currentBroker}
+          onChange={(e) => onChange({ ...draft, currentBroker: e.target.value })}
+          className="flex h-9 w-full rounded-md border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-foreground ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+        >
+          <option value="Dhan" className="bg-neutral-900 text-foreground">Dhan</option>
+          <option value="Zerodha" className="bg-neutral-900 text-foreground">Zerodha</option>
+          <option value="Angel One" className="bg-neutral-900 text-foreground">Angel One</option>
+          <option value="Upstox" className="bg-neutral-900 text-foreground">Upstox</option>
+          <option value="Groww" className="bg-neutral-900 text-foreground">Groww</option>
+          <option value="Goodwill" className="bg-neutral-900 text-foreground">Goodwill</option>
+          <option value="ICICI Direct" className="bg-neutral-900 text-foreground">ICICI Direct</option>
+          <option value="Kotak Securities" className="bg-neutral-900 text-foreground">Kotak Securities</option>
+          <option value="HDFC Securities" className="bg-neutral-900 text-foreground">HDFC Securities</option>
+          <option value="Motilal Oswal" className="bg-neutral-900 text-foreground">Motilal Oswal</option>
+          <option value="Sharekhan" className="bg-neutral-900 text-foreground">Sharekhan</option>
+          <option value="Fyers" className="bg-neutral-900 text-foreground">Fyers</option>
+          <option value="5paisa" className="bg-neutral-900 text-foreground">5paisa</option>
+          <option value="Other" className="bg-neutral-900 text-foreground">Other Broker</option>
+        </select>
+        {draft.currentBroker === "Other" && (
+          <Input
+            value={draft.customBroker}
+            onChange={(e) => onChange({ ...draft, customBroker: e.target.value })}
+            placeholder="Specify Broker Name"
+            className="h-8 text-xs"
+          />
+        )}
       </div>
     </div>
   );
@@ -413,6 +495,9 @@ function SubscriberRowItem({
         {subscriber.batchNumber != null ? `Batch ${subscriber.batchNumber}` : "—"}
       </TableCell>
       <TableCell>
+        <BrokerChip broker={subscriber.currentBroker} />
+      </TableCell>
+      <TableCell>
         <ReferralChip status={subscriber.referralStatus} />
       </TableCell>
       <TableCell>
@@ -490,6 +575,7 @@ function SubscriberRowItem({
 export function SubscribersTable({ subscribers }: { subscribers: SubscriberRow[] }) {
   const [query, setQuery] = useState("");
   const [batchFilter, setBatchFilter] = useState("all");
+  const [brokerFilter, setBrokerFilter] = useState("all");
   const [sort, setSort] = useState<SortState>({ key: "createdAt", direction: "desc" });
   const [addPanelOpen, setAddPanelOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -515,7 +601,7 @@ export function SubscribersTable({ subscribers }: { subscribers: SubscriberRow[]
     let rows = subscribers;
     if (q) {
       rows = rows.filter((s) =>
-        [s.name, s.phone, s.email ?? "", s.referralStatus].some((field) =>
+        [s.name, s.phone, s.email ?? "", s.currentBroker ?? "", s.referralStatus].some((field) =>
           field.toLowerCase().includes(q),
         ),
       );
@@ -524,6 +610,14 @@ export function SubscribersTable({ subscribers }: { subscribers: SubscriberRow[]
       rows = rows.filter((s) =>
         batchFilter === "unassigned" ? s.batchNumber == null : String(s.batchNumber) === batchFilter,
       );
+    }
+    if (brokerFilter !== "all") {
+      rows = rows.filter((s) => {
+        const b = (s.currentBroker ?? "").toLowerCase();
+        if (brokerFilter === "dhan") return b === "dhan";
+        if (brokerFilter === "non-dhan") return b !== "" && b !== "dhan";
+        return b.includes(brokerFilter.toLowerCase());
+      });
     }
 
     const sign = sort.direction === "asc" ? 1 : -1;
@@ -535,7 +629,7 @@ export function SubscribersTable({ subscribers }: { subscribers: SubscriberRow[]
       }
       return sign * (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
     });
-  }, [subscribers, query, batchFilter, sort]);
+  }, [subscribers, query, batchFilter, brokerFilter, sort]);
 
   const allFilteredSelected =
     filtered.length > 0 && filtered.every((s) => selectedIds.has(s.id));
@@ -567,6 +661,7 @@ export function SubscribersTable({ subscribers }: { subscribers: SubscriberRow[]
       Email: s.email ?? "—",
       Plan: s.plan,
       Batch: s.batchNumber != null ? `Batch ${s.batchNumber}` : "—",
+      "Current Broker": s.currentBroker ?? "—",
       "Referral Status":
         s.referralStatus === "JOINED"
           ? "Joined"
@@ -611,7 +706,7 @@ export function SubscribersTable({ subscribers }: { subscribers: SubscriberRow[]
             />
           </div>
           <Select value={batchFilter} onValueChange={setBatchFilter}>
-            <SelectTrigger className="w-full sm:w-40">
+            <SelectTrigger className="w-full sm:w-36">
               <SelectValue placeholder="Batch" />
             </SelectTrigger>
             <SelectContent>
@@ -622,6 +717,22 @@ export function SubscribersTable({ subscribers }: { subscribers: SubscriberRow[]
                 </SelectItem>
               ))}
               {hasUnassigned && <SelectItem value="unassigned">Unassigned</SelectItem>}
+            </SelectContent>
+          </Select>
+
+          <Select value={brokerFilter} onValueChange={setBrokerFilter}>
+            <SelectTrigger className="w-full sm:w-40">
+              <SelectValue placeholder="Broker" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Brokers</SelectItem>
+              <SelectItem value="dhan">Dhan Members</SelectItem>
+              <SelectItem value="non-dhan">Non-Dhan (Prospects)</SelectItem>
+              <SelectItem value="zerodha">Zerodha</SelectItem>
+              <SelectItem value="angel one">Angel One</SelectItem>
+              <SelectItem value="upstox">Upstox</SelectItem>
+              <SelectItem value="groww">Groww</SelectItem>
+              <SelectItem value="goodwill">Goodwill</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -706,6 +817,7 @@ export function SubscribersTable({ subscribers }: { subscribers: SubscriberRow[]
                 <TableHead>Email</TableHead>
                 <TableHead>Plan</TableHead>
                 <SortableHead label="Batch" sortKey="batchNumber" sort={sort} onSort={handleSort} />
+                <TableHead>Broker</TableHead>
                 <SortableHead label="Referral" sortKey="referralStatus" sort={sort} onSort={handleSort} />
                 <TableHead>Actions</TableHead>
               </TableRow>
@@ -714,7 +826,7 @@ export function SubscribersTable({ subscribers }: { subscribers: SubscriberRow[]
               {filtered.length === 0 ? (
                 <TableRow className="hover:bg-transparent">
                   <TableCell
-                    colSpan={9}
+                    colSpan={10}
                     className="py-8 text-center text-sm text-muted-foreground"
                   >
                     {subscribers.length === 0

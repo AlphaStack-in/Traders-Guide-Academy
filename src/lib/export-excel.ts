@@ -7,6 +7,7 @@ export interface MemberExportRow {
   Email: string;
   Plan: string;
   Batch: string;
+  "Current Broker"?: string;
   "Referral Status": string;
 }
 

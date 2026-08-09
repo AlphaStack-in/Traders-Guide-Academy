@@ -53,6 +53,7 @@ model Subscriber {
   createdAt             DateTime               @default(now())
   batchNumber           Int?
   couponCode            String?
+  currentBroker         String?
   referralStatus        ReferralStatus         @default(NOT_JOINED)
   invitedAt             DateTime?
   invitedBy             String?

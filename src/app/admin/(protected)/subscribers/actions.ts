@@ -21,6 +21,7 @@ export interface SubscriberInput {
   phone: string;
   email: string | null;
   batchNumber: number | null;
+  currentBroker?: string | null;
 }
 
 export async function createSubscriber(input: SubscriberInput) {
@@ -29,13 +30,14 @@ export async function createSubscriber(input: SubscriberInput) {
   const name = input.name.trim();
   const phone = input.phone.trim();
   const email = input.email?.trim() || null;
+  const currentBroker = input.currentBroker?.trim() || null;
 
   if (!name || !phone) {
     return { success: false, error: "Name and phone are required." };
   }
 
   await prisma.subscriber.create({
-    data: { name, phone, email, batchNumber: input.batchNumber },
+    data: { name, phone, email, batchNumber: input.batchNumber, currentBroker },
   });
 
   revalidatePath("/admin/subscribers");
@@ -49,6 +51,7 @@ export async function updateSubscriber(id: string, input: SubscriberInput) {
   const name = input.name.trim();
   const phone = input.phone.trim();
   const email = input.email?.trim() || null;
+  const currentBroker = input.currentBroker?.trim() || null;
 
   if (!name || !phone) {
     return { success: false, error: "Name and phone are required." };
@@ -56,7 +59,7 @@ export async function updateSubscriber(id: string, input: SubscriberInput) {
 
   await prisma.subscriber.update({
     where: { id },
-    data: { name, phone, email, batchNumber: input.batchNumber },
+    data: { name, phone, email, batchNumber: input.batchNumber, currentBroker },
   });
 
   revalidatePath("/admin/subscribers");

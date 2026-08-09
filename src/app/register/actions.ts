@@ -7,6 +7,8 @@ export interface RegisterInput {
   name: string;
   phone: string;
   email: string | null;
+  currentBroker?: string | null;
+  batchNumber?: number | null;
   invitationToken?: string | null;
 }
 
@@ -28,6 +30,8 @@ export async function registerSubscriber(input: RegisterInput) {
   const name = input.name.trim();
   const phone = input.phone.trim();
   const email = input.email?.trim() || null;
+  const currentBroker = input.currentBroker?.trim() || null;
+  const batchNumber = input.batchNumber ?? clientConfig.batchInfo.batchNumber;
   const token = input.invitationToken?.trim() || null;
 
   if (!name || !phone) {
@@ -46,6 +50,8 @@ export async function registerSubscriber(input: RegisterInput) {
           name,
           phone,
           email: email || invitedSubscriber.email,
+          currentBroker: currentBroker || invitedSubscriber.currentBroker,
+          batchNumber: batchNumber || invitedSubscriber.batchNumber,
           referralStatus: "JOINED",
           invitationToken: null,
         },
@@ -60,7 +66,8 @@ export async function registerSubscriber(input: RegisterInput) {
       name,
       phone,
       email,
-      batchNumber: clientConfig.batchInfo.batchNumber,
+      currentBroker,
+      batchNumber,
       referralStatus: "NOT_JOINED",
     },
   });

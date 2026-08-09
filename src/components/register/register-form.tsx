@@ -21,6 +21,8 @@ export function RegisterForm() {
   const [submitted, setSubmitted] = useState(false);
   const [isPending, startTransition] = useTransition();
 
+  const [currentBroker, setCurrentBroker] = useState("Dhan");
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -30,6 +32,8 @@ export function RegisterForm() {
         name,
         phone,
         email: email || null,
+        currentBroker,
+        batchNumber: clientConfig.batchInfo.batchNumber,
         invitationToken,
       });
       if (result.success) {
@@ -90,10 +94,19 @@ export function RegisterForm() {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      {/* Current Running Batch Indicator */}
+      <div className="rounded-lg border border-primary/30 bg-primary/10 p-3">
+        <p className="text-xs text-muted-foreground">Joining Batch</p>
+        <p className="font-heading text-sm font-semibold thc-gold-text">
+          Batch {clientConfig.batchInfo.batchNumber} ({clientConfig.batchInfo.startDate})
+        </p>
+      </div>
+
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="name">Name</Label>
         <Input id="name" required value={name} onChange={(e) => setName(e.target.value)} />
       </div>
+
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="phone">Phone</Label>
         <Input
@@ -104,6 +117,7 @@ export function RegisterForm() {
           onChange={(e) => setPhone(e.target.value)}
         />
       </div>
+
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="email">Email (optional)</Label>
         <Input
@@ -113,6 +127,32 @@ export function RegisterForm() {
           onChange={(e) => setEmail(e.target.value)}
         />
       </div>
+
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="currentBroker">Current Trading Broker</Label>
+        <select
+          id="currentBroker"
+          value={currentBroker}
+          onChange={(e) => setCurrentBroker(e.target.value)}
+          className="flex h-10 w-full rounded-md border border-white/10 bg-black/40 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <option value="Dhan" className="bg-neutral-900 text-foreground">Dhan</option>
+          <option value="Zerodha" className="bg-neutral-900 text-foreground">Zerodha</option>
+          <option value="Angel One" className="bg-neutral-900 text-foreground">Angel One</option>
+          <option value="Upstox" className="bg-neutral-900 text-foreground">Upstox</option>
+          <option value="Groww" className="bg-neutral-900 text-foreground">Groww</option>
+          <option value="Goodwill" className="bg-neutral-900 text-foreground">Goodwill</option>
+          <option value="ICICI Direct" className="bg-neutral-900 text-foreground">ICICI Direct</option>
+          <option value="Kotak Securities" className="bg-neutral-900 text-foreground">Kotak Securities</option>
+          <option value="HDFC Securities" className="bg-neutral-900 text-foreground">HDFC Securities</option>
+          <option value="Motilal Oswal" className="bg-neutral-900 text-foreground">Motilal Oswal</option>
+          <option value="Sharekhan" className="bg-neutral-900 text-foreground">Sharekhan</option>
+          <option value="Fyers" className="bg-neutral-900 text-foreground">Fyers</option>
+          <option value="5paisa" className="bg-neutral-900 text-foreground">5paisa</option>
+          <option value="Other" className="bg-neutral-900 text-foreground">Other Broker</option>
+        </select>
+      </div>
+
       {error && <p className="text-sm text-[var(--thc-loss)]">{error}</p>}
       <Button type="submit" disabled={isPending} className="thc-glow thc-btn-gradient mt-2">
         {isPending ? "Registering…" : "Register Premium"}
