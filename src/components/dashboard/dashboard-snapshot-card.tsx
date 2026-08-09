@@ -24,17 +24,15 @@ export function drawFullDashboardCanvas(
 
   const width = 1200;
   const height = 900;
-  const scale = 2; // High-DPI 2x super-sampling for crisp rendering
+  const scale = 2; // High-DPI 2x super-sampling for crisp text and graphics
 
   canvas.width = width * scale;
   canvas.height = height * scale;
-  canvas.style.width = `${width}px`;
-  canvas.style.height = `${height}px`;
 
   ctx.save();
   ctx.scale(scale, scale);
 
-  // 1. Background
+  // 1. Background Fill & Grid Texture
   const bgGrad = ctx.createLinearGradient(0, 0, width, height);
   bgGrad.addColorStop(0, "#090A0F");
   bgGrad.addColorStop(0.5, "#0E0F17");
@@ -42,7 +40,6 @@ export function drawFullDashboardCanvas(
   ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, width, height);
 
-  // Subtle grid background texture
   ctx.strokeStyle = "rgba(255, 255, 255, 0.02)";
   ctx.lineWidth = 1;
   for (let x = 0; x < width; x += 40) {
@@ -58,7 +55,7 @@ export function drawFullDashboardCanvas(
     ctx.stroke();
   }
 
-  // 2. Gold Top Border
+  // 2. Gold Top Accent Line
   const goldGrad = ctx.createLinearGradient(0, 0, width, 0);
   goldGrad.addColorStop(0, "#B8860B");
   goldGrad.addColorStop(0.5, "#FFD700");
@@ -66,7 +63,7 @@ export function drawFullDashboardCanvas(
   ctx.fillStyle = goldGrad;
   ctx.fillRect(0, 0, width, 5);
 
-  // 3. Header: Brand Logo & Title + Date Range Badge
+  // 3. Header: Brand & Title
   ctx.fillStyle = "#FFD700";
   ctx.font = "bold 26px sans-serif";
   ctx.fillText(clientConfig.siteName.toUpperCase(), 40, 48);
@@ -89,7 +86,7 @@ export function drawFullDashboardCanvas(
   ctx.fillStyle = "#FFD700";
   ctx.fillText(badgeText, width - 40 - badgeWidth + 12, 53);
 
-  // Card background helper
+  // Reusable Card Box Helper
   const drawCard = (x: number, y: number, w: number, h: number, title?: string) => {
     ctx.fillStyle = "rgba(255, 255, 255, 0.03)";
     ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
@@ -107,7 +104,7 @@ export function drawFullDashboardCanvas(
   };
 
   // --- SECTION 1: CUMULATIVE % PERFORMANCE (LEFT) & DONUT (RIGHT) ---
-  drawCard(40, 95, 740, 260, "1. Cumulative % Performance");
+  drawCard(40, 95, 740, 260, "Cumulative % Performance");
 
   // Total % Won Banner Box
   ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
@@ -137,7 +134,7 @@ export function drawFullDashboardCanvas(
   const chartW = 480;
   const chartH = 200;
 
-  // Grid lines inside line chart
+  // Grid lines
   ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
   ctx.lineWidth = 1;
   for (let i = 0; i <= 4; i++) {
@@ -183,45 +180,59 @@ export function drawFullDashboardCanvas(
     ctx.stroke();
   }
 
-  // Total % Won by Instrument (Donut Right)
+  // Total % Won by Instrument (Right) - HIDE ZERO-VALUE CATEGORIES
   drawCard(800, 95, 360, 260, "Total % Won by Instrument");
-  // Donut Circle
+
+  // Requirement 3: Only show instruments that have a non-zero value
+  const nonZeroInstData = data.metrics.instrumentCapture.filter(
+    (item) => item.capturePercent !== 0,
+  );
+
   const cx = 980;
-  const cy = 230;
-  const outerR = 65;
-  const innerR = 40;
+  const cy = 210;
+  const outerR = 55;
+  const innerR = 34;
 
-  const instData = data.metrics.instrumentCapture;
-  const totalInstVal = instData.reduce((acc, curr) => acc + Math.max(0, curr.capturePercent), 0) || 1;
-  const colors = ["#FFE066", "#FFD700", "#B8860B", "#7A5C0E"];
-  let startAngle = -Math.PI / 2;
+  if (nonZeroInstData.length > 0) {
+    const totalInstVal = nonZeroInstData.reduce((acc, curr) => acc + Math.abs(curr.capturePercent), 0) || 1;
+    const colors = ["#FFE066", "#FFD700", "#B8860B", "#7A5C0E"];
+    let startAngle = -Math.PI / 2;
 
-  instData.forEach((item, i) => {
-    const sliceVal = Math.max(0, item.capturePercent);
-    const sliceAngle = (sliceVal / totalInstVal) * (Math.PI * 2);
-    const endAngle = startAngle + sliceAngle;
+    nonZeroInstData.forEach((item, i) => {
+      const sliceVal = Math.abs(item.capturePercent);
+      const sliceAngle = (sliceVal / totalInstVal) * (Math.PI * 2);
+      const endAngle = startAngle + sliceAngle;
 
-    ctx.beginPath();
-    ctx.arc(cx, cy, outerR, startAngle, endAngle);
-    ctx.arc(cx, cy, innerR, endAngle, startAngle, true);
-    ctx.closePath();
-    ctx.fillStyle = colors[i % colors.length];
-    ctx.fill();
+      ctx.beginPath();
+      ctx.arc(cx, cy, outerR, startAngle, endAngle);
+      ctx.arc(cx, cy, innerR, endAngle, startAngle, true);
+      ctx.closePath();
+      ctx.fillStyle = colors[i % colors.length];
+      ctx.fill();
 
-    startAngle = endAngle;
-  });
+      startAngle = endAngle;
+    });
 
-  // Legend
-  instData.forEach((item, i) => {
-    const lx = 820 + (i % 2) * 160;
-    const ly = 135 + Math.floor(i / 2) * 22;
-    ctx.fillStyle = colors[i % colors.length];
-    ctx.fillRect(lx, ly, 10, 10);
+    // Legend - Non-Zero Items ONLY
+    nonZeroInstData.forEach((item, i) => {
+      const lx = 820 + (i % 2) * 160;
+      const ly = 280 + Math.floor(i / 2) * 22;
+      ctx.fillStyle = colors[i % colors.length];
+      ctx.fillRect(lx, ly, 10, 10);
 
-    ctx.fillStyle = "#D1D5DB";
-    ctx.font = "11px sans-serif";
-    ctx.fillText(`${item.instrument}: ${item.capturePercent.toFixed(1)}%`, lx + 16, ly + 9);
-  });
+      ctx.fillStyle = "#D1D5DB";
+      ctx.font = "11px sans-serif";
+      const capSign = item.capturePercent >= 0 ? "+" : "";
+      ctx.fillText(`${item.instrument}: ${capSign}${item.capturePercent.toFixed(1)}%`, lx + 16, ly + 9);
+    });
+  } else {
+    // Empty state if all instruments are 0
+    ctx.fillStyle = "#9CA3AF";
+    ctx.font = "12px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("No closed trades for this range", cx, cy);
+    ctx.textAlign = "left";
+  }
 
   // --- SECTION 2: KPI CARDS ---
   const kpiW = 270;
@@ -261,7 +272,7 @@ export function drawFullDashboardCanvas(
   const colH = 260;
 
   // Win Rate Donut
-  drawCard(40, gridY, colW, colH, "2. Win Rate");
+  drawCard(40, gridY, colW, colH, "Win Rate");
   const winCx = 220;
   const winCy = 610;
   const totalResolved = data.metrics.winCount + data.metrics.lossCount;
@@ -290,7 +301,7 @@ export function drawFullDashboardCanvas(
   ctx.textAlign = "left";
 
   // Profit vs Loss % by Day Bar Chart
-  drawCard(420, gridY, 360, colH, "3. Profit vs Loss % by Day");
+  drawCard(420, gridY, 360, colH, "Profit vs Loss % by Day");
   const dayBars = data.metrics.winLossByDay.slice(-6);
   const barX = 440;
   const barY = 525;
@@ -318,7 +329,7 @@ export function drawFullDashboardCanvas(
   }
 
   // Best & Worst Trades Bar Chart
-  drawCard(800, gridY, 360, colH, "4. Best & Worst Trades");
+  drawCard(800, gridY, 360, colH, "Best & Worst Trades");
   const bwData = (data.bestWorst || []).slice(0, 5);
   const bwX = 820;
   const bwY = 525;
@@ -390,16 +401,16 @@ export function DashboardSnapshotCard({
   }
 
   return (
-    <div className="flex flex-col items-center gap-4 w-full">
-      <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-2xl bg-black/40 p-2">
+    <div className="flex flex-col items-center gap-4 w-full h-full max-w-full">
+      <div className="relative w-full max-w-full overflow-hidden rounded-xl border border-white/10 bg-black/50 p-2 flex items-center justify-center">
         <canvas
           ref={canvasRef}
-          className="h-auto w-full object-contain rounded-lg"
+          className="w-full h-auto max-w-full max-h-[45vh] sm:max-h-[55vh] object-contain rounded-lg block"
         />
       </div>
       <Button
         onClick={handleDownload}
-        className="thc-glow thc-btn-gradient h-10 w-full gap-2 font-semibold text-sm"
+        className="thc-glow thc-btn-gradient h-10 w-full gap-2 font-semibold text-sm shrink-0"
       >
         <Download className="h-4 w-4" />
         Download Snapshot (PNG)
