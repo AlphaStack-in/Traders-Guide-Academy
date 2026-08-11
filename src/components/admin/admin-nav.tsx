@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   BarChart3,
   ChevronDown,
+  GitCommit,
   LogOut,
   MessageSquare,
   UserRound,
@@ -28,6 +29,7 @@ const links = [
   { href: "/admin/dashboard", label: "Dashboard", icon: BarChart3 },
   { href: "/admin/signals", label: "Manage Signals", icon: Zap },
   { href: "/admin/messages", label: "Messages", icon: MessageSquare },
+  { href: "/admin/changelog", label: "Changelog", icon: GitCommit },
 ];
 
 const membersLinks = [

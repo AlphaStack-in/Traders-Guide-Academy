@@ -10,6 +10,8 @@ import {
 } from "@/components/site/icons";
 import { clientConfig } from "@/lib/client-config";
 
+import { BuildVersionIndicator } from "@/components/site/build-version-indicator";
+
 export function Footer() {
   const socialLinks = [
     { href: clientConfig.instagramUrl, Icon: InstagramIcon, label: "Instagram" },
@@ -42,7 +44,10 @@ export function Footer() {
         </div>
 
         <div className="flex flex-col gap-4 border-t border-white/5 pt-6 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <p>&copy; {new Date().getFullYear()} {clientConfig.siteName}. All rights reserved.</p>
+          <div className="flex items-center gap-3 flex-wrap">
+            <p>&copy; {new Date().getFullYear()} {clientConfig.siteName}. All rights reserved.</p>
+            <BuildVersionIndicator />
+          </div>
           <div className="flex gap-4">
             <Link href="/register" className="hover:text-primary">
               Register Premium

@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "tsx scripts/check-build-health.ts",
+    "prebuild": "tsx scripts/check-build-health.ts && tsx scripts/generate-build-info.ts",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
