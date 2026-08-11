@@ -1,6 +1,5 @@
 import { getBuildInfo } from "@/lib/build-info";
-import { CheckCircle2, GitCommit, History, Server, ShieldCheck, Tag } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { CheckCircle2, GitCommit, History, ShieldCheck, Hash } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -23,11 +22,11 @@ export default function AdminChangelogPage() {
         </div>
 
         {/* Current Deployed Build Card */}
-        <div className="rounded-2xl border border-emerald-500/30 bg-emerald-950/20 p-3.5 flex items-center gap-3 backdrop-blur-md shadow-lg shrink-0">
-          <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400">
-            <ShieldCheck className="h-5 w-5" />
+        <div className="rounded-2xl border border-emerald-500/30 bg-emerald-950/20 p-4 flex items-center gap-3.5 backdrop-blur-md shadow-lg shrink-0">
+          <div className="p-2.5 rounded-xl bg-emerald-500/20 text-emerald-400">
+            <ShieldCheck className="h-6 w-6" />
           </div>
-          <div className="flex flex-col">
+          <div className="flex flex-col gap-0.5">
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
                 ACTIVE BUILD
@@ -36,8 +35,16 @@ export default function AdminChangelogPage() {
                 ✓ Currently Deployed
               </span>
             </div>
-            <span className="font-mono text-xs font-bold text-foreground mt-0.5">
-              v{buildInfo.version} · {buildInfo.gitSha}
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-sm font-bold text-foreground">
+                Build {buildInfo.formattedBuildNumber}
+              </span>
+              <span className="text-xs text-muted-foreground font-mono">
+                v{buildInfo.version} · {buildInfo.gitSha}
+              </span>
+            </div>
+            <span className="text-[11px] text-muted-foreground">
+              {buildInfo.formattedBuildTime}
             </span>
           </div>
         </div>
@@ -58,16 +65,19 @@ export default function AdminChangelogPage() {
               }`}
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-3 mb-4">
-                <div className="flex items-center gap-3 flex-wrap">
-                  <span className="px-2.5 py-1 rounded-lg bg-primary/10 text-primary border border-primary/20 text-xs font-bold font-mono">
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <span className="px-2.5 py-1 rounded-lg bg-primary/20 text-primary border border-primary/30 text-xs font-bold font-mono">
+                    Build {entry.formattedBuildNumber}
+                  </span>
+                  <span className="px-2 py-0.5 rounded-md bg-white/5 text-muted-foreground border border-white/10 text-xs font-mono font-medium">
                     v{entry.version}
                   </span>
                   <span className="flex items-center gap-1 text-xs font-mono font-semibold text-muted-foreground bg-white/5 px-2.5 py-1 rounded-lg border border-white/10">
                     <GitCommit className="h-3.5 w-3.5 text-primary" />
                     {entry.sha}
                   </span>
-                  <span className="text-xs text-muted-foreground">
-                    {entry.date}
+                  <span className="text-xs text-muted-foreground font-medium">
+                    {entry.timestamp}
                   </span>
                 </div>
 

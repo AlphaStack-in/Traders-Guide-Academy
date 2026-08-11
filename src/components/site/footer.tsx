@@ -43,8 +43,8 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-4 border-t border-white/5 pt-6 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex flex-col gap-4 border-t border-white/5 pt-6 text-sm text-muted-foreground sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex flex-col gap-1.5 items-start">
             <p>&copy; {new Date().getFullYear()} {clientConfig.siteName}. All rights reserved.</p>
             <BuildVersionIndicator />
           </div>

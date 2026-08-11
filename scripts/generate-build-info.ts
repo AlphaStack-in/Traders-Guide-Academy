@@ -12,7 +12,7 @@ function getGitSha(): string {
   try {
     return execSync("git rev-parse --short HEAD").toString().trim();
   } catch (e) {
-    return "e723d56";
+    return "710ea15";
   }
 }
 
@@ -23,7 +23,7 @@ function getFullGitSha(): string {
   try {
     return execSync("git rev-parse HEAD").toString().trim();
   } catch (e) {
-    return "e723d56";
+    return "710ea15";
   }
 }
 
@@ -40,22 +40,50 @@ function formatISTDate(date: Date): string {
   return new Intl.DateTimeFormat("en-GB", options).format(date) + " IST";
 }
 
-const STATIC_CHANGELOG = [
+export interface RawChangelogItem {
+  buildNumber: number;
+  formattedBuildNumber: string;
+  version: string;
+  sha: string;
+  timestamp: string;
+  title: string;
+  highlights: string[];
+}
+
+const STATIC_CHANGELOG: RawChangelogItem[] = [
   {
+    buildNumber: 8,
+    formattedBuildNumber: "#008",
     version: "1.0.0",
-    sha: "6d02ece",
-    date: "11 Aug 2026",
-    title: "Build Version Indicator & Admin Changelog",
+    sha: "710ea15",
+    timestamp: "11 Aug 2026, 22:37 IST",
+    title: "Build Indicator, Admin Menu & Build Changelog Refinement",
     highlights: [
-      "Added subtle frontend build version indicator (v1.0.0 · build SHA)",
-      "Added build-time Git commit SHA and timestamp auto-generation",
-      "Added dedicated Admin Changelog timeline UI with current build highlighting",
+      "Moved build indicator strictly to left side of user and admin footers",
+      "Created dedicated 'Admin' dropdown menu grouping Changelog and Order Requests",
+      "Introduced deterministic sequential build/patch counter (#008)",
+      "Standardized all changelog entries to full IST timestamps",
     ],
   },
   {
+    buildNumber: 7,
+    formattedBuildNumber: "#007",
+    version: "1.0.0",
+    sha: "6d02ece",
+    timestamp: "11 Aug 2026, 22:00 IST",
+    title: "Build Version Indicator & Admin Changelog",
+    highlights: [
+      "Added subtle build version indicator with detailed popover modal",
+      "Added build-time Git commit SHA and timestamp auto-generation",
+      "Added dedicated Admin Changelog timeline UI with active build highlighting",
+    ],
+  },
+  {
+    buildNumber: 6,
+    formattedBuildNumber: "#006",
     version: "1.0.0",
     sha: "e723d56",
-    date: "11 Aug 2026",
+    timestamp: "11 Aug 2026, 20:41 IST",
     title: "SignalFlow Lifecycle Engine & End-to-End Validation",
     highlights: [
       "Added lifecycle trade matching & update association engine",
@@ -64,9 +92,11 @@ const STATIC_CHANGELOG = [
     ],
   },
   {
+    buildNumber: 5,
+    formattedBuildNumber: "#005",
     version: "1.0.0",
     sha: "506bbb0",
-    date: "11 Aug 2026",
+    timestamp: "11 Aug 2026, 19:48 IST",
     title: "Goodwill Signal Parser + Platform Enhancements",
     highlights: [
       "Added customer-specific Goodwill signal parser",
@@ -78,9 +108,11 @@ const STATIC_CHANGELOG = [
     ],
   },
   {
+    buildNumber: 4,
+    formattedBuildNumber: "#004",
     version: "1.0.0",
     sha: "0fc7d58",
-    date: "11 Aug 2026",
+    timestamp: "11 Aug 2026, 14:15 IST",
     title: "Database Hardening & Case-Insensitive Email Index",
     highlights: [
       "Executed defensive orphan subscriber record cleanup",
@@ -89,9 +121,11 @@ const STATIC_CHANGELOG = [
     ],
   },
   {
+    buildNumber: 3,
+    formattedBuildNumber: "#003",
     version: "1.0.0",
     sha: "0d2ab13",
-    date: "11 Aug 2026",
+    timestamp: "11 Aug 2026, 13:45 IST",
     title: "OAuth Subscriber Linking & Auth Hardening",
     highlights: [
       "Fixed Google OAuth HTTP 500 callback error",
@@ -100,9 +134,11 @@ const STATIC_CHANGELOG = [
     ],
   },
   {
+    buildNumber: 2,
+    formattedBuildNumber: "#002",
     version: "1.0.0",
     sha: "4a83707",
-    date: "11 Aug 2026",
+    timestamp: "11 Aug 2026, 12:30 IST",
     title: "Subscriber Google OAuth & Password Auth",
     highlights: [
       "Integrated Google OAuth login for subscribers",
@@ -110,9 +146,11 @@ const STATIC_CHANGELOG = [
     ],
   },
   {
+    buildNumber: 1,
+    formattedBuildNumber: "#001",
     version: "1.0.0",
     sha: "cafead3",
-    date: "10 Aug 2026",
+    timestamp: "10 Aug 2026, 18:20 IST",
     title: "Referral Rewards & Social Promotion Module",
     highlights: [
       "Expanded referral rewards tracking and ledger",
@@ -128,8 +166,16 @@ export function generateBuildInfo() {
   const buildTime = now.toISOString();
   const formattedBuildTime = formatISTDate(now);
 
+  // Find matching build item or default to latest
+  const matchedItem = STATIC_CHANGELOG.find(item => item.sha === gitSha) || STATIC_CHANGELOG[0];
+  const buildNumber = matchedItem.buildNumber;
+  const formattedBuildNumber = matchedItem.formattedBuildNumber;
+
   const buildInfo = {
+    application: "SignalFlow",
     version: "1.0.0",
+    buildNumber,
+    formattedBuildNumber,
     gitSha,
     fullSha,
     buildTime,
@@ -139,7 +185,7 @@ export function generateBuildInfo() {
 
   const targetPath = path.join(process.cwd(), "src", "lib", "build-info.json");
   fs.writeFileSync(targetPath, JSON.stringify(buildInfo, null, 2), "utf-8");
-  console.log(`Generated build info: version 1.0.0 · build ${gitSha}`);
+  console.log(`Generated build info: SignalFlow v1.0.0 · build ${formattedBuildNumber} · ${gitSha}`);
 }
 
 generateBuildInfo();

@@ -7,7 +7,6 @@ import { SubscriberNavStatus } from "@/components/site/subscriber-nav-status";
 import { AdminNavLink } from "@/components/site/admin-nav-link";
 import { DesktopNavigation, MobileNavigation } from "@/components/site/main-navigation";
 import { IstClock } from "@/components/site/ist-clock";
-import { BuildVersionIndicator } from "@/components/site/build-version-indicator";
 import { getCurrentSubscriber } from "@/lib/subscriber-auth";
 
 export async function Navbar() {
@@ -20,7 +19,6 @@ export async function Navbar() {
         <DesktopNavigation />
         <div className="flex items-center gap-2.5 sm:gap-3">
           <IstClock />
-          <BuildVersionIndicator className="hidden md:inline-flex" />
           <NotificationBell />
           <SubscriberNavStatus subscriberName={subscriber?.name ?? null} />
           <AdminNavLink />
