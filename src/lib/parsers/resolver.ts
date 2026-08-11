@@ -11,7 +11,7 @@ export function resolveCustomerParser(customer?: CustomerType | string, rawText?
 
   // Auto-detection based on message heuristics if customer is unspecified
   if (rawText) {
-    const isGoodwill = /ALERT\s*:|CMP|POSTIONAL|HERO[\s\/]*ZERO|STOP@|BUY\s+AROUND|\b\d+(?:\.\d+)?\/\d+(?:\.\d+)?\b|CRUDE|GOLD|COPPER|JUBILANT|RVNL|TCS/i.test(rawText);
+    const isGoodwill = /ALERT\s*:|CMP|POSTIONAL|POSITIONAL|HERO[\s\/]*ZERO|STOP@|BUY\s+AROUND|\b\d+(?:\.\d+)?\/\d+(?:\.\d+)?\b|CRUDE|GOLD|COPPER|JUBILANT|RVNL|TCS|ADANI|HOLD TILL|AVRG|TRG|CLOSING TIME/i.test(rawText);
     if (isGoodwill) return "GOODWILL";
   }
 
