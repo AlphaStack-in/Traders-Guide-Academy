@@ -64,12 +64,19 @@ model Subscriber {
   brokerConnection      BrokerConnection?
   orderAuditLogs        OrderAuditLog[]
   goodwillOrderRequests GoodwillOrderRequest[]
+  rewardTransactions    RewardTransaction[]
+  socialPromotionEvents SocialPromotionEvent[]
 }
 
 enum ReferralStatus {
   JOINED
   INVITED
   NOT_JOINED
+  REGISTERED
+  PAYMENT_PENDING
+  SUCCESSFUL
+  REWARD_CREDITED
+  REDEEMED
 }
 
 // One Dhan account per subscriber. connectMethod is PERSONAL_TOKEN today (a
@@ -283,4 +290,45 @@ enum ContactMessageStatus {
 enum CouponDiscountType {
   PERCENT
   FLAT
+}
+
+enum RewardTransactionType {
+  REFERRAL_REWARD
+  SOCIAL_PROMOTION
+  SUBSCRIPTION_REDEMPTION
+  ADJUSTMENT
+}
+
+enum RewardTransactionStatus {
+  CREDITED
+  PENDING
+  REDEEMED
+}
+
+model RewardTransaction {
+  id           String                  @id @default(uuid())
+  subscriberId String
+  subscriber   Subscriber              @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+  type         RewardTransactionType
+  amount       Float
+  status       RewardTransactionStatus @default(CREDITED)
+  description  String
+  referenceId  String?
+  createdAt    DateTime                @default(now())
+
+  @@index([subscriberId])
+  @@index([type])
+}
+
+model SocialPromotionEvent {
+  id           String     @id @default(uuid())
+  subscriberId String
+  subscriber   Subscriber @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+  platform     String
+  shareDate    String     // Format: YYYY-MM-DD (IST)
+  rewardAmount Float      @default(10)
+  createdAt    DateTime   @default(now())
+
+  @@unique([subscriberId, shareDate])
+  @@index([subscriberId])
 }

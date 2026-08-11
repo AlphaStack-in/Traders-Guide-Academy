@@ -54,7 +54,15 @@ export interface SubscriberRow {
   plan: string;
   batchNumber: number | null;
   currentBroker?: string | null;
-  referralStatus: "JOINED" | "INVITED" | "NOT_JOINED";
+  referralStatus:
+    | "JOINED"
+    | "INVITED"
+    | "NOT_JOINED"
+    | "REGISTERED"
+    | "PAYMENT_PENDING"
+    | "SUCCESSFUL"
+    | "REWARD_CREDITED"
+    | "REDEEMED";
   createdAt: string;
 }
 
@@ -167,17 +175,24 @@ function SortableHead({
 }
 
 function ReferralChip({ status }: { status: SubscriberRow["referralStatus"] }) {
-  if (status === "JOINED") {
+  if (status === "JOINED" || status === "REWARD_CREDITED" || status === "SUCCESSFUL" || status === "REDEEMED") {
     return (
       <Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs">
-        Joined
+        {status === "REDEEMED" ? "Redeemed" : status === "REWARD_CREDITED" ? "Reward Credited" : "Joined"}
       </Badge>
     );
   }
-  if (status === "INVITED") {
+  if (status === "INVITED" || status === "PAYMENT_PENDING") {
     return (
       <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-400 text-xs">
-        Invited
+        {status === "PAYMENT_PENDING" ? "Payment Pending" : "Invited"}
+      </Badge>
+    );
+  }
+  if (status === "REGISTERED") {
+    return (
+      <Badge variant="outline" className="border-sky-500/30 bg-sky-500/10 text-sky-400 text-xs">
+        Registered
       </Badge>
     );
   }
