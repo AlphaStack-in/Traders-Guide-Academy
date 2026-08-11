@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { Gift, LogIn, LogOut, User } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import {
   DropdownMenu,
@@ -9,17 +10,27 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 
 export function SubscriberNavStatus({ subscriberName }: { subscriberName: string | null }) {
   const router = useRouter();
+  const pathname = usePathname();
 
   if (!subscriberName) {
+    const isLoginActive = pathname.startsWith("/login");
     return (
       <Link
         href="/login"
-        className="hidden text-xs text-muted-foreground/70 transition-colors hover:text-primary sm:inline"
+        aria-current={isLoginActive ? "page" : undefined}
+        className={cn(
+          "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all sm:inline-flex",
+          isLoginActive
+            ? "border border-primary/40 bg-primary/10 text-primary thc-glow font-semibold"
+            : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
+        )}
       >
-        Login
+        <LogIn className="h-3.5 w-3.5 text-primary" />
+        <span>Login</span>
       </Link>
     );
   }
@@ -31,23 +42,44 @@ export function SubscriberNavStatus({ subscriberName }: { subscriberName: string
   }
 
   const initial = subscriberName.trim().charAt(0).toUpperCase() || "?";
+  const isAccountActive = pathname.startsWith("/account");
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label={`${subscriberName}'s account menu`}
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-primary/40 bg-primary/10 font-heading font-bold thc-gold-text outline-none transition-colors hover:border-primary/70"
+        className={cn(
+          "flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-2.5 text-xs font-semibold outline-none transition-colors",
+          isAccountActive
+            ? "border-primary/60 bg-primary/20 text-primary thc-glow"
+            : "border-primary/40 bg-primary/10 text-primary hover:border-primary/70"
+        )}
       >
-        {initial}
+        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-[11px] font-bold text-primary">
+          {initial}
+        </span>
+        <span className="hidden max-w-[90px] truncate sm:inline">{subscriberName.split(" ")[0]}</span>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem asChild>
-          <Link href="/account/profile">Profile</Link>
+      <DropdownMenuContent align="end" className="w-44">
+        <DropdownMenuItem asChild className="cursor-pointer gap-2">
+          <Link href="/account/profile">
+            <User className="h-3.5 w-3.5 text-muted-foreground" />
+            <span>Profile</span>
+          </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/account/refer">Refer &amp; Earn</Link>
+        <DropdownMenuItem asChild className="cursor-pointer gap-2">
+          <Link href="/account/refer">
+            <Gift className="h-3.5 w-3.5 text-muted-foreground" />
+            <span>Refer &amp; Earn</span>
+          </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleLogout}>Log out</DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={handleLogout}
+          className="cursor-pointer gap-2 text-xs font-medium text-destructive focus:text-destructive"
+        >
+          <LogOut className="h-3.5 w-3.5" />
+          <span>Logout</span>
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
