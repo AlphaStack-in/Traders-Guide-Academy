@@ -7,9 +7,23 @@ export async function getCurrentSubscriber() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) return null;
+  if (!user || !user.email) return null;
 
-  return prisma.subscriber.findUnique({ where: { authUserId: user.id } });
+  let subscriber = await prisma.subscriber.findUnique({ where: { authUserId: user.id } });
+
+  if (!subscriber) {
+    subscriber = await prisma.subscriber.findFirst({
+      where: { email: { equals: user.email, mode: "insensitive" } },
+    });
+    if (subscriber && !subscriber.authUserId) {
+      await prisma.subscriber.update({
+        where: { id: subscriber.id },
+        data: { authUserId: user.id },
+      });
+    }
+  }
+
+  return subscriber;
 }
 
 export async function requireSubscriber() {
