@@ -1,0 +1,39 @@
+Context: This is the Traders Hub Center app. There's a notification panel ("Updates from Admin") shown to users on the main site, and an admin panel at /admin/signals/new with a section called "Update Subscribers on Ongoing Trade" where the admin picks a signal (e.g. "Sensex 77800 CE") and clicks status buttons (READY, HOLD, ENTRY NOW, EXIT NOW, TARGET HIT, etc.) or types a custom message to notify subscribers.
+
+First, investigate before changing anything:
+Look through this repo and identify:
+
+The database/schema layer (Prisma schema, Supabase tables, or whatever ORM/DB is in use) — specifically where signals and their status updates/messages are stored
+The frontend component that renders the "Updates from Admin" bell/notification panel
+The admin component/page for /admin/signals/new, specifically the "Update Subscribers on Ongoing Trade" section
+The API route(s) that save a new update when admin clicks a status button or sends a message
+The API route/query the subscriber-facing panel uses to fetch updates
+How data is currently fetched on the frontend (React Query/SWR, plain useEffect + fetch, Supabase Realtime, polling, etc.)
+
+Report back the actual file names, table/schema structure, and current data flow before making any changes, so we can confirm the plan together.
+
+Bug 1 — Messages not preserved as separate entries:
+Currently, each time the admin sends an update for a given signal, it looks like the new update is being appended to or overwriting the same message thread — old updates aren't preserved as distinct entries, and/or new messages get merged into one line instead of appearing as separate chat-style entries.
+
+Desired behavior:
+
+Every time the admin sends an update, it should be stored as a new, independent message entry — never appended to or merged with a previous one.
+Each entry must store its own timestamp (date + time) at the moment it was sent.
+The "Updates from Admin" panel should render like a chat feed: newest message at top (or bottom — confirm which the current UI uses), each on its own row, showing signal name/title, message content, and timestamp — similar to "Sensex 77800 CE — HOLD · READY · ENTRY NOW — 06:28:50 pm" but with every send creating a new row, never rewriting an existing one.
+If updates are currently stored as a single message/status field per signal, change this to an array/list of timestamped messages per signal (e.g. updates: [{ text, status, timestamp }]) so history is preserved. This may need a schema/migration change — flag it if so.
+Update the notification panel component to map over the full list of updates, not just the latest value.
+
+Bug 2 — Delivery is not real-time, and no alerting:
+6. Real-time delivery: Updates aren't appearing instantly for subscribers — likely due to polling on too long an interval, or no live update mechanism at all. Implement a proper real-time mechanism (Supabase Realtime subscription, WebSocket, or short-interval polling as fallback) so subscribers see new updates within a second or two of being sent, not on page refresh.
+7. Sound alert: On new update arrival, play a short notification sound client-side (add a small audio file, e.g. notification.mp3, trigger via Audio.play()). Respect browser autoplay restrictions — only fire if the user has interacted with the page at least once, and fail silently otherwise (no console errors).
+8. Notification badge: The bell icon should show an unread-count badge (dot or number) whenever there are unread updates, clearing/decrementing once the panel is opened or messages are marked read.
+9. Auto-open panel: On new update arrival, automatically open/expand the "Updates from Admin" panel (or at minimum flash/highlight the bell icon) so the user notices immediately, rather than requiring a manual click first.
+10. Unread visual state: Each message row should track a read boolean (or readAt timestamp). Unread messages should render with a distinct background fill/highlight color (e.g. subtle gold/yellow tint matching the site theme) until the user opens the panel or views the message, then switch to the normal/read background.
+
+Before implementing: confirm your plan for:
+
+The exact schema change needed (new table vs. JSON array column vs. array field)
+Whether read/unread state needs to persist across page reloads (localStorage vs. a DB column per subscriber)
+Which real-time mechanism fits best given what's already in the stack
+
+Then implement once confirmed.
