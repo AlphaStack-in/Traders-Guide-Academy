@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ManualSignalForm, type ManualFormValues } from "@/components/admin/manual-signal-form";
-import { parseSignalMessage, type CustomerType, type ParsedSignalResult } from "@/lib/parser";
+import { parseSignalMessage, type CustomerType, type ParsedSignalDraft } from "@/lib/parser";
 import { nextWeeklyExpiry } from "@/lib/expiry";
 import { Sparkles, ArrowDown, CheckCircle2, AlertTriangle, ShieldCheck, Zap } from "lucide-react";
 import { INSTRUMENTS, type InstrumentLiteral } from "@/lib/instruments";
@@ -16,7 +16,7 @@ const SAMPLE_SIGNAL_TEMPLATE = "NIFTY 24450 PE BUY ABOVE 15 SL 1 TARGETS 155,170
 export function AddSignalForm() {
   const [rawText, setRawText] = useState("");
   const [customer, setCustomer] = useState<string>("AUTO");
-  const [parsedResults, setParsedResults] = useState<ParsedSignalResult[] | null>(null);
+  const [parsedResults, setParsedResults] = useState<ParsedSignalDraft[] | null>(null);
   const [prefilledManualForm, setPrefilledManualForm] = useState<Partial<ManualFormValues> | null>(null);
 
   function handleParse() {
@@ -36,7 +36,7 @@ export function AddSignalForm() {
     toast.success(`Successfully parsed ${results.length} signal${results.length === 1 ? "" : "s"} (${results[0].parserName || "THC"}).`);
   }
 
-  function handleUseParsedData(parsed: ParsedSignalResult) {
+  function handleUseParsedData(parsed: ParsedSignalDraft) {
     // Map parsed result into ManualFormValues
     const mappedInstrument = (parsed.mappedInstrument || parsed.instrument || "NIFTY").toUpperCase() as InstrumentLiteral;
     const isKnownInstrument = INSTRUMENTS.includes(mappedInstrument);
