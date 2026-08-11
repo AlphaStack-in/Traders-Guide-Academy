@@ -182,6 +182,19 @@ export async function linkSubscriberAccount(): Promise<{
       );
     } catch (updateErr: unknown) {
       console.error("linkSubscriberAccount: Prisma error during subscriber update:", updateErr);
+      // Race condition fallback: Did a concurrent request complete the linking?
+      try {
+        const recheck = await prisma.subscriber.findUnique({
+          where: { authUserId: user.id },
+        });
+        if (recheck && recheck.email && normalizeEmail(recheck.email) === normalized) {
+          console.log(`linkSubscriberAccount: Race condition recovered for user ${user.id}`);
+          return { success: true };
+        }
+      } catch (recheckErr) {
+        console.error("linkSubscriberAccount: Recheck error during fallback:", recheckErr);
+      }
+
       return {
         success: false,
         error: "Failed to link subscriber account.",
