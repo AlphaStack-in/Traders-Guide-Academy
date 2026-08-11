@@ -69,3 +69,8 @@ export function getClientJoinUrl(referralToken?: string | null): string {
 export function getRuntimeReferralUrl(token?: string | null): string {
   return getClientJoinUrl(token);
 }
+
+export function normalizeEmail(email: string | null | undefined): string {
+  if (!email) return "";
+  return email.trim().toLowerCase();
+}
