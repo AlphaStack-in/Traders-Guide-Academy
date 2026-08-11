@@ -39,12 +39,14 @@ export function formatUpdateTime(date: string | Date) {
   })
 }
 
-// Dynamic runtime origin resolver for referral links — never hardcodes localhost
-// in staging or production environments.
-export function getRuntimeReferralUrl(token?: string | null): string {
-  let origin = clientConfig.id === "goodwill"
-    ? "https://goodwill.tradershubcenter.com"
-    : "https://tradershubcenter.com";
+// Dynamic runtime join URL resolver — enforces Goodwill's public join URL
+// (https://gwcindia.in/register) and THC's domain without cross-client leaks.
+export function getClientJoinUrl(referralToken?: string | null): string {
+  if (clientConfig.id === "goodwill") {
+    return "https://gwcindia.in/register";
+  }
+
+  let origin = "https://tradershubcenter.com";
 
   if (typeof window !== "undefined" && window.location?.origin) {
     const locOrigin = window.location.origin;
@@ -58,8 +60,12 @@ export function getRuntimeReferralUrl(token?: string | null): string {
     }
   }
 
-  if (token) {
-    return `${origin}/register?ref=${encodeURIComponent(token)}`;
+  if (referralToken) {
+    return `${origin}/register?ref=${encodeURIComponent(referralToken)}`;
   }
   return `${origin}/register`;
+}
+
+export function getRuntimeReferralUrl(token?: string | null): string {
+  return getClientJoinUrl(token);
 }

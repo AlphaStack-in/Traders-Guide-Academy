@@ -171,7 +171,9 @@ export function computeDashboardMetrics(signals: SignalForMetrics[]): DashboardM
 }
 
 export function computeBestWorstTrades<
-  T extends Pick<Signal, "strike" | "optionType" | "instrument" | "pnlPercent" | "signalTime">,
+  T extends Pick<Signal, "strike" | "optionType" | "instrument" | "pnlPercent" | "signalTime"> & {
+    expiry?: Date | string | null;
+  },
 >(signals: T[], n = 5) {
   const closed = signals.filter((s) => s.pnlPercent != null);
   return [...closed]
@@ -181,10 +183,16 @@ export function computeBestWorstTrades<
       const d = new Date(s.signalTime);
       const day = String(d.getDate()).padStart(2, "0");
       const month = d.toLocaleDateString("en-IN", { month: "short" });
-      const instrumentPrefix = s.instrument ? `${INSTRUMENT_LABEL[s.instrument]} ` : "";
+      const inst = s.instrument ? (INSTRUMENT_LABEL[s.instrument] || s.instrument) : "";
+      const strikeStr = s.strike ? `${s.strike} ` : "";
+      const optStr = s.optionType ? `${s.optionType} ` : "";
       return {
-        label: `${instrumentPrefix}${day}${month}`,
+        label: `${inst} ${strikeStr}${optStr}${day}${month}`.trim(),
         pnlPercent: Math.round((s.pnlPercent ?? 0) * 100) / 100,
+        instrument: inst,
+        strike: s.strike,
+        optionType: s.optionType,
+        dateStr: `${day} ${month}`,
       };
     });
 }

@@ -681,10 +681,44 @@ function BestWorstAxisTick({
   );
 }
 
+function BestWorstTooltip({ active, payload }: any) {
+  if (!active || !payload || payload.length === 0) return null;
+  const point = payload[0].payload;
+  return (
+    <div
+      className="rounded-lg border border-white/10 px-3 py-2 text-xs shadow-lg"
+      style={{ backgroundColor: "var(--popover)", color: "var(--popover-foreground)" }}
+    >
+      <p className="font-bold text-sm mb-1">{point.label}</p>
+      {point.strike != null && (
+        <p className="text-muted-foreground">
+          Strike: <span className="font-semibold text-foreground">{point.strike}</span> ({point.optionType})
+        </p>
+      )}
+      {point.dateStr && <p className="text-muted-foreground">Date: {point.dateStr}</p>}
+      <p
+        className={
+          point.pnlPercent >= 0 ? "font-bold text-[var(--thc-win)]" : "font-bold text-[var(--thc-loss)]"
+        }
+      >
+        P&amp;L: {point.pnlPercent >= 0 ? "+" : ""}
+        {point.pnlPercent.toFixed(1)}%
+      </p>
+    </div>
+  );
+}
+
 export function BestWorstBarChart({
   data,
 }: {
-  data: { label: string; pnlPercent: number }[];
+  data: {
+    label: string;
+    pnlPercent: number;
+    instrument?: string;
+    strike?: number;
+    optionType?: string;
+    dateStr?: string;
+  }[];
 }) {
   return (
     <ResponsiveContainer width="100%" height={280}>
@@ -702,10 +736,7 @@ export function BestWorstBarChart({
         {grid}
         <XAxis dataKey="label" tick={<BestWorstAxisTick />} interval={0} height={90} />
         <YAxis tick={axisTick} />
-        <Tooltip contentStyle={chartTooltipStyle}
-          labelStyle={chartTooltipLabelStyle}
-          itemStyle={chartTooltipItemStyle}
-        />
+        <Tooltip content={<BestWorstTooltip />} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
         <Bar dataKey="pnlPercent" name="P&L %" radius={[3, 3, 0, 0]} isAnimationActive={false}>
           {data.map((entry) => (
             <Cell

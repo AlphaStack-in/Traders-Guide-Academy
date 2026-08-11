@@ -7,7 +7,7 @@ import { toBlob, toPng } from "html-to-image";
 import { Button } from "@/components/ui/button";
 import type { DashboardMetrics } from "@/lib/signal-metrics";
 import { DashboardSnapshotCard } from "@/components/dashboard/dashboard-snapshot-card";
-import { getRuntimeReferralUrl } from "@/lib/utils";
+import { getClientJoinUrl } from "@/lib/utils";
 import { clientConfig } from "@/lib/client-config";
 
 function InstagramIcon({ className }: { className?: string }) {
@@ -32,7 +32,14 @@ interface DashboardShareModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   metrics: DashboardMetrics;
-  bestWorst?: { label: string; pnlPercent: number }[];
+  bestWorst?: {
+    label: string;
+    pnlPercent: number;
+    instrument?: string;
+    strike?: number;
+    optionType?: string;
+    dateStr?: string;
+  }[];
   rangeLabel: string;
   referralToken?: string | null;
   referralLink?: string;
@@ -54,7 +61,7 @@ export function DashboardShareModal({
   const [snapshotBlob, setSnapshotBlob] = useState<Blob | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const joinUrl = referralLink || getRuntimeReferralUrl(referralToken);
+  const joinUrl = getClientJoinUrl(referralToken);
 
   // Dynamic calculations from current dashboard metrics
   const totalResolved = metrics.winCount + metrics.lossCount;

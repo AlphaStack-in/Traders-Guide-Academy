@@ -14,7 +14,7 @@ import {
   WinRateDonutChart,
 } from "@/components/admin/dashboard-charts";
 import type { DashboardMetrics } from "@/lib/signal-metrics";
-import { cn, getRuntimeReferralUrl } from "@/lib/utils";
+import { cn, getClientJoinUrl } from "@/lib/utils";
 import { clientConfig } from "@/lib/client-config";
 import { DateFilterChips } from "@/components/signals/date-filter-chips";
 import type { SignalsDateFilter } from "@/lib/date-filter";
@@ -32,7 +32,14 @@ export function DashboardContent({
   referralToken,
 }: {
   metrics: DashboardMetrics;
-  bestWorst: { label: string; pnlPercent: number }[];
+  bestWorst: {
+    label: string;
+    pnlPercent: number;
+    instrument?: string;
+    strike?: number;
+    optionType?: string;
+    dateStr?: string;
+  }[];
   recentSignals: RecentSignalItem[];
   dateFilter?: SignalsDateFilter;
   onDateFilterChange?: (next: SignalsDateFilter) => void;
@@ -43,7 +50,7 @@ export function DashboardContent({
   const [shareOpen, setShareOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const pct = (n: number) => `${n.toFixed(1)}%`;
-  const joinUrl = referralLink || getRuntimeReferralUrl(referralToken);
+  const joinUrl = getClientJoinUrl(referralToken);
 
   return (
     <div className="flex flex-col gap-8">
