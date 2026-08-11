@@ -40,6 +40,17 @@ model Signal {
   // skip the sound alert for it (still refreshes page content either way).
   silentUpdateAt DateTime?
 
+  // Platform enhancement fields
+  chartImageUrl  String?
+  entryLow       Float?
+  entryHigh      Float?
+  target1        Float?
+  target2        Float?
+  contextTags    String[]     @default([])
+  confidence     String?      @default("HIGH")
+  parserName     String?      @default("THC")
+  parserVersion  String?      @default("1.0.0")
+
   @@index([signalTime])
   @@index([status])
 }
@@ -332,3 +343,26 @@ model SocialPromotionEvent {
   @@unique([subscriberId, shareDate])
   @@index([subscriberId])
 }
+
+model NewsAlert {
+  id                  String   @id @default(uuid())
+  title               String
+  category            String   @default("Market")
+  severity            String   @default("INFO")
+  summary             String
+  content             String
+  impact              String?
+  affectedInstruments String[] @default([])
+  source              String?
+  sourceUrl           String?
+  publishedAt         DateTime @default(now())
+  expiresAt           DateTime?
+  isBreaking          Boolean  @default(false)
+  isActive            Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([publishedAt])
+  @@index([isActive])
+}
+

@@ -51,6 +51,12 @@ export default async function ManageSignalsPage({
       adminNote: s.adminNote,
       adminNoteAt: updates[0]?.createdAt ?? null,
       adminUpdates: updates,
+      chartImageUrl: s.chartImageUrl,
+      entryLow: s.entryLow,
+      entryHigh: s.entryHigh,
+      contextTags: s.contextTags,
+      confidence: s.confidence,
+      parserName: s.parserName,
     };
   });
 

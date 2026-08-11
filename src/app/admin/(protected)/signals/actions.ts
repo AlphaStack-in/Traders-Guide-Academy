@@ -32,6 +32,14 @@ export interface SignalInput {
   sellPrice: number | null;
   rawMessage: string;
   expiry: string;
+  chartImageUrl?: string | null;
+  entryLow?: number | null;
+  entryHigh?: number | null;
+  target1?: number | null;
+  target2?: number | null;
+  contextTags?: string[];
+  confidence?: string;
+  parserName?: string;
 }
 
 function toSignalCreateData(input: SignalInput) {
@@ -58,6 +66,14 @@ function toSignalCreateData(input: SignalInput) {
     pnlPercent,
     closedTime: input.sellPrice != null ? new Date() : null,
     expiry: new Date(input.expiry),
+    chartImageUrl: input.chartImageUrl ?? null,
+    entryLow: input.entryLow ?? null,
+    entryHigh: input.entryHigh ?? null,
+    target1: input.target1 ?? (input.targets[0] || null),
+    target2: input.target2 ?? (input.targets[1] || null),
+    contextTags: input.contextTags ?? [],
+    confidence: input.confidence ?? "HIGH",
+    parserName: input.parserName ?? "THC",
   };
 }
 

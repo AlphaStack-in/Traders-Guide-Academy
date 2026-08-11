@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { X } from "lucide-react";
+import { ChartImageUploader } from "@/components/signals/chart-image-uploader";
 import { INSTRUMENTS, INSTRUMENT_LABEL, type InstrumentLiteral } from "@/lib/instruments";
 
 export interface EditableDraft {
@@ -18,6 +19,8 @@ export interface EditableDraft {
   optionType: "CE" | "PE";
   instrument: InstrumentLiteral;
   entryPrice: string;
+  entryLow?: string;
+  entryHigh?: string;
   stopLoss: string;
   targets: string;
   priceAtSignal: string;
@@ -26,6 +29,10 @@ export interface EditableDraft {
   expiry: string;
   rawMessage: string;
   warnings: string[];
+  chartImageUrl?: string | null;
+  contextTags?: string[];
+  confidence?: "HIGH" | "MEDIUM" | "LOW";
+  parserName?: "THC" | "GOODWILL";
 }
 
 export function SignalDraftEditor({
@@ -42,7 +49,7 @@ export function SignalDraftEditor({
   }
 
   return (
-    <div className="thc-glass relative rounded-xl border border-white/5 p-4">
+    <div className="thc-glass relative rounded-xl border border-white/10 bg-[#0d0e14]/80 p-4 flex flex-col gap-4">
       <button
         type="button"
         onClick={onRemove}
@@ -52,8 +59,36 @@ export function SignalDraftEditor({
         <X className="h-4 w-4" />
       </button>
 
+      <div className="flex items-center gap-2 flex-wrap text-xs">
+        <span className="font-semibold text-foreground px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
+          Parser: {draft.parserName || "THC"}
+        </span>
+        {draft.confidence && (
+          <span
+            className={`px-2 py-0.5 rounded font-semibold ${
+              draft.confidence === "HIGH"
+                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                : draft.confidence === "MEDIUM"
+                ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                : "bg-rose-500/10 text-rose-400 border border-rose-500/20"
+            }`}
+          >
+            Confidence: {draft.confidence}
+          </span>
+        )}
+        {draft.contextTags && draft.contextTags.length > 0 && (
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {draft.contextTags.map((tag) => (
+              <span key={tag} className="px-2 py-0.5 rounded bg-white/10 text-muted-foreground">
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+
       {draft.warnings.length > 0 && (
-        <p className="mb-3 text-xs text-[var(--thc-loss)]">
+        <p className="text-xs text-[var(--thc-loss)]">
           {draft.warnings.join(" · ")}
         </p>
       )}
@@ -163,6 +198,11 @@ export function SignalDraftEditor({
           </Select>
         </div>
       </div>
+
+      <ChartImageUploader
+        value={draft.chartImageUrl}
+        onChange={(url) => set("chartImageUrl", url)}
+      />
     </div>
   );
 }

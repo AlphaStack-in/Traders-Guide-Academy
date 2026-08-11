@@ -48,6 +48,12 @@ export interface ManageSignalRow {
   adminNote: string | null;
   adminNoteAt: string | null;
   adminUpdates?: AdminUpdateItem[];
+  chartImageUrl?: string | null;
+  entryLow?: number | null;
+  entryHigh?: number | null;
+  contextTags?: string[];
+  confidence?: string | null;
+  parserName?: string | null;
 }
 
 const STATUS_LABEL: Record<ManageSignalRow["status"], string> = {

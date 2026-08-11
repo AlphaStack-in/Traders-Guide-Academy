@@ -16,6 +16,8 @@ import { createSignals, type SignalInput } from "@/app/admin/(protected)/signals
 import { INSTRUMENTS, INSTRUMENT_LABEL, type InstrumentLiteral } from "@/lib/instruments";
 import { nextWeeklyExpiry } from "@/lib/expiry";
 
+import { ChartImageUploader } from "@/components/signals/chart-image-uploader";
+
 function emptyForm() {
   return {
     strike: "",
@@ -28,6 +30,7 @@ function emptyForm() {
     sellPrice: "",
     risk: "Medium" as "Low" | "Medium" | "High",
     expiry: nextWeeklyExpiry(),
+    chartImageUrl: null as string | null,
   };
 }
 
@@ -77,6 +80,7 @@ export function ManualSignalForm() {
       sellPrice: sellPrice != null && Number.isFinite(sellPrice) ? sellPrice : null,
       rawMessage: `Manual entry: ${strike} ${form.optionType}`,
       expiry: form.expiry,
+      chartImageUrl: form.chartImageUrl,
     };
 
     startTransition(async () => {
@@ -182,6 +186,12 @@ export function ManualSignalForm() {
           </Select>
         </div>
       </div>
+
+      <ChartImageUploader
+        value={form.chartImageUrl}
+        onChange={(url) => set("chartImageUrl", url)}
+      />
+
       <Button type="submit" disabled={isPending} className="thc-glow thc-btn-gradient w-fit">
         {isPending ? "Saving…" : "Save Signal"}
       </Button>

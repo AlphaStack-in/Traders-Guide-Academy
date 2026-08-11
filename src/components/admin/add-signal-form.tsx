@@ -4,34 +4,38 @@ import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SignalDraftEditor, type EditableDraft } from "@/components/admin/signal-draft-editor";
 import { ManualSignalForm } from "@/components/admin/manual-signal-form";
-import { parseSignalMessage } from "@/lib/parser";
+import { parseSignalMessage, type CustomerType } from "@/lib/parser";
 import { nextWeeklyExpiry } from "@/lib/expiry";
 import { createSignals, type SignalInput } from "@/app/admin/(protected)/signals/actions";
 
-// Matches the label wording the parser regexes in lib/parser.ts look for
-// (Above / SL / Target / Now / selling price — the parser also still accepts
-// "Trgt" for pasted messages that use that shorthand) — line 1 is left blank
-// for the admin to fill in "[strike] [ce/pe]".
 const SMART_PASTE_TEMPLATE = "\nAbove -\nSL -\nTarget -\nNow -\nselling price ";
 
-function toEditableDraft(index: number, raw: string): EditableDraft {
-  const parsed = parseSignalMessage(raw)[index];
+function toEditableDraft(index: number, raw: string, customer?: string): EditableDraft {
+  const parsedList = parseSignalMessage(raw, customer);
+  const parsed = parsedList[index] || parsedList[0];
+
   return {
     key: `${Date.now()}-${index}`,
     strike: parsed.strike != null ? String(parsed.strike) : "",
     optionType: parsed.optionType ?? "CE",
-    instrument: parsed.instrument,
+    instrument: parsed.mappedInstrument || parsed.instrument || "NIFTY",
     entryPrice: parsed.entryPrice != null ? String(parsed.entryPrice) : "",
+    entryLow: parsed.entryLow != null ? String(parsed.entryLow) : undefined,
+    entryHigh: parsed.entryHigh != null ? String(parsed.entryHigh) : undefined,
     stopLoss: parsed.stopLoss != null ? String(parsed.stopLoss) : "",
-    targets: parsed.targets.join(","),
-    priceAtSignal: parsed.priceAtSignal != null ? String(parsed.priceAtSignal) : "",
+    targets: parsed.targets && parsed.targets.length > 0 ? parsed.targets.join(",") : parsed.target1 ? String(parsed.target1) : "",
+    priceAtSignal: parsed.priceAtSignal != null ? String(parsed.priceAtSignal) : parsed.cmp != null ? String(parsed.cmp) : parsed.entryPrice != null ? String(parsed.entryPrice) : "",
     sellPrice: parsed.sellPrice != null ? String(parsed.sellPrice) : "",
     risk: "Medium",
     expiry: nextWeeklyExpiry(),
     rawMessage: parsed.rawMessage,
-    warnings: parsed.warnings,
+    warnings: parsed.warnings || [],
+    contextTags: parsed.context || [],
+    confidence: parsed.confidence || "HIGH",
+    parserName: parsed.parserName || (customer as CustomerType) || "THC",
   };
 }
 
@@ -68,11 +72,20 @@ function draftToInput(draft: EditableDraft): SignalInput | null {
     sellPrice: sellPrice != null && Number.isFinite(sellPrice) ? sellPrice : null,
     rawMessage: draft.rawMessage,
     expiry: draft.expiry,
+    chartImageUrl: draft.chartImageUrl,
+    entryLow: draft.entryLow ? parseFloat(draft.entryLow) : null,
+    entryHigh: draft.entryHigh ? parseFloat(draft.entryHigh) : null,
+    target1: targets[0] ?? null,
+    target2: targets[1] ?? null,
+    contextTags: draft.contextTags,
+    confidence: draft.confidence,
+    parserName: draft.parserName,
   };
 }
 
 export function AddSignalForm() {
   const [rawText, setRawText] = useState(SMART_PASTE_TEMPLATE);
+  const [customer, setCustomer] = useState<string>("AUTO");
   const [drafts, setDrafts] = useState<EditableDraft[]>([]);
   const [isPending, startTransition] = useTransition();
 
@@ -87,14 +100,17 @@ export function AddSignalForm() {
       return;
     }
 
-    const parsedCount = parseSignalMessage(rawText).length;
+    const parsedResults = parseSignalMessage(rawText, customer === "AUTO" ? undefined : customer);
+    const parsedCount = parsedResults.length;
     if (parsedCount === 0) {
       toast.error("Couldn't find any signal blocks in that text.");
       return;
     }
-    const next = Array.from({ length: parsedCount }, (_, i) => toEditableDraft(i, rawText));
+    const next = Array.from({ length: parsedCount }, (_, i) =>
+      toEditableDraft(i, rawText, customer === "AUTO" ? undefined : customer)
+    );
     setDrafts(next);
-    toast.success(`Parsed ${parsedCount} signal${parsedCount === 1 ? "" : "s"} — review below.`);
+    toast.success(`Parsed ${parsedCount} signal${parsedCount === 1 ? "" : "s"} (${parsedResults[0].parserName || "THC"}) — review below.`);
   }
 
   function handleSaveAll() {
@@ -120,14 +136,33 @@ export function AddSignalForm() {
     <div className="flex flex-col gap-6">
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="flex flex-col gap-4">
-          <h2 className="font-heading text-sm font-semibold text-muted-foreground">Smart Paste</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="font-heading text-sm font-semibold text-muted-foreground">
+              Signal Processing Engine & Smart Paste
+            </h2>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground font-medium">Customer Parser:</span>
+              <Select value={customer} onValueChange={setCustomer}>
+                <SelectTrigger className="h-8 w-36 text-xs bg-white/5 border-white/10">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="AUTO">Auto Detect</SelectItem>
+                  <SelectItem value="GOODWILL">Goodwill Parser</SelectItem>
+                  <SelectItem value="THC">THC Parser</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
           <Textarea
             value={rawText}
             onChange={(e) => setRawText(e.target.value)}
-            className="min-h-[180px] font-mono text-sm"
+            placeholder="Paste signal text (THC or Goodwill format)..."
+            className="min-h-[180px] font-mono text-sm bg-black/40 border-white/10"
           />
           <Button type="button" onClick={handleParse} className="thc-glow thc-btn-gradient w-fit">
-            Parse
+            Parse Signal
           </Button>
 
           {drafts.length > 0 && (
@@ -164,3 +199,4 @@ export function AddSignalForm() {
     </div>
   );
 }
+
