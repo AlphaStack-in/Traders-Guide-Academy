@@ -27,11 +27,13 @@ export function DashboardView({
   initialFilter,
   instrument,
   referralLink,
+  referralToken,
 }: {
   signals: SerializedSignal[];
   initialFilter: SignalsDateFilter;
   instrument?: string;
   referralLink?: string;
+  referralToken?: string | null;
 }) {
   const pathname = usePathname();
   const [dateFilter, setDateFilter] = useState<SignalsDateFilter>(initialFilter);
@@ -96,6 +98,7 @@ export function DashboardView({
       onDateFilterChange={handleDateFilterChange}
       rangeLabel={rangeLabel}
       referralLink={referralLink}
+      referralToken={referralToken}
     />
   );
 }

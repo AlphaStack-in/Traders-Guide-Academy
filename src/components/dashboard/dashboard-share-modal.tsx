@@ -1,20 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Copy, Link2, Share2, X as CloseIcon } from "lucide-react";
+import { Copy, Download, Link2, Share2, X as CloseIcon } from "lucide-react";
+import { toBlob, toPng } from "html-to-image";
 import { Button } from "@/components/ui/button";
 import type { DashboardMetrics } from "@/lib/signal-metrics";
-import {
-  DashboardSnapshotCard,
-  type SnapshotData,
-} from "@/components/dashboard/dashboard-snapshot-card";
+import { DashboardSnapshotCard } from "@/components/dashboard/dashboard-snapshot-card";
 import { getRuntimeReferralUrl } from "@/lib/utils";
 import { clientConfig } from "@/lib/client-config";
 
 function InstagramIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
       <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
       <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
@@ -30,6 +36,7 @@ interface DashboardShareModalProps {
   rangeLabel: string;
   referralToken?: string | null;
   referralLink?: string;
+  containerRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 export function DashboardShareModal({
@@ -40,10 +47,12 @@ export function DashboardShareModal({
   rangeLabel,
   referralToken,
   referralLink,
+  containerRef,
 }: DashboardShareModalProps) {
   const [tab, setTab] = useState<"text" | "snapshot">("text");
-
-  if (!open) return null;
+  const [snapshotUrl, setSnapshotUrl] = useState<string | null>(null);
+  const [snapshotBlob, setSnapshotBlob] = useState<Blob | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const joinUrl = referralLink || getRuntimeReferralUrl(referralToken);
 
@@ -83,6 +92,76 @@ export function DashboardShareModal({
   const encodedMsg = encodeURIComponent(shareMessage);
   const encodedUrl = encodeURIComponent(joinUrl);
 
+  const captureSnapshot = useCallback(async () => {
+    const element =
+      containerRef?.current || document.getElementById("dashboard-snapshot-container");
+    if (!element) return null;
+
+    setIsGenerating(true);
+    try {
+      // Small settle delay for SVGs and animations
+      await new Promise((resolve) => setTimeout(resolve, 80));
+
+      const dataUrl = await toPng(element, {
+        pixelRatio: 2,
+        cacheBust: true,
+        backgroundColor: "#090a0f",
+        style: {
+          transform: "none",
+          margin: "0",
+        },
+      });
+
+      const blob = await toBlob(element, {
+        pixelRatio: 2,
+        cacheBust: true,
+        backgroundColor: "#090a0f",
+        style: {
+          transform: "none",
+          margin: "0",
+        },
+      });
+
+      setSnapshotUrl(dataUrl);
+      setSnapshotBlob(blob);
+      return { dataUrl, blob };
+    } catch (err) {
+      console.error("Failed to capture exact dashboard snapshot:", err);
+      return null;
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [containerRef]);
+
+  useEffect(() => {
+    if (open) {
+      captureSnapshot();
+    } else {
+      setSnapshotUrl(null);
+      setSnapshotBlob(null);
+    }
+  }, [open, captureSnapshot]);
+
+  async function handleDownloadSnapshot() {
+    let url = snapshotUrl;
+    if (!url) {
+      const res = await captureSnapshot();
+      url = res?.dataUrl || null;
+    }
+    if (!url) {
+      toast.error("Failed to capture snapshot image.");
+      return;
+    }
+
+    const link = document.createElement("a");
+    const safeLabel = rangeLabel.replace(/[^a-zA-Z0-9]/g, "_");
+    const brandPrefix = clientConfig.siteNameShort || clientConfig.siteName.replace(/[^a-zA-Z0-9]/g, "_");
+    link.download = `${brandPrefix}_Dashboard_Snapshot_${safeLabel}.png`;
+    link.href = url;
+    link.click();
+    toast.success("Dashboard PNG snapshot downloaded!");
+  }
+
   function copyMessage() {
     navigator.clipboard.writeText(shareMessage);
     toast.success("Share message copied to clipboard!");
@@ -93,36 +172,75 @@ export function DashboardShareModal({
     toast.success("Referral link copied to clipboard!");
   }
 
-  function handleInstagramShare() {
+  async function handleInstagramShare() {
     copyMessage();
-    toast.info("Message copied! Attach your snapshot image on Instagram.");
+    await handleDownloadSnapshot();
+    toast.info("Message copied & Snapshot downloaded! Attach your image on Instagram.");
     window.open("https://www.instagram.com/", "_blank", "noopener,noreferrer");
   }
 
+  async function handleWhatsAppShare() {
+    await handleDownloadSnapshot();
+    toast.info("Opening WhatsApp... Your snapshot image has been downloaded to attach!");
+    window.open(`https://api.whatsapp.com/send?text=${encodedMsg}`, "_blank", "noopener,noreferrer");
+  }
+
+  async function handleTelegramShare() {
+    await handleDownloadSnapshot();
+    toast.info("Opening Telegram... Your snapshot image has been downloaded to attach!");
+    window.open(`https://t.me/share/url?url=${encodedUrl}&text=${encodedMsg}`, "_blank", "noopener,noreferrer");
+  }
+
+  async function handleSocialShare(shareTargetUrl: string) {
+    await handleDownloadSnapshot();
+    window.open(shareTargetUrl, "_blank", "noopener,noreferrer");
+  }
+
   async function handleNativeShare() {
+    let blob = snapshotBlob;
+    let url = snapshotUrl;
+
+    if (!blob || !url) {
+      const res = await captureSnapshot();
+      blob = res?.blob || null;
+      url = res?.dataUrl || null;
+    }
+
     if (navigator.share) {
       try {
+        const safeLabel = rangeLabel.replace(/[^a-zA-Z0-9]/g, "_");
+        const brandPrefix = clientConfig.siteNameShort || "Dashboard";
+        const fileName = `${brandPrefix}_Snapshot_${safeLabel}.png`;
+
+        if (blob && typeof File !== "undefined") {
+          const file = new File([blob], fileName, { type: "image/png" });
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              title: `${clientConfig.siteName} Performance`,
+              text: shareMessage,
+              files: [file],
+            });
+            toast.success("Shared successfully!");
+            return;
+          }
+        }
+
+        // Web Share API fallback without file attachment
         await navigator.share({
-          title: "Traders Hub Center Performance",
+          title: `${clientConfig.siteName} Performance`,
           text: shareMessage,
           url: joinUrl,
         });
         toast.success("Shared successfully!");
       } catch {
-        // User cancelled share
+        // User cancelled share window
       }
     } else {
       copyMessage();
     }
   }
 
-  const snapshotData: SnapshotData = {
-    rangeLabel,
-    metrics,
-    bestWorst,
-    referralToken,
-    referralUrl: joinUrl,
-  };
+  if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md">
@@ -220,33 +338,21 @@ export function DashboardShareModal({
                   {/* Row 1: WhatsApp | Telegram | Instagram */}
                   <div className="grid grid-cols-3 gap-2">
                     <Button
-                      asChild
                       size="sm"
                       variant="outline"
                       className="h-9 gap-1 border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 text-xs"
+                      onClick={handleWhatsAppShare}
                     >
-                      <a
-                        href={`https://api.whatsapp.com/send?text=${encodedMsg}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        WhatsApp
-                      </a>
+                      WhatsApp
                     </Button>
 
                     <Button
-                      asChild
                       size="sm"
                       variant="outline"
                       className="h-9 gap-1 border-sky-500/30 bg-sky-500/10 text-sky-400 hover:bg-sky-500/20 text-xs"
+                      onClick={handleTelegramShare}
                     >
-                      <a
-                        href={`https://t.me/share/url?url=${encodedUrl}&text=${encodedMsg}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Telegram
-                      </a>
+                      Telegram
                     </Button>
 
                     <Button
@@ -263,63 +369,49 @@ export function DashboardShareModal({
                   {/* Row 2: X / Twitter | LinkedIn | Facebook */}
                   <div className="grid grid-cols-3 gap-2">
                     <Button
-                      asChild
                       size="sm"
                       variant="outline"
                       className="h-9 gap-1 border-white/20 bg-white/5 text-foreground hover:bg-white/10 text-xs"
+                      onClick={() =>
+                        handleSocialShare(`https://twitter.com/intent/tweet?text=${encodedMsg}`)
+                      }
                     >
-                      <a
-                        href={`https://twitter.com/intent/tweet?text=${encodedMsg}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        X / Twitter
-                      </a>
+                      X / Twitter
                     </Button>
 
                     <Button
-                      asChild
                       size="sm"
                       variant="outline"
                       className="h-9 gap-1 border-blue-500/30 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 text-xs"
+                      onClick={() =>
+                        handleSocialShare(`https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`)
+                      }
                     >
-                      <a
-                        href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        LinkedIn
-                      </a>
+                      LinkedIn
                     </Button>
 
                     <Button
-                      asChild
                       size="sm"
                       variant="outline"
                       className="h-9 gap-1 border-indigo-500/30 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 text-xs"
+                      onClick={() =>
+                        handleSocialShare(`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`)
+                      }
                     >
-                      <a
-                        href={`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Facebook
-                      </a>
+                      Facebook
                     </Button>
                   </div>
 
                   {/* More Options / Web Share */}
-                  {typeof window !== "undefined" && "share" in navigator && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-9 w-full gap-1.5 border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 text-xs mt-1"
-                      onClick={handleNativeShare}
-                    >
-                      <Share2 className="h-3.5 w-3.5" />
-                      More Options (Web Share)
-                    </Button>
-                  )}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-9 w-full gap-1.5 border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 text-xs mt-1"
+                    onClick={handleNativeShare}
+                  >
+                    <Share2 className="h-3.5 w-3.5" />
+                    Share Image + Message (Web Share)
+                  </Button>
                 </div>
               </div>
             </div>
@@ -337,8 +429,9 @@ export function DashboardShareModal({
             </div>
 
             <DashboardSnapshotCard
-              data={snapshotData}
-              onDownloaded={() => toast.success("Dashboard PNG snapshot downloaded!")}
+              snapshotUrl={snapshotUrl}
+              isLoading={isGenerating}
+              onDownload={handleDownloadSnapshot}
             />
           </div>
         </div>

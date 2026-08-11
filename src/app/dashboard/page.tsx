@@ -26,7 +26,8 @@ export default async function PublicDashboardPage({
   };
 
   const subscriber = await getCurrentSubscriber();
-  const referralLink = getRuntimeReferralUrl(subscriber?.invitationToken);
+  const referralToken = subscriber?.invitationToken ?? null;
+  const referralLink = getRuntimeReferralUrl(referralToken);
 
   const allSignals = await prisma.signal.findMany({ orderBy: { signalTime: "desc" } });
   const serializedSignals: SerializedSignal[] = allSignals.map((s) => ({
@@ -63,6 +64,7 @@ export default async function PublicDashboardPage({
           initialFilter={initialFilter}
           instrument={params.instrument}
           referralLink={referralLink}
+          referralToken={referralToken}
         />
       </main>
       <Footer />

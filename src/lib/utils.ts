@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { clientConfig } from "@/lib/client-config"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -41,15 +42,24 @@ export function formatUpdateTime(date: string | Date) {
 // Dynamic runtime origin resolver for referral links — never hardcodes localhost
 // in staging or production environments.
 export function getRuntimeReferralUrl(token?: string | null): string {
-  let origin = "https://tradershubcenter.com"
+  let origin = clientConfig.id === "goodwill"
+    ? "https://goodwill.tradershubcenter.com"
+    : "https://tradershubcenter.com";
+
   if (typeof window !== "undefined" && window.location?.origin) {
-    origin = window.location.origin
+    const locOrigin = window.location.origin;
+    if (!locOrigin.includes("localhost") && !locOrigin.includes("127.0.0.1")) {
+      origin = locOrigin;
+    }
   } else if (process.env.NEXT_PUBLIC_APP_URL) {
-    origin = process.env.NEXT_PUBLIC_APP_URL
+    const envUrl = process.env.NEXT_PUBLIC_APP_URL;
+    if (!envUrl.includes("localhost") && !envUrl.includes("127.0.0.1")) {
+      origin = envUrl;
+    }
   }
 
   if (token) {
-    return `${origin}/register?ref=${encodeURIComponent(token)}`
+    return `${origin}/register?ref=${encodeURIComponent(token)}`;
   }
-  return `${origin}/register`
+  return `${origin}/register`;
 }
