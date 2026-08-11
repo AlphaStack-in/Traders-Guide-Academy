@@ -1,10 +1,21 @@
 {
   "version": "1.0.0",
-  "gitSha": "e723d56",
-  "fullSha": "e723d56271cb5fe19b31a416d3c76b6131ba7634",
-  "buildTime": "2026-08-11T16:29:11.801Z",
-  "formattedBuildTime": "11 Aug 2026, 21:59 IST",
+  "gitSha": "6d02ece",
+  "fullSha": "6d02eced7c125aeb7b3912606e14e0a105b64e46",
+  "buildTime": "2026-08-11T16:30:11.854Z",
+  "formattedBuildTime": "11 Aug 2026, 22:00 IST",
   "changelog": [
+    {
+      "version": "1.0.0",
+      "sha": "6d02ece",
+      "date": "11 Aug 2026",
+      "title": "Build Version Indicator & Admin Changelog",
+      "highlights": [
+        "Added subtle frontend build version indicator (v1.0.0 · build SHA)",
+        "Added build-time Git commit SHA and timestamp auto-generation",
+        "Added dedicated Admin Changelog timeline UI with current build highlighting"
+      ]
+    },
     {
       "version": "1.0.0",
       "sha": "e723d56",

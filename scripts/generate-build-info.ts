@@ -43,6 +43,17 @@ function formatISTDate(date: Date): string {
 const STATIC_CHANGELOG = [
   {
     version: "1.0.0",
+    sha: "6d02ece",
+    date: "11 Aug 2026",
+    title: "Build Version Indicator & Admin Changelog",
+    highlights: [
+      "Added subtle frontend build version indicator (v1.0.0 · build SHA)",
+      "Added build-time Git commit SHA and timestamp auto-generation",
+      "Added dedicated Admin Changelog timeline UI with current build highlighting",
+    ],
+  },
+  {
+    version: "1.0.0",
     sha: "e723d56",
     date: "11 Aug 2026",
     title: "SignalFlow Lifecycle Engine & End-to-End Validation",
