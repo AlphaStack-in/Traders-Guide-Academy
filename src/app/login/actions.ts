@@ -3,6 +3,14 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { normalizeEmail } from "@/lib/utils";
+import { linkSubscriberAccount as linkSubscriberAccountImpl } from "@/lib/subscriber-auth";
+
+
+export async function linkSubscriberAccount() {
+  return linkSubscriberAccountImpl();
+}
+
+
 
 /**
  * Request passwordless magic link for registered subscribers.
@@ -106,48 +114,5 @@ export async function requestPasswordReset(
   return { success: true };
 }
 
-/**
- * Hardened subscriber account linking helper.
- * Enforces canonical linking: Supabase User ID <-> Subscriber.authUserId.
- */
-export async function linkSubscriberAccount(): Promise<{ success: boolean; error?: string }> {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
-  if (!user?.email) {
-    return { success: false, error: "No authenticated session found." };
-  }
 
-  const normalized = normalizeEmail(user.email);
-
-  const existing = await prisma.subscriber.findFirst({
-    where: { email: { equals: normalized, mode: "insensitive" } },
-  });
-
-  if (!existing) {
-    return {
-      success: false,
-      error: "This email isn't registered as a premium subscriber yet.",
-    };
-  }
-
-  // Account Takeover Prevention: Reject if subscriber is already linked to a DIFFERENT authUserId
-  if (existing.authUserId && existing.authUserId !== user.id) {
-    return {
-      success: false,
-      error: "This email is already linked to a different account.",
-    };
-  }
-
-  // Link authUserId if NULL
-  if (!existing.authUserId) {
-    await prisma.subscriber.update({
-      where: { id: existing.id },
-      data: { authUserId: user.id },
-    });
-  }
-
-  return { success: true };
-}
