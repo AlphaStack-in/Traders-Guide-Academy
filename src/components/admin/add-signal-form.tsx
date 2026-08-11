@@ -4,9 +4,8 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ManualSignalForm, type ManualFormValues } from "@/components/admin/manual-signal-form";
-import { parseSignalMessage, type CustomerType, type ParsedSignalDraft } from "@/lib/parser";
+import { parseSignalMessage, type ParsedSignalDraft } from "@/lib/parser";
 import { nextWeeklyExpiry } from "@/lib/expiry";
 import { Sparkles, ArrowDown, CheckCircle2, AlertTriangle, ShieldCheck, Zap } from "lucide-react";
 import { INSTRUMENTS, type InstrumentLiteral } from "@/lib/instruments";
@@ -15,7 +14,6 @@ const SAMPLE_SIGNAL_TEMPLATE = "NIFTY 24450 PE BUY ABOVE 15 SL 1 TARGETS 155,170
 
 export function AddSignalForm() {
   const [rawText, setRawText] = useState("");
-  const [customer, setCustomer] = useState<string>("AUTO");
   const [parsedResults, setParsedResults] = useState<ParsedSignalDraft[] | null>(null);
   const [prefilledManualForm, setPrefilledManualForm] = useState<Partial<ManualFormValues> | null>(null);
 
@@ -25,7 +23,8 @@ export function AddSignalForm() {
       return;
     }
 
-    const results = parseSignalMessage(rawText, customer === "AUTO" ? undefined : customer);
+    // Automatic Parser Resolution (Customer Resolver internal engine)
+    const results = parseSignalMessage(rawText);
     if (results.length === 0) {
       toast.error("Couldn't parse any signal from that text.");
       setParsedResults(null);
@@ -72,7 +71,7 @@ export function AddSignalForm() {
     <div className="flex flex-col gap-8">
       {/* 1. PARSE SIGNAL SECTION */}
       <div className="rounded-2xl border border-white/10 bg-[#0d0e14]/80 p-5 sm:p-6 backdrop-blur-md shadow-xl flex flex-col gap-5">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-white/10 pb-4">
+        <div className="flex items-center justify-between border-b border-white/10 pb-4">
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-primary/10 text-primary border border-primary/20">
               <Zap className="h-5 w-5" />
@@ -83,20 +82,6 @@ export function AddSignalForm() {
                 Paste raw signal text to auto-extract trade values &amp; confidence rating.
               </p>
             </div>
-          </div>
-
-          <div className="flex items-center gap-2 shrink-0">
-            <span className="text-xs text-muted-foreground font-medium">Customer Parser:</span>
-            <Select value={customer} onValueChange={setCustomer}>
-              <SelectTrigger className="h-8 w-38 text-xs bg-white/5 border-white/10">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="AUTO">Auto Detect</SelectItem>
-                <SelectItem value="GOODWILL">Goodwill Parser</SelectItem>
-                <SelectItem value="THC">THC Parser</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
         </div>
 
@@ -151,7 +136,7 @@ export function AddSignalForm() {
                       {parsed.mappedInstrument || parsed.instrument} {parsed.strike} {parsed.optionType}
                     </span>
                     <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-primary/20 text-primary border border-primary/30">
-                      {parsed.parserName || "PARSER"}
+                      Parser: {parsed.parserName || "THC"}
                     </span>
                   </div>
 

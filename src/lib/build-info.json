@@ -1,14 +1,14 @@
 {
   "application": "SignalFlow",
   "version": "1.0.1",
-  "gitSha": "f7152c1",
-  "fullSha": "f7152c166d3dccb35c3ca584d0ea18eb3b03827e",
-  "buildTime": "2026-08-11T17:20:03.892Z",
-  "formattedBuildTime": "11 Aug 2026, 22:50 IST",
+  "gitSha": "7854ee3",
+  "fullSha": "7854ee3b1a1e9c8dffbbd956c1afba03d360684e",
+  "buildTime": "2026-08-11T17:35:30.069Z",
+  "formattedBuildTime": "11 Aug 2026, 23:05 IST",
   "changelog": [
     {
       "version": "1.0.1",
-      "sha": "f7152c1",
+      "sha": "7854ee3",
       "timestamp": "11 Aug 2026, 22:50 IST",
       "title": "Semantic Patch Versioning & Footer Build Alignment",
       "highlights": [
