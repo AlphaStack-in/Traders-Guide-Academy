@@ -1,5 +1,6 @@
 import { Logo } from "@/components/site/logo";
 import { AdminNav, AdminMobileNav } from "@/components/admin/admin-nav";
+import { BuildVersionIndicator } from "@/components/site/build-version-indicator";
 
 export default function AdminProtectedLayout({
   children,
@@ -18,6 +19,12 @@ export default function AdminProtectedLayout({
       <main className="mx-auto flex-1 w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {children}
       </main>
+      <footer className="border-t border-white/5 bg-card/40 py-6">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 text-xs text-muted-foreground sm:px-6 lg:px-8">
+          <p>&copy; {new Date().getFullYear()} Traders Hub Center · Admin Portal</p>
+          <BuildVersionIndicator />
+        </div>
+      </footer>
     </div>
   );
 }

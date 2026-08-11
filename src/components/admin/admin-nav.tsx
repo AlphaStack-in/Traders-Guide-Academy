@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { clientConfig } from "@/lib/client-config";
 import { IstClock } from "@/components/site/ist-clock";
+import { BuildVersionIndicator } from "@/components/site/build-version-indicator";
 
 const links = [
   { href: "/admin/dashboard", label: "Dashboard", icon: BarChart3 },
@@ -74,6 +75,7 @@ export function AdminNav() {
   return (
     <div className="flex items-center gap-3 sm:gap-4">
       <IstClock />
+      <BuildVersionIndicator className="hidden md:inline-flex" />
       <nav className="hidden items-center gap-2 lg:flex">
         {links.map((link) => {
           const Icon = link.icon;
