@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { GitCommit, CheckCircle2, Server, Hash } from "lucide-react";
+import { GitCommit, CheckCircle2, Server } from "lucide-react";
 import { getBuildInfo, type BuildInfo } from "@/lib/build-info";
 
 interface BuildVersionIndicatorProps {
@@ -24,7 +24,7 @@ export function BuildVersionIndicator({ className = "", buildInfo: initialInfo }
       >
         <GitCommit className="h-3 w-3 text-primary/80 group-hover:text-primary transition-colors" />
         <span className="font-mono text-[11px] font-medium tracking-tight">
-          v{info.version} · build {info.formattedBuildNumber} · {info.gitSha}
+          v{info.version} · {info.gitSha}
         </span>
       </button>
 
@@ -56,11 +56,7 @@ export function BuildVersionIndicator({ className = "", buildInfo: initialInfo }
               </div>
               <div className="flex items-center justify-between text-muted-foreground">
                 <span>Version:</span>
-                <span className="text-foreground font-semibold">v{info.version}</span>
-              </div>
-              <div className="flex items-center justify-between text-muted-foreground">
-                <span>Build/Patch:</span>
-                <span className="text-primary font-bold">{info.formattedBuildNumber}</span>
+                <span className="text-primary font-bold">v{info.version}</span>
               </div>
               <div className="flex items-center justify-between text-muted-foreground">
                 <span>Git Commit SHA:</span>

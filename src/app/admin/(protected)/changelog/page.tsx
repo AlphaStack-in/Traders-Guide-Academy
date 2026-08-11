@@ -1,5 +1,5 @@
 import { getBuildInfo } from "@/lib/build-info";
-import { CheckCircle2, GitCommit, History, ShieldCheck, Hash } from "lucide-react";
+import { CheckCircle2, GitCommit, History, ShieldCheck } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -37,10 +37,10 @@ export default function AdminChangelogPage() {
             </div>
             <div className="flex items-center gap-2">
               <span className="font-mono text-sm font-bold text-foreground">
-                Build {buildInfo.formattedBuildNumber}
+                v{buildInfo.version}
               </span>
               <span className="text-xs text-muted-foreground font-mono">
-                v{buildInfo.version} · {buildInfo.gitSha}
+                · {buildInfo.gitSha}
               </span>
             </div>
             <span className="text-[11px] text-muted-foreground">
@@ -57,7 +57,7 @@ export default function AdminChangelogPage() {
 
           return (
             <div
-              key={entry.sha}
+              key={entry.sha + index}
               className={`relative rounded-2xl border p-5 transition-all duration-200 ${
                 isCurrent
                   ? "border-emerald-500/40 bg-emerald-950/10 shadow-xl"
@@ -67,9 +67,6 @@ export default function AdminChangelogPage() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-3 mb-4">
                 <div className="flex items-center gap-2.5 flex-wrap">
                   <span className="px-2.5 py-1 rounded-lg bg-primary/20 text-primary border border-primary/30 text-xs font-bold font-mono">
-                    Build {entry.formattedBuildNumber}
-                  </span>
-                  <span className="px-2 py-0.5 rounded-md bg-white/5 text-muted-foreground border border-white/10 text-xs font-mono font-medium">
                     v{entry.version}
                   </span>
                   <span className="flex items-center gap-1 text-xs font-mono font-semibold text-muted-foreground bg-white/5 px-2.5 py-1 rounded-lg border border-white/10">
