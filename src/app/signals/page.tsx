@@ -4,7 +4,6 @@ import { SignalsExplorer } from "@/components/signals/signals-explorer";
 import { OngoingSignals } from "@/components/signals/ongoing-signals";
 import { SoundAlertToggle } from "@/components/signals/sound-alert-toggle";
 import { RefreshButton } from "@/components/site/refresh-button";
-import { NewsAlertsSection } from "@/components/news/news-alerts-section";
 import { prisma } from "@/lib/prisma";
 import { getAdminUpdatesForSignals } from "@/app/admin/(protected)/signals/actions";
 import type { SignalRow } from "@/components/signals/signals-explorer";
@@ -83,7 +82,6 @@ export default async function SignalsPage({
           </div>
         </div>
 
-        <NewsAlertsSection />
         <OngoingSignals signals={ongoing} />
         <SignalsExplorer signals={rows} initialFilter={initialFilter} />
       </main>
