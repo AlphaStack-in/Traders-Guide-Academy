@@ -1,14 +1,26 @@
 {
   "application": "SignalFlow",
-  "version": "1.0.5",
-  "gitSha": "2efb220",
-  "fullSha": "2efb2203161758716421351b7e5b38b68e82fbbc",
-  "buildTime": "2026-08-12T02:28:15.694Z",
-  "formattedBuildTime": "12 Aug 2026, 07:58 IST",
+  "version": "1.0.6",
+  "gitSha": "95dbbaf",
+  "fullSha": "95dbbaf32c612f7357d4f1f5260fe2bcacdde805",
+  "buildTime": "2026-08-12T02:36:10.561Z",
+  "formattedBuildTime": "12 Aug 2026, 08:06 IST",
   "changelog": [
     {
+      "version": "1.0.6",
+      "sha": "95dbbaf",
+      "timestamp": "12 Aug 2026, 08:10 IST",
+      "title": "Parse Signal Left Link Repositioning & Send Signal Icon Alignment",
+      "highlights": [
+        "Moved Insert Sample Signal link to the left side above Parse textarea",
+        "Restored raw signal example prefill text in textarea placeholder",
+        "Added Send icon to Send Signal button",
+        "Matched Send Signal button height (h-9), padding (px-6), text size (text-xs), and font weight with Parse Signal button"
+      ]
+    },
+    {
       "version": "1.0.5",
-      "sha": "2efb220",
+      "sha": "95dbbaf",
       "timestamp": "12 Aug 2026, 08:00 IST",
       "title": "Parse Signal Cleanup & Uniform 3-Column Manual Signal Grid",
       "highlights": [

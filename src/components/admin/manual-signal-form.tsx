@@ -16,6 +16,7 @@ import { createSignals, type SignalInput } from "@/app/admin/(protected)/signals
 import { INSTRUMENTS, INSTRUMENT_LABEL, type InstrumentLiteral } from "@/lib/instruments";
 import { getNextExpiry, type InstrumentCategory, type ExpiryOption } from "@/lib/expiry";
 import { ChartImageUploader } from "@/components/signals/chart-image-uploader";
+import { Send } from "lucide-react";
 
 export type ExtendedInstrument = InstrumentLiteral | "STOCK";
 
@@ -360,13 +361,14 @@ export function ManualSignalForm({ prefilledValues, onSaved }: ManualSignalFormP
         )}
       </div>
 
-      {/* LEFT-ALIGNED [ Send Signal ] BUTTON */}
+      {/* LEFT-ALIGNED [ Send Signal ] BUTTON WITH MATCHING SIZE, TEXT, & ICON */}
       <div className="pt-2 flex justify-start">
         <Button
           type="submit"
           disabled={isPending}
-          className="h-9 thc-glow thc-btn-gradient px-7 text-xs font-semibold justify-start shrink-0"
+          className="h-9 thc-glow thc-btn-gradient gap-2 px-6 text-xs font-semibold justify-start shrink-0"
         >
+          <Send className="h-4 w-4" />
           {isPending ? "Sending Signal…" : "Send Signal"}
         </Button>
       </div>

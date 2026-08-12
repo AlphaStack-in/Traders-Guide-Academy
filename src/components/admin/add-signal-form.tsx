@@ -84,14 +84,13 @@ export function AddSignalForm() {
           </div>
         </div>
 
-        {/* Clean Textarea with Header Row and Insert Sample Signal on Right */}
+        {/* Textarea Header Row with Insert Sample Signal on Left Side & Example Prefill Placeholder */}
         <div className="flex flex-col gap-1.5">
-          <div className="flex items-center justify-between">
-            <label className="text-xs font-semibold text-muted-foreground">Paste raw signal message</label>
+          <div className="flex items-center justify-start">
             <button
               type="button"
               onClick={() => setRawText(SAMPLE_SIGNAL_TEMPLATE)}
-              className="text-xs text-primary/90 hover:text-primary underline font-medium cursor-pointer transition-colors"
+              className="text-xs text-primary/90 hover:text-primary underline font-semibold cursor-pointer transition-colors"
             >
               Insert Sample Signal
             </button>
@@ -99,8 +98,8 @@ export function AddSignalForm() {
           <Textarea
             value={rawText}
             onChange={(e) => setRawText(e.target.value)}
-            placeholder="Paste raw signal message..."
-            className="min-h-[90px] font-mono text-sm bg-black/40 border-white/10 focus:border-primary/50"
+            placeholder={`Paste raw signal message...\nExample: ${SAMPLE_SIGNAL_TEMPLATE}`}
+            className="min-h-[95px] font-mono text-sm bg-black/40 border-white/10 focus:border-primary/50"
           />
         </div>
 
@@ -109,7 +108,7 @@ export function AddSignalForm() {
           <Button
             type="button"
             onClick={handleParse}
-            className="thc-glow thc-btn-gradient gap-2 px-6 h-9 font-semibold justify-start"
+            className="thc-glow thc-btn-gradient gap-2 px-6 h-9 font-semibold justify-start text-xs"
           >
             <Sparkles className="h-4 w-4" />
             Parse Signal
