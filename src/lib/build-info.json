@@ -1,14 +1,27 @@
 {
   "application": "SignalFlow",
-  "version": "1.0.3",
-  "gitSha": "3d6b8b9",
-  "fullSha": "3d6b8b9859537c181a3ce816b2949808986f860b",
-  "buildTime": "2026-08-12T02:04:11.307Z",
-  "formattedBuildTime": "12 Aug 2026, 07:34 IST",
+  "version": "1.0.4",
+  "gitSha": "df9dbe6",
+  "fullSha": "df9dbe6e64690a900b5615eb61c6eeb597acec23",
+  "buildTime": "2026-08-12T02:10:49.523Z",
+  "formattedBuildTime": "12 Aug 2026, 07:40 IST",
   "changelog": [
     {
+      "version": "1.0.4",
+      "sha": "df9dbe6",
+      "timestamp": "12 Aug 2026, 07:45 IST",
+      "title": "Official Exchange Contract Expiry Specifications & Holiday Engine",
+      "highlights": [
+        "Updated NSE Nifty 50 weekly options to official Tuesday expiry schedule",
+        "Omitted weekly expiries for Bank Nifty and Midcap Nifty per official NSE contract specs (monthly only)",
+        "Implemented BSE Sensex Friday weekly option expiry specification",
+        "Added exchange trading holiday engine with automatic previous-trading-day adjustment",
+        "Added centralized getValidExpiries({ exchange, instrument, stockSymbol, referenceDate }) abstraction"
+      ]
+    },
+    {
       "version": "1.0.3",
-      "sha": "3d6b8b9",
+      "sha": "df9dbe6",
       "timestamp": "12 Aug 2026, 07:35 IST",
       "title": "Dynamic Instrument Expiry Engine & Compact Keyboard-First Admin UI",
       "highlights": [
@@ -100,48 +113,6 @@
         "Added common News & Market Alerts platform section",
         "Added multi-instrument signal parsing support",
         "Preserved 100% THC parser compatibility"
-      ]
-    },
-    {
-      "version": "1.0.0",
-      "sha": "0fc7d58",
-      "timestamp": "11 Aug 2026, 14:15 IST",
-      "title": "Database Hardening & Email Index",
-      "highlights": [
-        "Executed defensive orphan subscriber record cleanup",
-        "Added PostgreSQL case-insensitive unique index on LOWER(email)",
-        "Standardized uniform email normalization"
-      ]
-    },
-    {
-      "version": "1.0.0",
-      "sha": "0d2ab13",
-      "timestamp": "11 Aug 2026, 13:45 IST",
-      "title": "OAuth Subscriber Linking & Auth Hardening",
-      "highlights": [
-        "Fixed Google OAuth HTTP 500 callback error",
-        "Hardened subscriber account linking logic",
-        "Added race-condition fallback and user error boundaries"
-      ]
-    },
-    {
-      "version": "1.0.0",
-      "sha": "4a83707",
-      "timestamp": "11 Aug 2026, 12:30 IST",
-      "title": "Subscriber Google OAuth & Password Auth",
-      "highlights": [
-        "Integrated Google OAuth login for subscribers",
-        "Added password authentication & account linking"
-      ]
-    },
-    {
-      "version": "1.0.0",
-      "sha": "cafead3",
-      "timestamp": "10 Aug 2026, 18:20 IST",
-      "title": "Referral Rewards & Social Promotion Module",
-      "highlights": [
-        "Expanded referral rewards tracking and ledger",
-        "Added social promotion share verification and rewards"
       ]
     }
   ]

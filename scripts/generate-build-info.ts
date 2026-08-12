@@ -6,9 +6,9 @@ function getAppVersion(): string {
   try {
     const pkgPath = path.join(process.cwd(), "package.json");
     const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8"));
-    return pkg.version || "1.0.3";
+    return pkg.version || "1.0.4";
   } catch (e) {
-    return "1.0.3";
+    return "1.0.4";
   }
 }
 
@@ -22,7 +22,7 @@ function getGitSha(): string {
   try {
     return execSync("git rev-parse --short HEAD").toString().trim();
   } catch (e) {
-    return "3d6b8b9";
+    return "df9dbe6";
   }
 }
 
@@ -33,7 +33,7 @@ function getFullGitSha(): string {
   try {
     return execSync("git rev-parse HEAD").toString().trim();
   } catch (e) {
-    return "3d6b8b9";
+    return "df9dbe6";
   }
 }
 
@@ -60,8 +60,21 @@ export interface RawChangelogItem {
 
 const STATIC_CHANGELOG: RawChangelogItem[] = [
   {
-    version: "1.0.3",
+    version: "1.0.4",
     sha: "pending",
+    timestamp: "12 Aug 2026, 07:45 IST",
+    title: "Official Exchange Contract Expiry Specifications & Holiday Engine",
+    highlights: [
+      "Updated NSE Nifty 50 weekly options to official Tuesday expiry schedule",
+      "Omitted weekly expiries for Bank Nifty and Midcap Nifty per official NSE contract specs (monthly only)",
+      "Implemented BSE Sensex Friday weekly option expiry specification",
+      "Added exchange trading holiday engine with automatic previous-trading-day adjustment",
+      "Added centralized getValidExpiries({ exchange, instrument, stockSymbol, referenceDate }) abstraction",
+    ],
+  },
+  {
+    version: "1.0.3",
+    sha: "df9dbe6",
     timestamp: "12 Aug 2026, 07:35 IST",
     title: "Dynamic Instrument Expiry Engine & Compact Keyboard-First Admin UI",
     highlights: [
@@ -153,48 +166,6 @@ const STATIC_CHANGELOG: RawChangelogItem[] = [
       "Added common News & Market Alerts platform section",
       "Added multi-instrument signal parsing support",
       "Preserved 100% THC parser compatibility",
-    ],
-  },
-  {
-    version: "1.0.0",
-    sha: "0fc7d58",
-    timestamp: "11 Aug 2026, 14:15 IST",
-    title: "Database Hardening & Email Index",
-    highlights: [
-      "Executed defensive orphan subscriber record cleanup",
-      "Added PostgreSQL case-insensitive unique index on LOWER(email)",
-      "Standardized uniform email normalization",
-    ],
-  },
-  {
-    version: "1.0.0",
-    sha: "0d2ab13",
-    timestamp: "11 Aug 2026, 13:45 IST",
-    title: "OAuth Subscriber Linking & Auth Hardening",
-    highlights: [
-      "Fixed Google OAuth HTTP 500 callback error",
-      "Hardened subscriber account linking logic",
-      "Added race-condition fallback and user error boundaries",
-    ],
-  },
-  {
-    version: "1.0.0",
-    sha: "4a83707",
-    timestamp: "11 Aug 2026, 12:30 IST",
-    title: "Subscriber Google OAuth & Password Auth",
-    highlights: [
-      "Integrated Google OAuth login for subscribers",
-      "Added password authentication & account linking",
-    ],
-  },
-  {
-    version: "1.0.0",
-    sha: "cafead3",
-    timestamp: "10 Aug 2026, 18:20 IST",
-    title: "Referral Rewards & Social Promotion Module",
-    highlights: [
-      "Expanded referral rewards tracking and ledger",
-      "Added social promotion share verification and rewards",
     ],
   },
 ];
