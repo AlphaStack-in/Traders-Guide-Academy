@@ -70,12 +70,18 @@ export function ManualSignalForm({ prefilledValues, onSaved }: ManualSignalFormP
 
   // Dynamic Expiry Calculation based on Selected Category & Stock Symbol
   const expiryResult = useMemo(() => {
-    return getNextExpiry(form.category, new Date(), form.stockSymbol);
+    return getNextExpiry({
+      instrument: form.category,
+      stockSymbol: form.stockSymbol,
+    });
   }, [form.category, form.stockSymbol]);
 
   // Update Expiry Date whenever Category or Stock Symbol changes
   function handleCategoryChange(newCategory: ExtendedInstrument) {
-    const res = getNextExpiry(newCategory, new Date(), form.stockSymbol);
+    const res = getNextExpiry({
+      instrument: newCategory,
+      stockSymbol: form.stockSymbol,
+    });
     const mappedInst: InstrumentLiteral = newCategory === "STOCK" ? "NIFTY" : newCategory;
     setForm((prev) => ({
       ...prev,
@@ -86,7 +92,10 @@ export function ManualSignalForm({ prefilledValues, onSaved }: ManualSignalFormP
   }
 
   function handleStockSymbolChange(newSymbol: string) {
-    const res = getNextExpiry("STOCK", new Date(), newSymbol);
+    const res = getNextExpiry({
+      instrument: "STOCK",
+      stockSymbol: newSymbol,
+    });
     setForm((prev) => ({
       ...prev,
       stockSymbol: newSymbol,
@@ -100,7 +109,10 @@ export function ManualSignalForm({ prefilledValues, onSaved }: ManualSignalFormP
       const rawInst = (prefilledValues.instrument || "NIFTY").toUpperCase();
       const isStock = !INSTRUMENTS.includes(rawInst as InstrumentLiteral);
       const cat: ExtendedInstrument = isStock ? "STOCK" : (rawInst as InstrumentLiteral);
-      const res = getNextExpiry(cat, new Date(), isStock ? rawInst : "RVNL");
+      const res = getNextExpiry({
+        instrument: cat,
+        stockSymbol: isStock ? rawInst : "RVNL",
+      });
 
       setForm((prev) => ({
         ...prev,
@@ -163,36 +175,37 @@ export function ManualSignalForm({ prefilledValues, onSaved }: ManualSignalFormP
     startTransition(async () => {
       const result = await createSignals([input]);
       if (result.success) {
-        toast.success("Signal saved successfully.");
+        toast.success("Signal sent successfully.");
         setForm(emptyForm());
         onSaved?.();
       } else {
-        toast.error(result.error ?? "Failed to save signal.");
+        toast.error(result.error ?? "Failed to send signal.");
       }
     });
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      {/* ROW 1: Strike | Type | Instrument | [Stock Symbol] */}
-      <div className="flex flex-wrap items-end gap-3 sm:gap-4">
-        {/* Strike */}
-        <div className="flex flex-col gap-1 w-28 sm:w-32">
-          <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Strike</Label>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+      {/* 3-COLUMN UNIFORM GRID */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 items-start">
+        {/* ================= COLUMN 1 ================= */}
+        {/* Row 1 Col 1: Strike */}
+        <div className="flex flex-col gap-1.5 w-full">
+          <Label className="text-xs font-semibold text-muted-foreground">Strike</Label>
           <Input
             value={form.strike}
             onChange={(e) => set("strike", e.target.value)}
             placeholder="24450"
-            className="h-8 text-xs font-mono bg-black/40 border-white/10 focus:border-primary/50"
+            className="h-9 text-xs font-mono bg-black/40 border-white/10 focus:border-primary/50 w-full"
             required
           />
         </div>
 
-        {/* Type */}
-        <div className="flex flex-col gap-1 w-24 sm:w-28">
-          <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Type</Label>
+        {/* Row 1 Col 2: Type */}
+        <div className="flex flex-col gap-1.5 w-full">
+          <Label className="text-xs font-semibold text-muted-foreground">Type</Label>
           <Select value={form.optionType} onValueChange={(v) => set("optionType", v as "CE" | "PE")}>
-            <SelectTrigger className="h-8 text-xs font-mono bg-black/40 border-white/10">
+            <SelectTrigger className="h-9 text-xs font-mono bg-black/40 border-white/10 w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="bg-[#12131a] border-white/10">
@@ -202,14 +215,14 @@ export function ManualSignalForm({ prefilledValues, onSaved }: ManualSignalFormP
           </Select>
         </div>
 
-        {/* Instrument */}
-        <div className="flex flex-col gap-1 w-32 sm:w-36">
-          <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Instrument</Label>
+        {/* Row 1 Col 3: Instrument */}
+        <div className="flex flex-col gap-1.5 w-full">
+          <Label className="text-xs font-semibold text-muted-foreground">Instrument</Label>
           <Select
             value={form.category}
             onValueChange={(v) => handleCategoryChange(v as ExtendedInstrument)}
           >
-            <SelectTrigger className="h-8 text-xs font-semibold bg-black/40 border-white/10">
+            <SelectTrigger className="h-9 text-xs font-semibold bg-black/40 border-white/10 w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="bg-[#12131a] border-white/10">
@@ -222,15 +235,117 @@ export function ManualSignalForm({ prefilledValues, onSaved }: ManualSignalFormP
           </Select>
         </div>
 
-        {/* Stock Symbol (Shown ONLY when Stock is selected) */}
+        {/* ================= COLUMN 2 ================= */}
+        {/* Row 2 Col 1: Entry Price */}
+        <div className="flex flex-col gap-1.5 w-full">
+          <Label className="text-xs font-semibold text-muted-foreground">Entry Price</Label>
+          <Input
+            value={form.entryPrice}
+            onChange={(e) => set("entryPrice", e.target.value)}
+            placeholder="15"
+            className="h-9 text-xs font-mono bg-black/40 border-white/10 focus:border-primary/50 w-full"
+            required
+          />
+        </div>
+
+        {/* Row 2 Col 2: Stop Loss */}
+        <div className="flex flex-col gap-1.5 w-full">
+          <Label className="text-xs font-semibold text-muted-foreground">Stop Loss</Label>
+          <Input
+            value={form.stopLoss}
+            onChange={(e) => set("stopLoss", e.target.value)}
+            placeholder="1"
+            className="h-9 text-xs font-mono bg-black/40 border-white/10 focus:border-primary/50 text-rose-400 w-full"
+            required
+          />
+        </div>
+
+        {/* Row 2 Col 3: Target(s) */}
+        <div className="flex flex-col gap-1.5 w-full">
+          <Label className="text-xs font-semibold text-muted-foreground">Target(s)</Label>
+          <Input
+            value={form.targets}
+            onChange={(e) => set("targets", e.target.value)}
+            placeholder="155,170"
+            className="h-9 text-xs font-mono bg-black/40 border-white/10 focus:border-primary/50 text-emerald-400 w-full"
+            required
+          />
+        </div>
+
+        {/* ================= COLUMN 3 ================= */}
+        {/* Row 3 Col 1: CMP */}
+        <div className="flex flex-col gap-1.5 w-full">
+          <Label className="text-xs font-semibold text-muted-foreground">CMP</Label>
+          <Input
+            value={form.priceAtSignal}
+            onChange={(e) => set("priceAtSignal", e.target.value)}
+            placeholder="15"
+            className="h-9 text-xs font-mono bg-black/40 border-white/10 focus:border-primary/50 w-full"
+          />
+        </div>
+
+        {/* Row 3 Col 2: Sell Price (Optional) */}
+        <div className="flex flex-col gap-1.5 w-full">
+          <Label className="text-xs font-semibold text-muted-foreground">Sell Price (Optional)</Label>
+          <Input
+            value={form.sellPrice}
+            onChange={(e) => set("sellPrice", e.target.value)}
+            placeholder="Optional"
+            className="h-9 text-xs font-mono bg-black/40 border-white/10 focus:border-primary/50 w-full"
+          />
+        </div>
+
+        {/* Row 3 Col 3: Expiry Date */}
+        <div className="flex flex-col gap-1.5 w-full">
+          <div className="flex items-center justify-between">
+            <Label className="text-xs font-semibold text-muted-foreground">Expiry Date</Label>
+            <span className="text-[10px] text-primary/80 font-normal">AUTO-NEXT</span>
+          </div>
+          <Select
+            value={form.expiry}
+            onValueChange={(v) => set("expiry", v)}
+          >
+            <SelectTrigger className="h-9 text-xs font-mono bg-black/40 border-white/10 text-primary font-semibold w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-[#12131a] border-white/10">
+              {expiryResult.upcomingExpiries.map((exp) => (
+                <SelectItem key={exp.date} value={exp.date} className="font-mono text-xs">
+                  {exp.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* ================= ROW 4 ================= */}
+        {/* Row 4 Col 1: Risk Rating */}
+        <div className="flex flex-col gap-1.5 w-full">
+          <Label className="text-xs font-semibold text-muted-foreground">Risk Rating</Label>
+          <Select
+            value={form.risk}
+            onValueChange={(v) => set("risk", v as "Low" | "Medium" | "High")}
+          >
+            <SelectTrigger className="h-9 text-xs bg-black/40 border-white/10 w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-[#12131a] border-white/10">
+              <SelectItem value="Low">Low Risk</SelectItem>
+              <SelectItem value="Medium">Medium Risk</SelectItem>
+              <SelectItem value="High">High Risk</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Row 4 Col 2: Stock Symbol (Only if Stock selected) */}
         {form.category === "STOCK" && (
-          <div className="flex flex-col gap-1 w-32 sm:w-36">
-            <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Stock Symbol</Label>
+          <div className="flex flex-col gap-1.5 w-full">
+            <Label className="text-xs font-semibold text-muted-foreground">Stock Symbol</Label>
             <Select
               value={form.stockSymbol}
               onValueChange={handleStockSymbolChange}
             >
-              <SelectTrigger className="h-8 text-xs font-mono bg-black/40 border-white/10">
+              <SelectTrigger className="h-9 text-xs font-mono bg-black/40 border-white/10 w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-[#12131a] border-white/10">
@@ -245,127 +360,19 @@ export function ManualSignalForm({ prefilledValues, onSaved }: ManualSignalFormP
         )}
       </div>
 
-      {/* ROW 2: Entry Price | Stop Loss | Target(s) */}
-      <div className="flex flex-wrap items-end gap-3 sm:gap-4">
-        {/* Entry Price */}
-        <div className="flex flex-col gap-1 w-28 sm:w-32">
-          <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Entry Price</Label>
-          <Input
-            value={form.entryPrice}
-            onChange={(e) => set("entryPrice", e.target.value)}
-            placeholder="15"
-            className="h-8 text-xs font-mono bg-black/40 border-white/10 focus:border-primary/50"
-            required
-          />
-        </div>
-
-        {/* Stop Loss */}
-        <div className="flex flex-col gap-1 w-28 sm:w-32">
-          <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Stop Loss</Label>
-          <Input
-            value={form.stopLoss}
-            onChange={(e) => set("stopLoss", e.target.value)}
-            placeholder="1"
-            className="h-8 text-xs font-mono bg-black/40 border-white/10 focus:border-primary/50 text-rose-400"
-            required
-          />
-        </div>
-
-        {/* Target(s) */}
-        <div className="flex flex-col gap-1 w-44 sm:w-56">
-          <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Target(s)</Label>
-          <Input
-            value={form.targets}
-            onChange={(e) => set("targets", e.target.value)}
-            placeholder="155,170"
-            className="h-8 text-xs font-mono bg-black/40 border-white/10 focus:border-primary/50 text-emerald-400"
-            required
-          />
-        </div>
-      </div>
-
-      {/* ROW 3: CMP | Sell Price | Expiry Date */}
-      <div className="flex flex-wrap items-end gap-3 sm:gap-4">
-        {/* CMP */}
-        <div className="flex flex-col gap-1 w-28 sm:w-32">
-          <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">CMP</Label>
-          <Input
-            value={form.priceAtSignal}
-            onChange={(e) => set("priceAtSignal", e.target.value)}
-            placeholder="15"
-            className="h-8 text-xs font-mono bg-black/40 border-white/10 focus:border-primary/50"
-          />
-        </div>
-
-        {/* Sell Price */}
-        <div className="flex flex-col gap-1 w-32 sm:w-36">
-          <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-            Sell Price <span className="text-[10px] text-muted-foreground/60 font-normal">(Optional)</span>
-          </Label>
-          <Input
-            value={form.sellPrice}
-            onChange={(e) => set("sellPrice", e.target.value)}
-            placeholder="Optional"
-            className="h-8 text-xs font-mono bg-black/40 border-white/10 focus:border-primary/50"
-          />
-        </div>
-
-        {/* Dynamic Instrument Expiry Selector */}
-        <div className="flex flex-col gap-1 w-48 sm:w-56">
-          <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center justify-between">
-            <span>Expiry Date</span>
-            <span className="text-[10px] text-primary/80 font-normal">Auto-Next</span>
-          </Label>
-          <Select
-            value={form.expiry}
-            onValueChange={(v) => set("expiry", v)}
-          >
-            <SelectTrigger className="h-8 text-xs font-mono bg-black/40 border-white/10 text-primary font-semibold">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="bg-[#12131a] border-white/10">
-              {expiryResult.upcomingExpiries.map((exp) => (
-                <SelectItem key={exp.date} value={exp.date} className="font-mono text-xs">
-                  {exp.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      {/* ROW 4: Risk Rating | Save Signal */}
-      <div className="flex flex-wrap items-end gap-3 sm:gap-4 pt-1">
-        {/* Risk Rating */}
-        <div className="flex flex-col gap-1 w-28 sm:w-32">
-          <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Risk Rating</Label>
-          <Select
-            value={form.risk}
-            onValueChange={(v) => set("risk", v as "Low" | "Medium" | "High")}
-          >
-            <SelectTrigger className="h-8 text-xs bg-black/40 border-white/10">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="bg-[#12131a] border-white/10">
-              <SelectItem value="Low">Low Risk</SelectItem>
-              <SelectItem value="Medium">Medium Risk</SelectItem>
-              <SelectItem value="High">High Risk</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* LEFT-ALIGNED [ Save Signal ] Button */}
+      {/* LEFT-ALIGNED [ Send Signal ] BUTTON */}
+      <div className="pt-2 flex justify-start">
         <Button
           type="submit"
           disabled={isPending}
-          className="h-8 thc-glow thc-btn-gradient px-6 text-xs font-semibold justify-start shrink-0"
+          className="h-9 thc-glow thc-btn-gradient px-7 text-xs font-semibold justify-start shrink-0"
         >
-          {isPending ? "Saving Signal…" : "Save Signal"}
+          {isPending ? "Sending Signal…" : "Send Signal"}
         </Button>
       </div>
 
       {/* SCREENSHOT SECTION */}
-      <div className="flex flex-col gap-1 pt-2">
+      <div className="flex flex-col gap-1.5 pt-2 border-t border-white/10">
         <ChartImageUploader
           label="SCREENSHOT"
           value={form.chartImageUrl}

@@ -6,9 +6,9 @@ function getAppVersion(): string {
   try {
     const pkgPath = path.join(process.cwd(), "package.json");
     const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8"));
-    return pkg.version || "1.0.4";
+    return pkg.version || "1.0.5";
   } catch (e) {
-    return "1.0.4";
+    return "1.0.5";
   }
 }
 
@@ -22,7 +22,7 @@ function getGitSha(): string {
   try {
     return execSync("git rev-parse --short HEAD").toString().trim();
   } catch (e) {
-    return "df9dbe6";
+    return "2efb220";
   }
 }
 
@@ -33,7 +33,7 @@ function getFullGitSha(): string {
   try {
     return execSync("git rev-parse HEAD").toString().trim();
   } catch (e) {
-    return "df9dbe6";
+    return "2efb220";
   }
 }
 
@@ -60,8 +60,21 @@ export interface RawChangelogItem {
 
 const STATIC_CHANGELOG: RawChangelogItem[] = [
   {
-    version: "1.0.4",
+    version: "1.0.5",
     sha: "pending",
+    timestamp: "12 Aug 2026, 08:00 IST",
+    title: "Parse Signal Cleanup & Uniform 3-Column Manual Signal Grid",
+    highlights: [
+      "Moved Insert Sample Signal link above Parse textarea on the right side",
+      "Removed redundant labels, example placeholders, and overlapping instructional text from Parse Signal",
+      "Aligned Manual Signal Entry into a uniform 3-column grid with equal column field widths",
+      "Widen Instrument dropdown to full column width and resized Target(s) input to normal column width",
+      "Renamed visible manual form action from Save Signal to Send Signal (left-aligned)",
+    ],
+  },
+  {
+    version: "1.0.4",
+    sha: "2efb220",
     timestamp: "12 Aug 2026, 07:45 IST",
     title: "Official Exchange Contract Expiry Specifications & Holiday Engine",
     highlights: [

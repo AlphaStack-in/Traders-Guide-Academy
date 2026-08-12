@@ -1,14 +1,27 @@
 {
   "application": "SignalFlow",
-  "version": "1.0.4",
-  "gitSha": "df9dbe6",
-  "fullSha": "df9dbe6e64690a900b5615eb61c6eeb597acec23",
-  "buildTime": "2026-08-12T02:10:49.523Z",
-  "formattedBuildTime": "12 Aug 2026, 07:40 IST",
+  "version": "1.0.5",
+  "gitSha": "2efb220",
+  "fullSha": "2efb2203161758716421351b7e5b38b68e82fbbc",
+  "buildTime": "2026-08-12T02:28:15.694Z",
+  "formattedBuildTime": "12 Aug 2026, 07:58 IST",
   "changelog": [
     {
+      "version": "1.0.5",
+      "sha": "2efb220",
+      "timestamp": "12 Aug 2026, 08:00 IST",
+      "title": "Parse Signal Cleanup & Uniform 3-Column Manual Signal Grid",
+      "highlights": [
+        "Moved Insert Sample Signal link above Parse textarea on the right side",
+        "Removed redundant labels, example placeholders, and overlapping instructional text from Parse Signal",
+        "Aligned Manual Signal Entry into a uniform 3-column grid with equal column field widths",
+        "Widen Instrument dropdown to full column width and resized Target(s) input to normal column width",
+        "Renamed visible manual form action from Save Signal to Send Signal (left-aligned)"
+      ]
+    },
+    {
       "version": "1.0.4",
-      "sha": "df9dbe6",
+      "sha": "2efb220",
       "timestamp": "12 Aug 2026, 07:45 IST",
       "title": "Official Exchange Contract Expiry Specifications & Holiday Engine",
       "highlights": [

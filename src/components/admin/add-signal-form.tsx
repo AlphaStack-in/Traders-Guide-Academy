@@ -84,36 +84,36 @@ export function AddSignalForm() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-2">
-          <label className="text-xs font-semibold text-muted-foreground">Paste raw signal</label>
+        {/* Clean Textarea with Header Row and Insert Sample Signal on Right */}
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-semibold text-muted-foreground">Paste raw signal message</label>
+            <button
+              type="button"
+              onClick={() => setRawText(SAMPLE_SIGNAL_TEMPLATE)}
+              className="text-xs text-primary/90 hover:text-primary underline font-medium cursor-pointer transition-colors"
+            >
+              Insert Sample Signal
+            </button>
+          </div>
           <Textarea
             value={rawText}
             onChange={(e) => setRawText(e.target.value)}
-            placeholder={`Paste raw signal message...\nExample: ${SAMPLE_SIGNAL_TEMPLATE}`}
-            className="min-h-[100px] font-mono text-sm bg-black/40 border-white/10 focus:border-primary/50"
+            placeholder="Paste raw signal message..."
+            className="min-h-[90px] font-mono text-sm bg-black/40 border-white/10 focus:border-primary/50"
           />
         </div>
 
         {/* LEFT-ALIGNED [ Parse Signal ] Button */}
-        <div className="flex items-center justify-between">
+        <div className="flex justify-start">
           <Button
             type="button"
             onClick={handleParse}
-            className="thc-glow thc-btn-gradient gap-2 px-6 py-2 font-semibold justify-start"
+            className="thc-glow thc-btn-gradient gap-2 px-6 h-9 font-semibold justify-start"
           >
             <Sparkles className="h-4 w-4" />
             Parse Signal
           </Button>
-
-          {rawText === "" && (
-            <button
-              type="button"
-              onClick={() => setRawText(SAMPLE_SIGNAL_TEMPLATE)}
-              className="text-xs text-primary/80 hover:text-primary underline font-medium cursor-pointer"
-            >
-              Insert Sample Signal
-            </button>
-          )}
         </div>
 
         {/* PARSED RESULT / CONFIDENCE BOX */}
