@@ -80,3 +80,12 @@ render with real numbers.
   Razorpay/Stripe later.
 - Instagram thumbnail grid data lives in `src/lib/constants.ts`
   (`INSTAGRAM_THUMBNAILS`) — swap the placeholder entries for real reels any time.
+
+
+## Production Deployments
+
+| Brand Platform | Production URL |
+| :--- | :--- |
+| **Goodwill** | [https://goodwill-pi.vercel.app](https://goodwill-pi.vercel.app) |
+| **Traders Hub Center (THC)** | [https://traders-hub-center.vercel.app](https://traders-hub-center.vercel.app) |
+| **StockOps** | [https://stockops-technojegan1.vercel.app](https://stockops-technojegan1.vercel.app) |
