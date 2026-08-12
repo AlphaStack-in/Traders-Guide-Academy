@@ -6,9 +6,9 @@ function getAppVersion(): string {
   try {
     const pkgPath = path.join(process.cwd(), "package.json");
     const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8"));
-    return pkg.version || "1.0.6";
+    return pkg.version || "1.0.7";
   } catch (e) {
-    return "1.0.6";
+    return "1.0.7";
   }
 }
 
@@ -22,7 +22,7 @@ function getGitSha(): string {
   try {
     return execSync("git rev-parse --short HEAD").toString().trim();
   } catch (e) {
-    return "95dbbaf";
+    return "8967943";
   }
 }
 
@@ -33,7 +33,7 @@ function getFullGitSha(): string {
   try {
     return execSync("git rev-parse HEAD").toString().trim();
   } catch (e) {
-    return "95dbbaf";
+    return "8967943";
   }
 }
 
@@ -60,8 +60,18 @@ export interface RawChangelogItem {
 
 const STATIC_CHANGELOG: RawChangelogItem[] = [
   {
-    version: "1.0.6",
+    version: "1.0.7",
     sha: "pending",
+    timestamp: "12 Aug 2026, 08:15 IST",
+    title: "Parse Signal Textarea Placeholder Example Only Refinement",
+    highlights: [
+      "Removed 'Paste raw signal message...' from Parse text input placeholder",
+      "Showing strictly 'Example: NIFTY 24450 PE BUY ABOVE 15 SL 1 TARGETS 155,170' as placeholder prompt",
+    ],
+  },
+  {
+    version: "1.0.6",
+    sha: "8967943",
     timestamp: "12 Aug 2026, 08:10 IST",
     title: "Parse Signal Left Link Repositioning & Send Signal Icon Alignment",
     highlights: [

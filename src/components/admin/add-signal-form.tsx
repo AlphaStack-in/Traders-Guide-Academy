@@ -98,7 +98,7 @@ export function AddSignalForm() {
           <Textarea
             value={rawText}
             onChange={(e) => setRawText(e.target.value)}
-            placeholder={`Paste raw signal message...\nExample: ${SAMPLE_SIGNAL_TEMPLATE}`}
+            placeholder={`Example: ${SAMPLE_SIGNAL_TEMPLATE}`}
             className="min-h-[95px] font-mono text-sm bg-black/40 border-white/10 focus:border-primary/50"
           />
         </div>

@@ -1,14 +1,24 @@
 {
   "application": "SignalFlow",
-  "version": "1.0.6",
-  "gitSha": "95dbbaf",
-  "fullSha": "95dbbaf32c612f7357d4f1f5260fe2bcacdde805",
-  "buildTime": "2026-08-12T02:36:10.561Z",
-  "formattedBuildTime": "12 Aug 2026, 08:06 IST",
+  "version": "1.0.7",
+  "gitSha": "8967943",
+  "fullSha": "89679437ceea4051e530fe14e398af6e3aa86f83",
+  "buildTime": "2026-08-12T02:41:43.248Z",
+  "formattedBuildTime": "12 Aug 2026, 08:11 IST",
   "changelog": [
     {
+      "version": "1.0.7",
+      "sha": "8967943",
+      "timestamp": "12 Aug 2026, 08:15 IST",
+      "title": "Parse Signal Textarea Placeholder Example Only Refinement",
+      "highlights": [
+        "Removed 'Paste raw signal message...' from Parse text input placeholder",
+        "Showing strictly 'Example: NIFTY 24450 PE BUY ABOVE 15 SL 1 TARGETS 155,170' as placeholder prompt"
+      ]
+    },
+    {
       "version": "1.0.6",
-      "sha": "95dbbaf",
+      "sha": "8967943",
       "timestamp": "12 Aug 2026, 08:10 IST",
       "title": "Parse Signal Left Link Repositioning & Send Signal Icon Alignment",
       "highlights": [
