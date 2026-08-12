@@ -6,9 +6,9 @@ function getAppVersion(): string {
   try {
     const pkgPath = path.join(process.cwd(), "package.json");
     const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8"));
-    return pkg.version || "1.0.2";
+    return pkg.version || "1.0.3";
   } catch (e) {
-    return "1.0.2";
+    return "1.0.3";
   }
 }
 
@@ -22,7 +22,7 @@ function getGitSha(): string {
   try {
     return execSync("git rev-parse --short HEAD").toString().trim();
   } catch (e) {
-    return "995a026";
+    return "3d6b8b9";
   }
 }
 
@@ -33,7 +33,7 @@ function getFullGitSha(): string {
   try {
     return execSync("git rev-parse HEAD").toString().trim();
   } catch (e) {
-    return "995a026";
+    return "3d6b8b9";
   }
 }
 
@@ -60,8 +60,21 @@ export interface RawChangelogItem {
 
 const STATIC_CHANGELOG: RawChangelogItem[] = [
   {
-    version: "1.0.2",
+    version: "1.0.3",
     sha: "pending",
+    timestamp: "12 Aug 2026, 07:35 IST",
+    title: "Dynamic Instrument Expiry Engine & Compact Keyboard-First Admin UI",
+    highlights: [
+      "Added dynamic getNextExpiry service for Nifty, Sensex, Bank Nifty, Midcap Nifty, and Stock derivatives",
+      "Automatic instrument-driven expiry calculation and pre-selection on form load and switching",
+      "Added Stock category support with derivative stock selector",
+      "Integrated automatic expiry recalculation with 'Use Parsed Data' flow",
+      "Redesigned Manual Signal Entry to a ultra-fast, compact keyboard-first admin panel",
+    ],
+  },
+  {
+    version: "1.0.2",
+    sha: "3d6b8b9",
     timestamp: "12 Aug 2026, 07:15 IST",
     title: "Instrument Detection Fix & Compact Left-Aligned Signal Entry UI",
     highlights: [

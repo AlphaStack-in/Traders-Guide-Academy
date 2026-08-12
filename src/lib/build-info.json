@@ -1,14 +1,27 @@
 {
   "application": "SignalFlow",
-  "version": "1.0.2",
-  "gitSha": "995a026",
-  "fullSha": "995a0263a2be8e02add2847effef18583c9b000d",
-  "buildTime": "2026-08-12T01:43:03.271Z",
-  "formattedBuildTime": "12 Aug 2026, 07:13 IST",
+  "version": "1.0.3",
+  "gitSha": "3d6b8b9",
+  "fullSha": "3d6b8b9859537c181a3ce816b2949808986f860b",
+  "buildTime": "2026-08-12T02:04:11.307Z",
+  "formattedBuildTime": "12 Aug 2026, 07:34 IST",
   "changelog": [
     {
+      "version": "1.0.3",
+      "sha": "3d6b8b9",
+      "timestamp": "12 Aug 2026, 07:35 IST",
+      "title": "Dynamic Instrument Expiry Engine & Compact Keyboard-First Admin UI",
+      "highlights": [
+        "Added dynamic getNextExpiry service for Nifty, Sensex, Bank Nifty, Midcap Nifty, and Stock derivatives",
+        "Automatic instrument-driven expiry calculation and pre-selection on form load and switching",
+        "Added Stock category support with derivative stock selector",
+        "Integrated automatic expiry recalculation with 'Use Parsed Data' flow",
+        "Redesigned Manual Signal Entry to a ultra-fast, compact keyboard-first admin panel"
+      ]
+    },
+    {
       "version": "1.0.2",
-      "sha": "995a026",
+      "sha": "3d6b8b9",
       "timestamp": "12 Aug 2026, 07:15 IST",
       "title": "Instrument Detection Fix & Compact Left-Aligned Signal Entry UI",
       "highlights": [
