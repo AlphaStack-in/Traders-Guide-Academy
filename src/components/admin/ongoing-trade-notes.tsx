@@ -43,11 +43,11 @@ function instrumentPrefix(trade: OngoingTrade) {
 }
 
 function NoteEditor({ trade }: { trade: OngoingTrade }) {
-  const [note, setNote] = useState(trade.adminNote ?? "");
+  const [note, setNote] = useState("");
   const [isPending, startTransition] = useTransition();
 
   function appendPhrase(phrase: string) {
-    setNote((prev) => (prev.trim() ? `${prev.trim()}\n${phrase}` : phrase));
+    setNote((prev) => (prev.trim() ? `${prev.trim()} ${phrase}` : phrase));
   }
 
   function handleSend() {
@@ -73,16 +73,17 @@ function NoteEditor({ trade }: { trade: OngoingTrade }) {
 
   return (
     <div className="thc-glass rounded-xl border border-white/5 p-4">
-      <div className="mb-2 flex items-center justify-between gap-2">
+      <div className="mb-2 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm font-medium">
           Update on{" "}
           <span className="font-heading font-bold thc-gold-text">
             {instrumentPrefix(trade)}{trade.strike} {trade.optionType}
           </span>
         </p>
-        {trade.adminNoteAt && (
+        {trade.adminNote && (
           <p className="shrink-0 text-xs text-muted-foreground">
-            {formatUpdateTime(trade.adminNoteAt)}
+            Latest: <span className="text-foreground/90 font-medium">{trade.adminNote}</span>
+            {trade.adminNoteAt && ` · ${formatUpdateTime(trade.adminNoteAt)}`}
           </p>
         )}
       </div>

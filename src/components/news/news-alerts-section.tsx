@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import { AlertTriangle, Globe, Newspaper, Zap, ExternalLink, ChevronDown, ChevronUp, ShieldAlert, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+import { clientConfig } from "@/lib/client-config";
+
 export interface NewsAlertItem {
   id: string;
   title: string;
@@ -97,11 +99,11 @@ export function NewsAlertsSection() {
             <Newspaper className="h-5 w-5" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-foreground tracking-wide flex items-center gap-2">
-              SignalFlow News & Market Alerts
+            <h3 className="text-base font-bold font-heading text-foreground tracking-wide flex items-center gap-2">
+              SignalFlow <span className="thc-gold-text">News & Market Alerts</span>
             </h3>
             <p className="text-[11px] text-muted-foreground">
-              Real-time global macro, regulatory & volatility intelligence
+              Real-time global macro, regulatory & volatility intelligence for {clientConfig.siteName}
             </p>
           </div>
         </div>
