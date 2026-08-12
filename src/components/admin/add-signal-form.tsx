@@ -23,7 +23,7 @@ export function AddSignalForm() {
       return;
     }
 
-    // Automatic Parser Resolution (Customer Resolver internal engine)
+    // Automatic Customer / Parser Resolution
     const results = parseSignalMessage(rawText);
     if (results.length === 0) {
       toast.error("Couldn't parse any signal from that text.");
@@ -37,13 +37,14 @@ export function AddSignalForm() {
 
   function handleUseParsedData(parsed: ParsedSignalDraft) {
     // Map parsed result into ManualFormValues
-    const mappedInstrument = (parsed.mappedInstrument || parsed.instrument || "NIFTY").toUpperCase() as InstrumentLiteral;
-    const isKnownInstrument = INSTRUMENTS.includes(mappedInstrument);
+    const rawInst = (parsed.mappedInstrument || parsed.instrument || "NIFTY").toUpperCase();
+    const mappedInst = rawInst === "BANKNIFTY" ? "BANK_NIFTY" : rawInst === "MIDCPNIFTY" || rawInst === "MIDCAPNIFTY" ? "MIDCAP_NIFTY" : rawInst as InstrumentLiteral;
+    const isKnownInstrument = INSTRUMENTS.includes(mappedInst);
 
     const prefilled: Partial<ManualFormValues> = {
       strike: parsed.strike != null ? String(parsed.strike) : "",
       optionType: parsed.optionType ?? "CE",
-      instrument: isKnownInstrument ? mappedInstrument : "NIFTY",
+      instrument: isKnownInstrument ? mappedInst : "NIFTY",
       entryPrice: parsed.entryPrice != null ? String(parsed.entryPrice) : "",
       stopLoss: parsed.stopLoss != null ? String(parsed.stopLoss) : "",
       targets: parsed.targets && parsed.targets.length > 0
@@ -71,17 +72,15 @@ export function AddSignalForm() {
     <div className="flex flex-col gap-8">
       {/* 1. PARSE SIGNAL SECTION */}
       <div className="rounded-2xl border border-white/10 bg-[#0d0e14]/80 p-5 sm:p-6 backdrop-blur-md shadow-xl flex flex-col gap-5">
-        <div className="flex items-center justify-between border-b border-white/10 pb-4">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-primary/10 text-primary border border-primary/20">
-              <Zap className="h-5 w-5" />
-            </div>
-            <div>
-              <h2 className="font-heading text-lg font-bold text-foreground tracking-tight">PARSE SIGNAL</h2>
-              <p className="text-xs text-muted-foreground">
-                Paste raw signal text to auto-extract trade values &amp; confidence rating.
-              </p>
-            </div>
+        <div className="flex items-center gap-2.5 border-b border-white/10 pb-4">
+          <div className="p-2 rounded-xl bg-primary/10 text-primary border border-primary/20">
+            <Zap className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="font-heading text-lg font-bold text-foreground tracking-tight">PARSE SIGNAL</h2>
+            <p className="text-xs text-muted-foreground">
+              Paste raw signal text to auto-extract trade values &amp; confidence rating.
+            </p>
           </div>
         </div>
 
@@ -91,15 +90,16 @@ export function AddSignalForm() {
             value={rawText}
             onChange={(e) => setRawText(e.target.value)}
             placeholder={`Paste raw signal message...\nExample: ${SAMPLE_SIGNAL_TEMPLATE}`}
-            className="min-h-[110px] font-mono text-sm bg-black/40 border-white/10 focus:border-primary/50"
+            className="min-h-[100px] font-mono text-sm bg-black/40 border-white/10 focus:border-primary/50"
           />
         </div>
 
+        {/* LEFT-ALIGNED [ Parse Signal ] Button */}
         <div className="flex items-center justify-between">
           <Button
             type="button"
             onClick={handleParse}
-            className="thc-glow thc-btn-gradient gap-2 px-6 font-semibold"
+            className="thc-glow thc-btn-gradient gap-2 px-6 py-2 font-semibold justify-start"
           >
             <Sparkles className="h-4 w-4" />
             Parse Signal
@@ -178,7 +178,7 @@ export function AddSignalForm() {
                   </div>
                 </div>
 
-                {/* Warnings if any */}
+                {/* Genuine Warnings if any */}
                 {parsed.warnings && parsed.warnings.length > 0 && (
                   <div className="flex items-start gap-1.5 text-xs text-amber-400/90 bg-amber-500/10 p-2 rounded-lg border border-amber-500/20">
                     <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
@@ -186,13 +186,13 @@ export function AddSignalForm() {
                   </div>
                 )}
 
-                {/* Use Parsed Data Button */}
-                <div className="pt-2 flex justify-end">
+                {/* LEFT-ALIGNED [ Use Parsed Data ↓ ] Button */}
+                <div className="pt-2 flex justify-start">
                   <Button
                     type="button"
                     onClick={() => handleUseParsedData(parsed)}
                     variant="outline"
-                    className="gap-2 border-primary/40 text-primary hover:bg-primary/10 text-xs font-semibold"
+                    className="gap-2 border-primary/40 text-primary hover:bg-primary/10 text-xs font-semibold justify-start"
                   >
                     Use Parsed Data ↓
                     <ArrowDown className="h-3.5 w-3.5" />

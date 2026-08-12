@@ -1,14 +1,38 @@
 {
   "application": "SignalFlow",
-  "version": "1.0.1",
-  "gitSha": "7854ee3",
-  "fullSha": "7854ee3b1a1e9c8dffbbd956c1afba03d360684e",
-  "buildTime": "2026-08-11T17:35:30.069Z",
-  "formattedBuildTime": "11 Aug 2026, 23:05 IST",
+  "version": "1.0.2",
+  "gitSha": "995a026",
+  "fullSha": "995a0263a2be8e02add2847effef18583c9b000d",
+  "buildTime": "2026-08-12T01:43:03.271Z",
+  "formattedBuildTime": "12 Aug 2026, 07:13 IST",
   "changelog": [
     {
+      "version": "1.0.2",
+      "sha": "995a026",
+      "timestamp": "12 Aug 2026, 07:15 IST",
+      "title": "Instrument Detection Fix & Compact Left-Aligned Signal Entry UI",
+      "highlights": [
+        "Fixed NIFTY/SENSEX explicit instrument detection & eliminated false instrument warnings",
+        "Implemented Priority 1 explicit name, Priority 2 strike-range, Priority 3 unresolved detection engine",
+        "Left-aligned Parse Signal, Use Parsed Data, and Save Signal buttons",
+        "Simplified screenshot upload label to SCREENSHOT",
+        "Redesigned Manual Signal Entry to compact 3-column desktop grid"
+      ]
+    },
+    {
       "version": "1.0.1",
-      "sha": "7854ee3",
+      "sha": "995a026",
+      "timestamp": "11 Aug 2026, 23:05 IST",
+      "title": "Enforce 100% Automatic Customer Parser Resolution",
+      "highlights": [
+        "Removed Customer Parser dropdown UI completely",
+        "Enforced 100% automatic internal customer/parser resolution",
+        "Aligned Parse Signal and Manual Signal Entry form cards with wireframe layout"
+      ]
+    },
+    {
+      "version": "1.0.1",
+      "sha": "22e78cb",
       "timestamp": "11 Aug 2026, 22:50 IST",
       "title": "Semantic Patch Versioning & Footer Build Alignment",
       "highlights": [

@@ -61,7 +61,6 @@ export function ManualSignalForm({ prefilledValues, onSaved }: ManualSignalFormP
       setForm((prev) => ({
         ...prev,
         ...prefilledValues,
-        // Default expiry if empty
         expiry: prefilledValues.expiry || prev.expiry || nextWeeklyExpiry(),
       }));
     }
@@ -77,7 +76,6 @@ export function ManualSignalForm({ prefilledValues, onSaved }: ManualSignalFormP
     const strike = parseInt(form.strike, 10);
     const entryPrice = parseFloat(form.entryPrice);
     const stopLoss = parseFloat(form.stopLoss);
-    // Fall back priceAtSignal to entryPrice if not specified
     const priceAtSignalVal = form.priceAtSignal.trim() !== "" ? parseFloat(form.priceAtSignal) : entryPrice;
     const targets = form.targets
       .split(",")
@@ -126,24 +124,24 @@ export function ManualSignalForm({ prefilledValues, onSaved }: ManualSignalFormP
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-      {/* Row 1: Strike | Type | Instrument */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="flex flex-col gap-1.5">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      {/* Row 1: Strike | Type | Instrument (Compact 3 Columns) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+        <div className="flex flex-col gap-1">
           <Label className="text-xs font-semibold text-muted-foreground">Strike</Label>
           <Input
             value={form.strike}
             onChange={(e) => set("strike", e.target.value)}
             placeholder="24450"
-            className="bg-black/40 border-white/10"
+            className="h-9 bg-black/40 border-white/10 text-xs sm:text-sm"
             required
           />
         </div>
 
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-1">
           <Label className="text-xs font-semibold text-muted-foreground">Type</Label>
           <Select value={form.optionType} onValueChange={(v) => set("optionType", v as "CE" | "PE")}>
-            <SelectTrigger className="bg-black/40 border-white/10">
+            <SelectTrigger className="h-9 bg-black/40 border-white/10 text-xs sm:text-sm">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -153,13 +151,13 @@ export function ManualSignalForm({ prefilledValues, onSaved }: ManualSignalFormP
           </Select>
         </div>
 
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-1">
           <Label className="text-xs font-semibold text-muted-foreground">Instrument</Label>
           <Select
             value={form.instrument}
             onValueChange={(v) => set("instrument", v as InstrumentLiteral)}
           >
-            <SelectTrigger className="bg-black/40 border-white/10">
+            <SelectTrigger className="h-9 bg-black/40 border-white/10 text-xs sm:text-sm">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -173,85 +171,85 @@ export function ManualSignalForm({ prefilledValues, onSaved }: ManualSignalFormP
         </div>
       </div>
 
-      {/* Row 2: Entry | Stop Loss | Target(s) */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="flex flex-col gap-1.5">
+      {/* Row 2: Entry Price | Stop Loss | Target(s) (Compact 3 Columns) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+        <div className="flex flex-col gap-1">
           <Label className="text-xs font-semibold text-muted-foreground">Entry Price</Label>
           <Input
             value={form.entryPrice}
             onChange={(e) => set("entryPrice", e.target.value)}
             placeholder="15"
-            className="bg-black/40 border-white/10"
+            className="h-9 bg-black/40 border-white/10 text-xs sm:text-sm"
             required
           />
         </div>
 
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-1">
           <Label className="text-xs font-semibold text-muted-foreground">Stop Loss</Label>
           <Input
             value={form.stopLoss}
             onChange={(e) => set("stopLoss", e.target.value)}
             placeholder="1"
-            className="bg-black/40 border-white/10"
+            className="h-9 bg-black/40 border-white/10 text-xs sm:text-sm"
             required
           />
         </div>
 
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-1">
           <Label className="text-xs font-semibold text-muted-foreground">Target(s)</Label>
           <Input
             value={form.targets}
             onChange={(e) => set("targets", e.target.value)}
             placeholder="155,170"
-            className="bg-black/40 border-white/10"
+            className="h-9 bg-black/40 border-white/10 text-xs sm:text-sm"
             required
           />
         </div>
       </div>
 
-      {/* Row 3: Current Price | Sell Price */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="flex flex-col gap-1.5">
+      {/* Row 3: Current Price | Sell Price (Compact 2 Columns) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+        <div className="flex flex-col gap-1">
           <Label className="text-xs font-semibold text-muted-foreground">Current Price (CMP)</Label>
           <Input
             value={form.priceAtSignal}
             onChange={(e) => set("priceAtSignal", e.target.value)}
             placeholder="15 (or leave same as entry)"
-            className="bg-black/40 border-white/10"
+            className="h-9 bg-black/40 border-white/10 text-xs sm:text-sm"
           />
         </div>
 
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-1">
           <Label className="text-xs font-semibold text-muted-foreground">Sell Price (Optional)</Label>
           <Input
             value={form.sellPrice}
             onChange={(e) => set("sellPrice", e.target.value)}
             placeholder="Leave empty for ongoing trade"
-            className="bg-black/40 border-white/10"
+            className="h-9 bg-black/40 border-white/10 text-xs sm:text-sm"
           />
         </div>
       </div>
 
-      {/* Row 4: Expiry | Risk */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="flex flex-col gap-1.5">
+      {/* Row 4: Expiry Date | Risk Rating (Compact 2 Columns) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+        <div className="flex flex-col gap-1">
           <Label className="text-xs font-semibold text-muted-foreground">Expiry Date</Label>
           <Input
             type="date"
             value={form.expiry}
             onChange={(e) => set("expiry", e.target.value)}
-            className="bg-black/40 border-white/10"
+            className="h-9 bg-black/40 border-white/10 text-xs sm:text-sm"
             required
           />
         </div>
 
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-1">
           <Label className="text-xs font-semibold text-muted-foreground">Risk Rating</Label>
           <Select
             value={form.risk}
             onValueChange={(v) => set("risk", v as "Low" | "Medium" | "High")}
           >
-            <SelectTrigger className="bg-black/40 border-white/10">
+            <SelectTrigger className="h-9 bg-black/40 border-white/10 text-xs sm:text-sm">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -263,20 +261,22 @@ export function ManualSignalForm({ prefilledValues, onSaved }: ManualSignalFormP
         </div>
       </div>
 
-      {/* TradingView Chart Screenshot */}
-      <div className="flex flex-col gap-2 pt-1">
-        <Label className="text-xs font-semibold text-muted-foreground">
-          TradingView Chart Screenshot
-        </Label>
+      {/* Screenshot Section (Simplified Label) */}
+      <div className="flex flex-col gap-1 pt-1">
         <ChartImageUploader
+          label="SCREENSHOT"
           value={form.chartImageUrl}
           onChange={(url) => set("chartImageUrl", url)}
         />
       </div>
 
-      {/* Save Signal Button */}
-      <div className="pt-2 flex justify-end">
-        <Button type="submit" disabled={isPending} className="thc-glow thc-btn-gradient px-8 py-2 font-semibold">
+      {/* LEFT-ALIGNED [ Save Signal ] Button */}
+      <div className="pt-2 flex justify-start">
+        <Button
+          type="submit"
+          disabled={isPending}
+          className="thc-glow thc-btn-gradient px-8 py-2 font-semibold justify-start"
+        >
           {isPending ? "Saving Signal…" : "Save Signal"}
         </Button>
       </div>

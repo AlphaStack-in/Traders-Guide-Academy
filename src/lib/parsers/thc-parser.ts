@@ -1,11 +1,11 @@
-import type { InstrumentLiteral } from "@/lib/instruments";
+import { resolveInstrument, type InstrumentLiteral } from "@/lib/instruments";
 import type { CanonicalSignalDraft, OptionTypeLiteral } from "./types";
 
-const BLOCK_START = /\d{4,6}\s*(?:ce|pe)/gi;
+const BLOCK_START = /(?:(?:NIFTY|SENSEX|BANKNIFTY|FINNIFTY|MIDCPNIFTY|MIDCAPNIFTY)\s*)?\d{4,6}\s*(?:ce|pe)/gi;
 const STRIKE_TYPE = /(\d{4,6})\s*(CE|PE)/i;
 const ENTRY = /Above\s*-?\s*(\d+(?:\.\d+)?)/i;
 const STOP_LOSS = /SL\s*-?\s*(\d+(?:\.\d+)?)/i;
-const TARGETS = /(?:Trgt|Target)\.?\s*-?\s*([\d.,\s]+)/i;
+const TARGETS = /(?:Trgts?|Targets?|Trgt)\.?\s*-?\s*([\d.,\s]+)/i;
 const PRICE_AT_SIGNAL = /Now\s*-?\s*(\d+(?:\.\d+)?)/i;
 const SELL_PRICE = /sell(?:ing)?\s*price\s*-?\s*(\d+(?:\.\d+)?)/i;
 
@@ -15,27 +15,17 @@ function num(match: RegExpMatchArray | null): number | null {
   return Number.isFinite(value) ? value : null;
 }
 
-function detectInstrument(block: string): { instrument: InstrumentLiteral; detected: boolean } {
-  const normalized = block.toUpperCase().replace(/\s+/g, "");
-  if (normalized.includes("BANKNIFTY")) return { instrument: "BANK_NIFTY", detected: true };
-  if (normalized.includes("MIDCPNIFTY") || normalized.includes("MIDCAPNIFTY")) {
-    return { instrument: "MIDCAP_NIFTY", detected: true };
-  }
-  if (normalized.includes("SENSEX")) return { instrument: "SENSEX", detected: true };
-  if (normalized.includes("NIFTY")) return { instrument: "NIFTY", detected: true };
-  return { instrument: "NIFTY", detected: false };
-}
-
 export function splitThcSignalBlocks(rawText: string): string[] {
   const text = rawText.trim();
   if (!text) return [];
 
+  const matches = Array.from(text.matchAll(BLOCK_START));
+  if (matches.length === 0) return [text];
+
   const starts: number[] = [];
-  for (const match of text.matchAll(BLOCK_START)) {
+  for (const match of matches) {
     if (match.index !== undefined) starts.push(match.index);
   }
-
-  if (starts.length === 0) return [text];
 
   const blocks: string[] = [];
   for (let i = 0; i < starts.length; i++) {
@@ -47,7 +37,7 @@ export function splitThcSignalBlocks(rawText: string): string[] {
   return blocks;
 }
 
-export function parseThcSignalBlock(block: string): CanonicalSignalDraft {
+export function parseThcSignalBlock(block: string, rawTextContext?: string): CanonicalSignalDraft {
   const warnings: string[] = [];
 
   const strikeTypeMatch = block.match(STRIKE_TYPE);
@@ -57,8 +47,29 @@ export function parseThcSignalBlock(block: string): CanonicalSignalDraft {
     : null;
   if (!strike || !optionType) warnings.push("Could not detect strike + CE/PE");
 
-  const { instrument, detected: instrumentDetected } = detectInstrument(block);
-  if (!instrumentDetected) warnings.push("Could not detect instrument, defaulted to Nifty");
+  // Instrument resolution: Priority 1 (Explicit), Priority 2 (Strike Range), Priority 3 (Unresolved)
+  const resolvedInBlock = resolveInstrument(block, strike);
+  const resolvedInContext = rawTextContext ? resolveInstrument(rawTextContext, strike) : null;
+
+  let instrument: InstrumentLiteral = "NIFTY";
+  let isExplicit = false;
+
+  if (resolvedInBlock.detectedBy === "EXPLICIT_NAME" && resolvedInBlock.instrument) {
+    instrument = resolvedInBlock.instrument;
+    isExplicit = true;
+  } else if (resolvedInContext && resolvedInContext.detectedBy === "EXPLICIT_NAME" && resolvedInContext.instrument) {
+    instrument = resolvedInContext.instrument;
+    isExplicit = true;
+  } else if (resolvedInBlock.detectedBy === "STRIKE_RANGE" && resolvedInBlock.instrument) {
+    instrument = resolvedInBlock.instrument;
+    if (resolvedInBlock.warning) warnings.push(resolvedInBlock.warning);
+  } else if (resolvedInContext && resolvedInContext.detectedBy === "STRIKE_RANGE" && resolvedInContext.instrument) {
+    instrument = resolvedInContext.instrument;
+    if (resolvedInContext.warning) warnings.push(resolvedInContext.warning);
+  } else {
+    // Unresolved
+    warnings.push("Instrument could not be determined");
+  }
 
   const entryPrice = num(block.match(ENTRY));
   if (entryPrice == null) warnings.push("Missing entry price (Above)");
@@ -76,7 +87,6 @@ export function parseThcSignalBlock(block: string): CanonicalSignalDraft {
   if (targets.length === 0) warnings.push("Missing target(s) (Target)");
 
   const priceAtSignal = num(block.match(PRICE_AT_SIGNAL));
-  if (priceAtSignal == null) warnings.push("Missing price at signal (Now)");
 
   const sellPrice = num(block.match(SELL_PRICE));
 
@@ -94,7 +104,7 @@ export function parseThcSignalBlock(block: string): CanonicalSignalDraft {
     entryHigh: entryPrice,
     entryPrice,
     averagePrice: null,
-    cmp: priceAtSignal,
+    cmp: priceAtSignal ?? entryPrice,
     target1: targets[0] ?? null,
     target2: targets[1] ?? null,
     targets,
@@ -108,11 +118,11 @@ export function parseThcSignalBlock(block: string): CanonicalSignalDraft {
     confidence,
     warnings,
     isUpdate: false,
-    priceAtSignal,
+    priceAtSignal: priceAtSignal ?? entryPrice,
     sellPrice,
   };
 }
 
 export function parseThcMessage(rawText: string): CanonicalSignalDraft[] {
-  return splitThcSignalBlocks(rawText).map(parseThcSignalBlock);
+  return splitThcSignalBlocks(rawText).map((block) => parseThcSignalBlock(block, rawText));
 }

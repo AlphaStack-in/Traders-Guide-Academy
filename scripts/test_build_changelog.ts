@@ -8,7 +8,7 @@ function runBuildChangelogTests() {
   // 1. Verify package.json version
   const pkgPath = path.join(process.cwd(), "package.json");
   const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8"));
-  console.assert(pkg.version === "1.0.1", `FAIL: Expected package.json version 1.0.1, got ${pkg.version}`);
+  console.assert(pkg.version === "1.0.2", `FAIL: Expected package.json version 1.0.2, got ${pkg.version}`);
   console.log(`✓ package.json version verified: v${pkg.version}`);
 
   // 2. Verify build-info.json existence
@@ -19,7 +19,7 @@ function runBuildChangelogTests() {
   // 3. Verify getBuildInfo() and lack of build counter
   const info = getBuildInfo();
   console.assert(Boolean(info.application === "SignalFlow"), "FAIL: Application name missing or invalid");
-  console.assert(info.version === "1.0.1", `FAIL: Expected version 1.0.1, got ${info.version}`);
+  console.assert(info.version === "1.0.2", `FAIL: Expected version 1.0.2, got ${info.version}`);
   console.assert(Boolean(info.gitSha), "FAIL: Git SHA missing");
   console.assert(Boolean(info.formattedBuildTime), "FAIL: Build time missing");
   console.assert(Array.isArray(info.changelog) && info.changelog.length > 0, "FAIL: Changelog entries missing");

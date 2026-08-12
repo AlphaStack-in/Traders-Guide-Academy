@@ -6,9 +6,9 @@ function getAppVersion(): string {
   try {
     const pkgPath = path.join(process.cwd(), "package.json");
     const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8"));
-    return pkg.version || "1.0.1";
+    return pkg.version || "1.0.2";
   } catch (e) {
-    return "1.0.1";
+    return "1.0.2";
   }
 }
 
@@ -22,7 +22,7 @@ function getGitSha(): string {
   try {
     return execSync("git rev-parse --short HEAD").toString().trim();
   } catch (e) {
-    return "f7152c1";
+    return "995a026";
   }
 }
 
@@ -33,7 +33,7 @@ function getFullGitSha(): string {
   try {
     return execSync("git rev-parse HEAD").toString().trim();
   } catch (e) {
-    return "f7152c1";
+    return "995a026";
   }
 }
 
@@ -60,8 +60,32 @@ export interface RawChangelogItem {
 
 const STATIC_CHANGELOG: RawChangelogItem[] = [
   {
+    version: "1.0.2",
+    sha: "pending",
+    timestamp: "12 Aug 2026, 07:15 IST",
+    title: "Instrument Detection Fix & Compact Left-Aligned Signal Entry UI",
+    highlights: [
+      "Fixed NIFTY/SENSEX explicit instrument detection & eliminated false instrument warnings",
+      "Implemented Priority 1 explicit name, Priority 2 strike-range, Priority 3 unresolved detection engine",
+      "Left-aligned Parse Signal, Use Parsed Data, and Save Signal buttons",
+      "Simplified screenshot upload label to SCREENSHOT",
+      "Redesigned Manual Signal Entry to compact 3-column desktop grid",
+    ],
+  },
+  {
     version: "1.0.1",
-    sha: "pending", // Will be matched with current git SHA dynamically
+    sha: "995a026",
+    timestamp: "11 Aug 2026, 23:05 IST",
+    title: "Enforce 100% Automatic Customer Parser Resolution",
+    highlights: [
+      "Removed Customer Parser dropdown UI completely",
+      "Enforced 100% automatic internal customer/parser resolution",
+      "Aligned Parse Signal and Manual Signal Entry form cards with wireframe layout",
+    ],
+  },
+  {
+    version: "1.0.1",
+    sha: "22e78cb",
     timestamp: "11 Aug 2026, 22:50 IST",
     title: "Semantic Patch Versioning & Footer Build Alignment",
     highlights: [
