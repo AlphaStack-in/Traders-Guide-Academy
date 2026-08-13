@@ -1,7 +1,24 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { getAdminUser } from "@/lib/admin-auth";
 
 export const dynamic = "force-dynamic";
+
+const newsAlertSchema = z
+  .object({
+    title: z.string().trim().min(1).max(200),
+    category: z.string().trim().min(1).max(80).optional(),
+    severity: z.string().trim().min(1).max(40).optional(),
+    summary: z.string().trim().min(1).max(1_000),
+    content: z.string().trim().min(1).max(10_000),
+    impact: z.string().trim().max(500).nullable().optional(),
+    affectedInstruments: z.array(z.string().trim().min(1).max(80)).max(20).optional(),
+    source: z.string().trim().max(200).nullable().optional(),
+    sourceUrl: z.string().trim().url().max(2_000).nullable().optional(),
+    isBreaking: z.boolean().optional(),
+  })
+  .strict();
 
 export async function GET() {
   try {
@@ -60,16 +77,32 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  try {
-    const body = await request.json();
-    const { title, category, severity, summary, content, impact, affectedInstruments, source, sourceUrl, isBreaking } = body;
+  const auth = await getAdminUser();
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
+  }
 
-    if (!title || !summary || !content) {
+  try {
+    const parsed = newsAlertSchema.safeParse(await request.json());
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Title, summary, and content are required" },
+        { error: "Invalid news alert payload" },
         { status: 400 }
       );
     }
+
+    const {
+      title,
+      category,
+      severity,
+      summary,
+      content,
+      impact,
+      affectedInstruments,
+      source,
+      sourceUrl,
+      isBreaking,
+    } = parsed.data;
 
     const created = await prisma.newsAlert.create({
       data: {

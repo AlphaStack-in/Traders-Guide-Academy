@@ -2,24 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/admin-auth";
 import { calcPnlPercent, deriveStatus, inferHitTargetLabel } from "@/lib/signal-metrics";
 import {
   formatNewSignalMessage,
   formatSignalUpdateMessage,
   sendTelegramMessage,
 } from "@/lib/telegram";
-import { clientConfig } from "@/lib/client-config";
 import type { InstrumentLiteral } from "@/lib/instruments";
-
-async function requireAdmin() {
-  if (!clientConfig.requireAdminAuth) return;
-  const supabase = await createSupabaseServerClient();
-  const { data } = await supabase.auth.getUser();
-  if (!data.user) {
-    throw new Error("Not authenticated");
-  }
-}
 
 export interface SignalInput {
   strike: number;

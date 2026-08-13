@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ShieldCheck } from "lucide-react";
-import { clientConfig } from "@/lib/client-config";
 import { cn } from "@/lib/utils";
 
 export function AdminNavLink() {
   const pathname = usePathname();
   const isAdminActive = pathname.startsWith("/admin");
-  const adminHref = clientConfig.requireAdminAuth ? "/admin/login" : "/admin/dashboard";
+  // Always link to /admin/login — the middleware will redirect authenticated
+  // admins to /admin/dashboard automatically, so this is just the entry point.
+  const adminHref = "/admin/login";
 
   return (
     <Link

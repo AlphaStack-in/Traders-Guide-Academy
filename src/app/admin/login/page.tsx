@@ -1,14 +1,8 @@
 import { Suspense } from "react";
-import { redirect } from "next/navigation";
 import { Logo } from "@/components/site/logo";
 import { LoginForm } from "@/components/admin/login-form";
-import { clientConfig } from "@/lib/client-config";
 
 export default function AdminLoginPage() {
-  if (!clientConfig.requireAdminAuth) {
-    redirect("/admin/dashboard");
-  }
-
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-8 bg-background px-4">
       <Logo />

@@ -1,13 +1,21 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { clientConfig } from "@/lib/client-config";
 
+/**
+ * Session-refresh middleware for /admin/* routes.
+ *
+ * Authentication is ALWAYS enforced for all admin routes regardless of the
+ * clientConfig.requireAdminAuth flag.  That flag only controls whether the
+ * /admin/login page is shown (i.e. the UX login flow) — it must never bypass
+ * actual server-side authentication or authorization.
+ *
+ * Authorization (admin role check) is performed separately inside each
+ * Server Action and layout via requireAdmin() from @/lib/admin-auth, because
+ * middleware runs before the Supabase session cookies are finalised and cannot
+ * reliably read app_metadata.
+ */
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
-
-  if (!clientConfig.requireAdminAuth) {
-    return supabaseResponse;
-  }
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

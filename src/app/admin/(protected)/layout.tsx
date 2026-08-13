@@ -1,12 +1,23 @@
+import { redirect } from "next/navigation";
 import { Logo } from "@/components/site/logo";
 import { AdminNav, AdminMobileNav } from "@/components/admin/admin-nav";
 import { BuildVersionIndicator } from "@/components/site/build-version-indicator";
+import { requireAdmin } from "@/lib/admin-auth";
 
-export default function AdminProtectedLayout({
+export default async function AdminProtectedLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  try {
+    await requireAdmin();
+  } catch {
+    // Not authenticated or not an admin — send to login.
+    // We catch here rather than letting the throw propagate as an unhandled
+    // error so users see the login page rather than a 500 error screen.
+    redirect("/admin/login");
+  }
+
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-50 border-b border-white/5 thc-glass">
@@ -28,3 +39,4 @@ export default function AdminProtectedLayout({
     </div>
   );
 }
+
