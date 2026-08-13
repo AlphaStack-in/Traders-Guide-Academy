@@ -43,5 +43,9 @@ next-env.d.ts
 
 /src/generated/prisma
 
+# Generated build artifact — do not commit; baked fresh by next.config.ts on every build.
+/src/lib/build-info.json
+
+
 .vercel
 .env*

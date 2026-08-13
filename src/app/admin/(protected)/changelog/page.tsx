@@ -1,11 +1,24 @@
 import { getBuildInfo } from "@/lib/build-info";
-import { CheckCircle2, GitCommit, History, ShieldCheck } from "lucide-react";
+import { CHANGELOG } from "@/lib/changelog";
+import { CheckCircle2, History, ShieldCheck } from "lucide-react";
 
-export const dynamic = "force-dynamic";
-
+// Changelog entries are static (committed source data) so this page can be
+// statically generated.  Build metadata (SHA, timestamp) are baked into the
+// bundle by next.config.ts — no runtime fetch needed.
 export default function AdminChangelogPage() {
   const buildInfo = getBuildInfo();
-  const currentSha = buildInfo.gitSha;
+  // "Currently Deployed" is determined by the application version, not by Git
+  // SHA. Multiple changelog entries can share a version (iterative patches
+  // released under the same version string), but only the FIRST matching
+  // entry at the top of the list is marked as currently deployed.
+  const currentVersion = buildInfo.version;
+
+  // Pre-compute which entry is the current one before rendering.
+  // We do this outside the map so we never mutate a variable inside a render
+  // callback, which would violate react-hooks/immutability rules.
+  const currentIndex = CHANGELOG.findIndex(
+    (entry) => entry.version === currentVersion
+  );
 
   return (
     <div className="flex flex-col gap-8 max-w-5xl mx-auto py-2">
@@ -52,12 +65,15 @@ export default function AdminChangelogPage() {
 
       {/* Changelog Timeline */}
       <div className="flex flex-col gap-6">
-        {buildInfo.changelog.map((entry, index) => {
-          const isCurrent = entry.sha === currentSha || (index === 0 && !buildInfo.changelog.some(c => c.sha === currentSha));
+        {CHANGELOG.map((entry, index) => {
+          // Only the first entry whose version matches the running version is
+          // marked as currently deployed — prevents duplicate badges when
+          // multiple entries share the same version string.
+          const isCurrent = index === currentIndex;
 
           return (
             <div
-              key={entry.sha + index}
+              key={`${entry.version}-${index}`}
               className={`relative rounded-2xl border p-5 transition-all duration-200 ${
                 isCurrent
                   ? "border-emerald-500/40 bg-emerald-950/10 shadow-xl"
@@ -69,12 +85,8 @@ export default function AdminChangelogPage() {
                   <span className="px-2.5 py-1 rounded-lg bg-primary/20 text-primary border border-primary/30 text-xs font-bold font-mono">
                     v{entry.version}
                   </span>
-                  <span className="flex items-center gap-1 text-xs font-mono font-semibold text-muted-foreground bg-white/5 px-2.5 py-1 rounded-lg border border-white/10">
-                    <GitCommit className="h-3.5 w-3.5 text-primary" />
-                    {entry.sha}
-                  </span>
                   <span className="text-xs text-muted-foreground font-medium">
-                    {entry.timestamp}
+                    {entry.date}
                   </span>
                 </div>
 
