@@ -127,7 +127,102 @@ function useContainerWidth(fallback: number) {
 // Hand-rolled SVG instead of recharts here: recharts' stacked/array-valued Bar
 // rendering (needed for a single diverging profit/loss column) didn't combine
 // the two series into one bar in this version — each still got its own X slot.
+const HORIZONTAL_BAR_ROW_HEIGHT = 34;
+
+function visibleRowLimit(chartHeight: number, verticalPadding: number) {
+  return Math.max(1, Math.floor((chartHeight - verticalPadding) / HORIZONTAL_BAR_ROW_HEIGHT));
+}
+
+function makeHorizontalPnlLabel(data: { pnlPercent: number }[]) {
+  return function HorizontalPnlLabel({
+    x = 0,
+    y = 0,
+    width = 0,
+    height = 0,
+    index = 0,
+  }: RiskRewardLabelProps) {
+    const point = data[index];
+    if (!point) return null;
+    const isPositive = point.pnlPercent >= 0;
+    return (
+      <text
+        x={isPositive ? Number(x) + Number(width) + 5 : Number(x) - 5}
+        y={Number(y) + Number(height) / 2 + 4}
+        textAnchor={isPositive ? "start" : "end"}
+        fontSize={11}
+        fontWeight={700}
+        fill="#f5f2e8"
+      >
+        {`${isPositive ? "+" : ""}${point.pnlPercent.toFixed(1)}%`}
+      </text>
+    );
+  };
+}
+
+function WinLossTooltip({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: { payload: DayPnl }[];
+}) {
+  if (!active || !payload || payload.length === 0) return null;
+  const point = payload[0].payload as DayPnl;
+  return (
+    <div
+      className="rounded-lg border border-white/10 px-3 py-2 text-xs shadow-lg"
+      style={{ backgroundColor: "var(--popover)", color: "var(--popover-foreground)" }}
+    >
+      <p className="mb-1 font-semibold">{formatDdMmm(point.date)}</p>
+      <p style={{ color: "var(--thc-win)" }}>Profit: +{Math.round(point.profitPercent)}%</p>
+      <p style={{ color: "var(--thc-loss)" }}>Loss: {Math.round(point.lossPercent)}%</p>
+      <p>
+        Net: {point.netPercent >= 0 ? "+" : ""}
+        {Math.round(point.netPercent)}%
+      </p>
+    </div>
+  );
+}
+
 export function WinLossBarChart({ data }: { data: DayPnl[] }) {
+  const chartHeight = 260;
+  const visibleData = data.slice(-visibleRowLimit(chartHeight, 42));
+  const labelData = visibleData.map((point) => ({ pnlPercent: point.netPercent }));
+
+  return (
+    <div>
+      <ResponsiveContainer width="100%" height={chartHeight}>
+        <BarChart
+          data={visibleData}
+          layout="vertical"
+          margin={{ top: 8, right: 38, bottom: 4, left: 0 }}
+          barCategoryGap="20%"
+        >
+          {grid}
+          <XAxis type="number" tick={axisTick} unit="%" />
+          <YAxis type="category" dataKey="date" width={58} tick={axisTick} tickFormatter={formatDdMmm} />
+          <Tooltip content={<WinLossTooltip />} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
+          <Bar dataKey="profitPercent" name="Total Profit %" stackId="dailyPnl" fill="var(--thc-win)" radius={[0, 3, 3, 0]} isAnimationActive={false} />
+          <Bar dataKey="lossPercent" name="Total Loss %" stackId="dailyPnl" fill="var(--thc-loss)" radius={[3, 0, 0, 3]} isAnimationActive={false}>
+            <LabelList dataKey="netPercent" content={makeHorizontalPnlLabel(labelData)} />
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+      <div className="mt-2 flex items-center justify-center gap-4 text-xs text-muted-foreground">
+        <span className="flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-sm" style={{ backgroundColor: "var(--thc-win)" }} />
+          Total Profit %
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-sm" style={{ backgroundColor: "var(--thc-loss)" }} />
+          Total Loss %
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function LegacyWinLossBarChart({ data }: { data: DayPnl[] }) {
   const [hovered, setHovered] = useState<number | null>(null);
   const [containerRef, CHART_WIDTH] = useContainerWidth(360);
 
@@ -720,9 +815,24 @@ export function BestWorstBarChart({
     dateStr?: string;
   }[];
 }) {
+  const chartHeight = 280;
+  const visibleLimit = visibleRowLimit(chartHeight, 24);
+  const visibleData =
+    data.length <= visibleLimit
+      ? data
+      : [
+          ...data.slice(0, Math.ceil(visibleLimit / 2)),
+          ...data.slice(-Math.floor(visibleLimit / 2)),
+        ];
+
   return (
-    <ResponsiveContainer width="100%" height={280}>
-      <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 4 }} barCategoryGap="12%">
+    <ResponsiveContainer width="100%" height={chartHeight}>
+      <BarChart
+        data={visibleData}
+        layout="vertical"
+        margin={{ top: 8, right: 38, left: 0, bottom: 4 }}
+        barCategoryGap="20%"
+      >
         <defs>
           <linearGradient id="bwWinFill" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="var(--thc-win)" stopOpacity={0.95} />
@@ -734,17 +844,17 @@ export function BestWorstBarChart({
           </linearGradient>
         </defs>
         {grid}
-        <XAxis dataKey="label" tick={<BestWorstAxisTick />} interval={0} height={90} />
-        <YAxis tick={axisTick} />
+        <XAxis type="number" tick={axisTick} unit="%" />
+        <YAxis type="category" dataKey="label" width={148} tick={axisTick} interval={0} />
         <Tooltip content={<BestWorstTooltip />} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
-        <Bar dataKey="pnlPercent" name="P&L %" radius={[3, 3, 0, 0]} isAnimationActive={false}>
-          {data.map((entry) => (
+        <Bar dataKey="pnlPercent" name="P&L %" radius={[0, 3, 3, 0]} isAnimationActive={false}>
+          {visibleData.map((entry) => (
             <Cell
               key={entry.label}
               fill={entry.pnlPercent >= 0 ? "url(#bwWinFill)" : "url(#bwLossFill)"}
             />
           ))}
-          <LabelList dataKey="pnlPercent" content={makeBestWorstLabel(data)} />
+          <LabelList dataKey="pnlPercent" content={makeHorizontalPnlLabel(visibleData)} />
         </Bar>
       </BarChart>
     </ResponsiveContainer>
