@@ -6,13 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import { DEMO_ADMIN_CREDENTIALS } from "@/lib/constants";
 
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [email, setEmail] = useState(DEMO_ADMIN_CREDENTIALS.email);
-  const [password, setPassword] = useState(DEMO_ADMIN_CREDENTIALS.password);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -41,11 +40,6 @@ export function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
-      <p className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs text-muted-foreground">
-        Demo access — fields are pre-filled:{" "}
-        <span className="font-medium text-foreground">{DEMO_ADMIN_CREDENTIALS.email}</span> /{" "}
-        <span className="font-medium text-foreground">{DEMO_ADMIN_CREDENTIALS.password}</span>
-      </p>
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="email">Email</Label>
         <Input

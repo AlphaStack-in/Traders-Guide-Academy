@@ -39,12 +39,15 @@ const membersLinks = [
     : []),
 ];
 
-const adminGroupLinks = [
-  { href: "/admin/changelog", label: "Changelog" },
-  ...(clientConfig.goodwillBrokerEnabled
-    ? [{ href: "/admin/goodwill-orders", label: "Order Requests" }]
-    : []),
-];
+function getAdminGroupLinks(isSuperAdmin: boolean) {
+  return [
+    { href: "/admin/changelog", label: "Changelog" },
+    ...(clientConfig.goodwillBrokerEnabled
+      ? [{ href: "/admin/goodwill-orders", label: "Order Requests" }]
+      : []),
+    ...(isSuperAdmin ? [{ href: "/admin/admin-users", label: "Admin Users" }] : []),
+  ];
+}
 
 function useUsername() {
   const [username, setUsername] = useState<string | null>(null);
@@ -60,10 +63,11 @@ function useUsername() {
   return username;
 }
 
-export function AdminNav() {
+export function AdminNav({ isSuperAdmin = false }: { isSuperAdmin?: boolean }) {
   const pathname = usePathname();
   const router = useRouter();
   const username = useUsername();
+  const adminGroupLinks = getAdminGroupLinks(isSuperAdmin);
 
   async function handleLogout() {
     const supabase = createSupabaseBrowserClient();
@@ -178,9 +182,9 @@ export function AdminNav() {
   );
 }
 
-export function AdminMobileNav() {
+export function AdminMobileNav({ isSuperAdmin = false }: { isSuperAdmin?: boolean }) {
   const pathname = usePathname();
-  const allLinks = [...links, ...membersLinks, ...adminGroupLinks];
+  const allLinks = [...links, ...membersLinks, ...getAdminGroupLinks(isSuperAdmin)];
 
   return (
     <nav className="flex items-center gap-2 overflow-x-auto border-t border-white/5 px-4 py-2 lg:hidden">

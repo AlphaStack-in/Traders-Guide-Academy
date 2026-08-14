@@ -366,3 +366,54 @@ model NewsAlert {
   @@index([isActive])
 }
 
+// ---------------------------------------------------------------------------
+// Admin RBAC — database-backed admin users and access levels.
+// Authorization is performed by src/lib/admin-rbac.ts which joins the
+// Supabase Auth session (supabaseUserId) to this table.
+// Never trust user_metadata or client-provided email for authorization.
+// ---------------------------------------------------------------------------
+
+enum AdminAccessLevel {
+  SUPER_ADMIN
+  ADMIN
+  SIGNAL_MANAGER
+  SUPPORT
+  VIEWER
+}
+
+// One row per authorized admin.  supabaseUserId is the canonical identity
+// (Supabase Auth user.id, a UUID).  email is stored for display / audit but
+// is NOT the authorization key — supabaseUserId is.
+model AdminUser {
+  id             String           @id @default(uuid())
+  supabaseUserId String           @unique
+  email          String           // display / audit only — not the auth key
+  accessLevel    AdminAccessLevel @default(VIEWER)
+  isActive       Boolean          @default(true)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  auditChangesBy  AdminUserAuditLog[] @relation("ChangedBy")
+  auditChangesFor AdminUserAuditLog[] @relation("ChangedFor")
+
+  @@index([supabaseUserId])
+  @@index([email])
+  @@index([isActive])
+}
+
+// Append-only audit trail for admin access-level and activation changes.
+model AdminUserAuditLog {
+  id            String    @id @default(uuid())
+  changedById   String
+  changedBy     AdminUser @relation("ChangedBy", fields: [changedById], references: [id])
+  targetAdminId String
+  targetAdmin   AdminUser @relation("ChangedFor", fields: [targetAdminId], references: [id])
+  action        String    // "SET_ACCESS_LEVEL" | "ACTIVATE" | "DEACTIVATE" | "CREATE"
+  previousValue String?
+  newValue      String?
+  createdAt     DateTime  @default(now())
+
+  @@index([changedById])
+  @@index([targetAdminId])
+  @@index([createdAt])
+}
