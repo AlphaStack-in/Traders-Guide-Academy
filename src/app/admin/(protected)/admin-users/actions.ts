@@ -27,21 +27,24 @@ export async function listAdminUsers() {
 }
 
 // ---------------------------------------------------------------------------
-// Create admin user — SUPER_ADMIN only
+// Create admin user — SUPER_ADMIN only (email onboarding)
 // ---------------------------------------------------------------------------
 
 export async function createAdminUser(input: {
-  supabaseUserId: string;
   email: string;
   accessLevel: AdminAccessLevel;
 }) {
   const actor = await requireAccessLevel("SUPER_ADMIN");
 
-  const supabaseUserId = input.supabaseUserId.trim();
   const email = input.email.trim().toLowerCase();
 
-  if (!supabaseUserId || !email) {
-    return { success: false, error: "supabaseUserId and email are required." };
+  if (!email) {
+    return { success: false, error: "Email is required." };
+  }
+
+  // Basic shape check — full RFC validation is unnecessary here
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return { success: false, error: "Enter a valid email address." };
   }
 
   // SUPER_ADMIN cannot be created via this action — must be bootstrapped via SQL.
@@ -52,38 +55,43 @@ export async function createAdminUser(input: {
     };
   }
 
-  // Prevent duplicate
-  const existing = await prisma.adminUser.findUnique({ where: { supabaseUserId } });
+  const existing = await prisma.adminUser.findUnique({ where: { email } });
   if (existing) {
-    return { success: false, error: "An AdminUser with that Supabase user ID already exists." };
+    return { success: false, error: "An admin with that email already exists." };
   }
 
-  const newUser = await prisma.adminUser.create({
-    data: {
-      supabaseUserId,
-      email,
-      accessLevel: input.accessLevel,
-      isActive: true,
-    },
-  });
-
-  // Audit log — note: actor.adminUserId may be "" for env_fallback admins,
-  // but a SUPER_ADMIN env-fallback cannot create other admins (no DB row = no
-  // changedById FK).  Guard here.
-  if (actor.adminUserId) {
-    await prisma.adminUserAuditLog.create({
+  try {
+    const newUser = await prisma.adminUser.create({
       data: {
-        changedById: actor.adminUserId,
-        targetAdminId: newUser.id,
-        action: "CREATE",
-        previousValue: null,
-        newValue: input.accessLevel,
+        email,
+        accessLevel: input.accessLevel,
+        isActive: true,
+        supabaseUserId: null,
       },
     });
-  }
 
-  revalidatePath("/admin/admin-users");
-  return { success: true };
+    // Audit log — note: actor.adminUserId may be "" for env_fallback admins,
+    // but a SUPER_ADMIN env-fallback cannot create other admins (no DB row = no
+    // changedById FK).  Guard here.
+    if (actor.adminUserId) {
+      await prisma.adminUserAuditLog.create({
+        data: {
+          changedById: actor.adminUserId,
+          targetAdminId: newUser.id,
+          action: "CREATE",
+          previousValue: null,
+          newValue: input.accessLevel,
+        },
+      });
+    }
+
+    revalidatePath("/admin/admin-users");
+    return { success: true };
+  } catch (err) {
+    // Race: unique email constraint
+    console.error("[createAdminUser]", err);
+    return { success: false, error: "An admin with that email already exists." };
+  }
 }
 
 // ---------------------------------------------------------------------------

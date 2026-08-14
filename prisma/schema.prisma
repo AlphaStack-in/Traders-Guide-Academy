@@ -381,13 +381,14 @@ enum AdminAccessLevel {
   VIEWER
 }
 
-// One row per authorized admin.  supabaseUserId is the canonical identity
-// (Supabase Auth user.id, a UUID).  email is stored for display / audit but
-// is NOT the authorization key — supabaseUserId is.
+// One row per authorized admin.  supabaseUserId is the permanent auth identity
+// (Supabase Auth user.id) once bound.  email is the onboarding / binding key
+// only — used to create pending admins and bind UUID on first Google login.
+// After binding, authorization uses supabaseUserId (never email alone).
 model AdminUser {
   id             String           @id @default(uuid())
-  supabaseUserId String           @unique
-  email          String           // display / audit only — not the auth key
+  supabaseUserId String?          @unique // null until first successful Google login
+  email          String           @unique // normalized lowercase; onboarding key
   accessLevel    AdminAccessLevel @default(VIEWER)
   isActive       Boolean          @default(true)
   createdAt      DateTime         @default(now())
@@ -397,7 +398,6 @@ model AdminUser {
   auditChangesFor AdminUserAuditLog[] @relation("ChangedFor")
 
   @@index([supabaseUserId])
-  @@index([email])
   @@index([isActive])
 }
 

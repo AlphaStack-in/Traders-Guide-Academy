@@ -31,7 +31,7 @@ const ACCESS_LEVEL_COLORS: Record<AdminAccessLevel, string> = {
 
 type AdminUser = {
   id: string;
-  supabaseUserId: string;
+  supabaseUserId: string | null;
   email: string;
   accessLevel: AdminAccessLevel;
   isActive: boolean;
@@ -47,7 +47,6 @@ export function AdminUsersClient({ initialUsers }: { initialUsers: AdminUser[] }
   // Add user form state
   const [showAdd, setShowAdd] = useState(false);
   const [newEmail, setNewEmail] = useState("");
-  const [newUid, setNewUid] = useState("");
   const [newLevel, setNewLevel] = useState<AdminAccessLevel>("VIEWER");
 
   function notify(msg: string, isError = false) {
@@ -59,7 +58,6 @@ export function AdminUsersClient({ initialUsers }: { initialUsers: AdminUser[] }
   function handleAddUser() {
     startTransition(async () => {
       const result = await createAdminUser({
-        supabaseUserId: newUid,
         email: newEmail,
         accessLevel: newLevel,
       });
@@ -67,10 +65,9 @@ export function AdminUsersClient({ initialUsers }: { initialUsers: AdminUser[] }
         notify(result.error ?? "Failed to create admin user.", true);
         return;
       }
-      notify("Admin user created.");
+      notify("Admin user created. They can sign in with Google using this email.");
       setShowAdd(false);
       setNewEmail("");
-      setNewUid("");
       setNewLevel("VIEWER");
       // Refresh list
       window.location.reload();
@@ -138,29 +135,19 @@ export function AdminUsersClient({ initialUsers }: { initialUsers: AdminUser[] }
         <div className="thc-glass rounded-xl border border-white/10 p-4 flex flex-col gap-3">
           <p className="text-sm font-semibold">New Admin User</p>
           <p className="text-xs text-muted-foreground">
-            Find the Supabase User ID in{" "}
-            <strong>Supabase Dashboard → Authentication → Users</strong>.
+            The user must sign in with this Google account. Access is activated on their
+            first successful login.
           </p>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="new-uid">Supabase User ID (UUID)</Label>
-              <Input
-                id="new-uid"
-                placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-                value={newUid}
-                onChange={(e) => setNewUid(e.target.value)}
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="new-email">Email (display only)</Label>
-              <Input
-                id="new-email"
-                type="email"
-                placeholder="user@example.com"
-                value={newEmail}
-                onChange={(e) => setNewEmail(e.target.value)}
-              />
-            </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="new-email">Email Address</Label>
+            <Input
+              id="new-email"
+              type="email"
+              placeholder="user@example.com"
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+              autoComplete="off"
+            />
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="new-level">Access Level</Label>
@@ -179,7 +166,7 @@ export function AdminUsersClient({ initialUsers }: { initialUsers: AdminUser[] }
             <Button
               id="confirm-add-admin-btn"
               size="sm"
-              disabled={isPending || !newUid || !newEmail}
+              disabled={isPending || !newEmail.trim()}
               onClick={handleAddUser}
               className="gap-1.5 text-xs thc-btn-gradient thc-glow"
             >
@@ -205,6 +192,7 @@ export function AdminUsersClient({ initialUsers }: { initialUsers: AdminUser[] }
             <tr className="text-left text-xs font-semibold text-muted-foreground">
               <th className="px-4 py-3">Email</th>
               <th className="px-4 py-3">Access Level</th>
+              <th className="px-4 py-3">Link Status</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Actions</th>
             </tr>
@@ -213,12 +201,7 @@ export function AdminUsersClient({ initialUsers }: { initialUsers: AdminUser[] }
             {users.map((user) => (
               <tr key={user.id} className={cn("transition-colors hover:bg-white/2.5", !user.isActive && "opacity-50")}>
                 <td className="px-4 py-3">
-                  <div>
-                    <p className="font-medium">{user.email}</p>
-                    <p className="mt-0.5 font-mono text-[10px] text-muted-foreground">
-                      {user.supabaseUserId}
-                    </p>
-                  </div>
+                  <p className="font-medium">{user.email}</p>
                 </td>
                 <td className="px-4 py-3">
                   {user.accessLevel === "SUPER_ADMIN" ? (
@@ -243,6 +226,16 @@ export function AdminUsersClient({ initialUsers }: { initialUsers: AdminUser[] }
                       ))}
                     </select>
                   )}
+                </td>
+                <td className="px-4 py-3">
+                  <span className={cn(
+                    "inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium",
+                    user.supabaseUserId
+                      ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
+                      : "border-amber-500/30 bg-amber-500/10 text-amber-400",
+                  )}>
+                    {user.supabaseUserId ? "Linked" : "Pending first login"}
+                  </span>
                 </td>
                 <td className="px-4 py-3">
                   <span className={cn(
@@ -275,7 +268,7 @@ export function AdminUsersClient({ initialUsers }: { initialUsers: AdminUser[] }
             ))}
             {users.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-sm text-muted-foreground">
+                <td colSpan={5} className="px-4 py-8 text-center text-sm text-muted-foreground">
                   No admin users found. Bootstrap the first SUPER_ADMIN via the database script.
                 </td>
               </tr>

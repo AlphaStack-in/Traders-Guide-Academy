@@ -13,8 +13,9 @@ export default async function AdminUsersPage() {
       <div>
         <h1 className="font-heading text-2xl font-bold">Admin Users</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Manage authorized admin accounts and access levels. SUPER_ADMIN accounts can only be
-          created via the database bootstrap script.
+          Add administrators by Google email and access level. Access activates on their
+          first successful login. SUPER_ADMIN accounts can only be created via the
+          database bootstrap script.
         </p>
       </div>
       <AdminUsersClient initialUsers={adminUsers} />
