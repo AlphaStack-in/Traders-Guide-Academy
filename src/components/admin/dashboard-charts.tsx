@@ -157,7 +157,7 @@ function makeHorizontalPnlLabel(data: { pnlPercent: number }[]) {
     const anchor = isPositive
       ? fitOutside ? "start" : "end"
       : fitOutside ? "end" : "start";
-    const fill = fitOutside ? "#f5f2e8" : (isPositive ? "var(--thc-win)" : "var(--thc-loss)");
+    const fill = "#f5f2e8";
     return (
       <text
         x={labelX}
