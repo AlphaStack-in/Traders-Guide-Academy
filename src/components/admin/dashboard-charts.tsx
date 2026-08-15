@@ -144,14 +144,28 @@ function makeHorizontalPnlLabel(data: { pnlPercent: number }[]) {
     const point = data[index];
     if (!point) return null;
     const isPositive = point.pnlPercent >= 0;
+    const cx = Number(x);
+    const cy = Number(y);
+    const cw = Number(width);
+    const ch = Number(height);
+    // Short bars (< 48px) → label outside: value is small, text is short, fits in margin.
+    // Long bars (≥ 48px) → label inside: value like "+238.4%" is wide and would clip outside.
+    const fitOutside = Math.abs(cw) < 48;
+    const labelX = isPositive
+      ? fitOutside ? cx + cw + 5 : cx + cw - 5
+      : fitOutside ? cx - 5 : cx + 5;
+    const anchor = isPositive
+      ? fitOutside ? "start" : "end"
+      : fitOutside ? "end" : "start";
+    const fill = fitOutside ? "#f5f2e8" : (isPositive ? "var(--thc-win)" : "var(--thc-loss)");
     return (
       <text
-        x={isPositive ? Number(x) + Number(width) + 5 : Number(x) - 5}
-        y={Number(y) + Number(height) / 2 + 4}
-        textAnchor={isPositive ? "start" : "end"}
+        x={labelX}
+        y={cy + ch / 2 + 4}
+        textAnchor={anchor}
         fontSize={11}
         fontWeight={700}
-        fill="#f5f2e8"
+        fill={fill}
       >
         {`${isPositive ? "+" : ""}${point.pnlPercent.toFixed(1)}%`}
       </text>
@@ -195,7 +209,7 @@ export function WinLossBarChart({ data }: { data: DayPnl[] }) {
         <BarChart
           data={visibleData}
           layout="vertical"
-          margin={{ top: 8, right: 38, bottom: 4, left: 0 }}
+          margin={{ top: 8, right: 52, bottom: 4, left: 0 }}
           barCategoryGap="20%"
         >
           {grid}
@@ -776,6 +790,43 @@ function BestWorstAxisTick({
   );
 }
 
+/** Single-line YAxis tick for BestWorstBarChart – clips overflow, never wraps. */
+function BestWorstYAxisTick({
+  x,
+  y,
+  payload,
+  width,
+}: {
+  x?: number;
+  y?: number;
+  payload?: { value: string };
+  width?: number;
+}) {
+  const maxWidth = (width ?? 148) - 4;
+  const clipId = `bw-y-clip-${(payload?.value ?? "").replace(/\W+/g, "")}`;
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <defs>
+        <clipPath id={clipId}>
+          <rect x={-maxWidth} y={-10} width={maxWidth} height={20} />
+        </clipPath>
+      </defs>
+      <title>{payload?.value}</title>
+      <text
+        x={0}
+        y={0}
+        dy={4}
+        textAnchor="end"
+        fontSize={11}
+        fill="var(--muted-foreground)"
+        clipPath={`url(#${clipId})`}
+      >
+        {payload?.value}
+      </text>
+    </g>
+  );
+}
+
 function BestWorstTooltip({ active, payload }: any) {
   if (!active || !payload || payload.length === 0) return null;
   const point = payload[0].payload;
@@ -830,7 +881,7 @@ export function BestWorstBarChart({
       <BarChart
         data={visibleData}
         layout="vertical"
-        margin={{ top: 8, right: 38, left: 0, bottom: 4 }}
+        margin={{ top: 8, right: 52, left: 0, bottom: 4 }}
         barCategoryGap="20%"
       >
         <defs>
@@ -845,7 +896,7 @@ export function BestWorstBarChart({
         </defs>
         {grid}
         <XAxis type="number" tick={axisTick} unit="%" />
-        <YAxis type="category" dataKey="label" width={148} tick={axisTick} interval={0} />
+        <YAxis type="category" dataKey="label" width={148} tick={<BestWorstYAxisTick width={148} />} interval={0} />
         <Tooltip content={<BestWorstTooltip />} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
         <Bar dataKey="pnlPercent" name="P&L %" radius={[0, 3, 3, 0]} isAnimationActive={false}>
           {visibleData.map((entry) => (
