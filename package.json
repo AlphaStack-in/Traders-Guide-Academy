@@ -1,6 +1,6 @@
 {
-  "name": "signalflow",
-  "version": "1.0.7",
+  "name": "traders-guide-academy",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",

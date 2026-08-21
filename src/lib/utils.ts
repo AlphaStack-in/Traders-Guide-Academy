@@ -39,13 +39,16 @@ export function formatUpdateTime(date: string | Date) {
   })
 }
 
-// Dynamic runtime join URL resolver — enforces Goodwill's public join URL
-// (https://gwcindia.in/register) and SignalFlow's domain without cross-client leaks.
+// Dynamic runtime join URL resolver — a client with its own external
+// broker-hosted join page (goodwillBrokerEnabled) uses that instead of this
+// app's own domain, to avoid cross-client leaks.
 export function getClientJoinUrl(referralToken?: string | null): string {
-  if (clientConfig.id === "goodwill") {
+  if (clientConfig.goodwillBrokerEnabled) {
     return "https://gwcindia.in/register";
   }
 
+  // TODO: set once this client's real production domain is known —
+  // currently only reached when window/NEXT_PUBLIC_APP_URL are unavailable.
   let origin = "https://tradershubcenter.com";
 
   if (typeof window !== "undefined" && window.location?.origin) {

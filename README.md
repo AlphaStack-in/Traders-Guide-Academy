@@ -1,7 +1,12 @@
-# SignalFlow
+# Traders Guide Academy (TGA)
 
 Full-stack web app for publishing intraday options-buying trade signals to premium
 subscribers, with an admin dashboard for signal entry and performance analytics.
+
+Single-tenant client repo, forked from the shared SignalFlow codebase — see
+`docs/customer-onboarding-runbook.md` (carried over from that fork) for the full
+onboarding checklist, and `src/lib/client-config.ts` for this deployment's branding,
+which is currently placeholder pending real TGA assets.
 
 **Stack:** Next.js 16 (App Router) + TypeScript · Tailwind CSS v4 + shadcn/ui · Recharts ·
 Prisma → Supabase Postgres · Supabase Auth · Vercel.
@@ -61,7 +66,7 @@ vercel env pull      # or add the same 5 env vars from .env in the Vercel dashbo
 vercel --prod        # or just `git push` once the GitHub repo is connected
 ```
 
-Once the GitHub repo (`technojegan/SignalFlow`) is connected to the Vercel
+Once the GitHub repo (`AlphaStack-in/Traders-Guide-Academy`) is connected to the Vercel
 project, every push to `main` auto-deploys to production and every other branch gets a
 preview deployment — no extra config needed. Root directory and build command
 (`next build`) work out of the box since this is a standard Next.js app at the repo root.
@@ -78,14 +83,12 @@ render with real numbers.
 - The "Register Premium" flow only stores leads in `Subscriber` for now — see the
   `TODO(payments)` comment in `src/app/register/actions.ts` for where to wire up
   Razorpay/Stripe later.
-- Instagram thumbnail grid data lives in `src/lib/constants.ts`
-  (`INSTAGRAM_THUMBNAILS`) — swap the placeholder entries for real reels any time.
+- Instagram thumbnail grid data lives in `src/lib/client-config.ts`
+  (`instagramThumbnails` on the `tga` entry) — currently empty; add real reels, or
+  clearly-labeled placeholders, whenever they're supplied.
 
+## Production Deployment
 
-## Production Deployments
-
-| Brand Platform | Production URL |
+| Client | Production URL |
 | :--- | :--- |
-| **Goodwill** | [https://goodwill-pi.vercel.app](https://goodwill-pi.vercel.app) |
-| **SignalFlow** (formerly Traders Hub Center) | [https://traders-hub-center.vercel.app](https://traders-hub-center.vercel.app) _(rename pending — see onboarding runbook)_ |
-| **StockOps** | [https://stockops-technojegan1.vercel.app](https://stockops-technojegan1.vercel.app) |
+| **Traders Guide Academy** | _TODO — set once the Vercel project is created (see onboarding runbook, Step 5)_ |

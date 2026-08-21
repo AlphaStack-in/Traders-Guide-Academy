@@ -18,7 +18,7 @@ import { OngoingRiskRewardChart } from "@/components/admin/dashboard-charts";
 import { ManageSignalsTable } from "@/components/admin/manage-signals-table";
 import type { SignalRow } from "@/components/signals/signals-explorer";
 import { INSTRUMENT_LABEL } from "@/lib/instruments";
-import { clientConfig, getActiveOrderBroker } from "@/lib/client-config";
+import { getActiveOrderBroker } from "@/lib/client-config";
 
 const ORDER_BROKER = getActiveOrderBroker();
 
@@ -102,13 +102,7 @@ export function OngoingSignals({
                 <span>
                   · Entry @{" "}
                   <span
-                    className={cn(
-                      "font-heading text-base font-bold",
-                      // The blue gradient clip reads poorly on this small chip
-                      // for StockOps — plain bright text is more legible there,
-                      // while SignalFlow's gold gradient stays as-is.
-                      clientConfig.id === "stockops" ? "text-foreground" : "signalflow-gold-text",
-                    )}
+                    className={cn("font-heading text-base font-bold", "signalflow-gold-text")}
                   >
                     ₹{signal.entryPrice}
                   </span>

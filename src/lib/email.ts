@@ -22,7 +22,9 @@ export async function sendReferralInviteEmail({
 
   try {
     const resend = new Resend(apiKey);
-    const fromAddress = process.env.EMAIL_FROM_ADDRESS || `${clientConfig.siteName} <noreply@signalflow.app>`;
+    // TODO: swap the placeholder domain below once TGA's real domain is purchased —
+    // set EMAIL_FROM_ADDRESS in the env instead of editing this fallback.
+    const fromAddress = process.env.EMAIL_FROM_ADDRESS || `${clientConfig.siteName} <noreply@tga-placeholder.app>`;
 
     const { error } = await resend.emails.send({
       from: fromAddress,
