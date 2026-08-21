@@ -16,12 +16,11 @@ import {
 import { clientConfig } from "@/lib/client-config";
 
 export function Hero() {
-  const isSignalFlow = clientConfig.id === "signalflow";
   // Clients using the "Premium Community" pricing headline (Stockops,
   // Goodwill) show the bull image here instead of in the Pricing section —
   // see pricing.tsx's showBullImage.
   const showBull = clientConfig.pricingHeadline === "Premium Community";
-  const hasHeroImage = isSignalFlow || showBull;
+  const hasHeroImage = showBull;
 
   const socialLinks = [
     { href: clientConfig.whatsappUrl, Icon: WhatsAppIcon, label: "WhatsApp" },
@@ -65,16 +64,6 @@ export function Hero() {
               : ""
           }
         >
-          {isSignalFlow && (
-            <Image
-              src="/signalflow-hero-emblem.png"
-              alt={clientConfig.siteName}
-              width={850}
-              height={624}
-              className="h-[15rem] w-auto shrink-0 object-contain sm:h-[19.5rem] lg:h-[33rem] lg:w-auto lg:self-stretch"
-              priority
-            />
-          )}
           {showBull && (
             <Image
               src="/bull-3d.png"
