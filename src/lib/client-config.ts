@@ -101,9 +101,9 @@ const CLIENTS: Record<ClientId, ClientConfig> = {
     siteNameShort: "SignalFlow",
     siteDescription:
       "SignalFlow publishes intraday options-buying trade signals to premium subscribers, backed by transparent performance analytics.",
-    logoSrc: "/signalflow-logo.jpg",
+    logoSrc: "/signalflow-logo.png",
     logoAlt: "SignalFlow",
-    faviconSrc: "/signalflow-favicon.jpg",
+    faviconSrc: "/signalflow-favicon.png",
     goldStart: "#d4af37",
     goldEnd: "#f0c949",
     instrumentDonutColors: ["#f5d576", "#d4af37", "#a8842a", "#7a5f1c"],

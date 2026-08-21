@@ -67,10 +67,10 @@ export function Hero() {
         >
           {isSignalFlow && (
             <Image
-              src="/signalflow-hero-emblem.webp"
+              src="/signalflow-hero-emblem.png"
               alt={clientConfig.siteName}
-              width={1389}
-              height={1965}
+              width={850}
+              height={624}
               className="h-[15rem] w-auto shrink-0 object-contain sm:h-[19.5rem] lg:h-[33rem] lg:w-auto lg:self-stretch"
               priority
             />
