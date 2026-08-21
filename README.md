@@ -1,4 +1,4 @@
-# Traders Hub Center (THC)
+# SignalFlow
 
 Full-stack web app for publishing intraday options-buying trade signals to premium
 subscribers, with an admin dashboard for signal entry and performance analytics.
@@ -61,7 +61,7 @@ vercel env pull      # or add the same 5 env vars from .env in the Vercel dashbo
 vercel --prod        # or just `git push` once the GitHub repo is connected
 ```
 
-Once the GitHub repo (`technojegan/Traders_Hub_Center`) is connected to the Vercel
+Once the GitHub repo (`technojegan/SignalFlow`) is connected to the Vercel
 project, every push to `main` auto-deploys to production and every other branch gets a
 preview deployment — no extra config needed. Root directory and build command
 (`next build`) work out of the box since this is a standard Next.js app at the repo root.
@@ -87,5 +87,5 @@ render with real numbers.
 | Brand Platform | Production URL |
 | :--- | :--- |
 | **Goodwill** | [https://goodwill-pi.vercel.app](https://goodwill-pi.vercel.app) |
-| **Traders Hub Center (THC)** | [https://traders-hub-center.vercel.app](https://traders-hub-center.vercel.app) |
+| **SignalFlow** (formerly Traders Hub Center) | [https://traders-hub-center.vercel.app](https://traders-hub-center.vercel.app) _(rename pending — see onboarding runbook)_ |
 | **StockOps** | [https://stockops-technojegan1.vercel.app](https://stockops-technojegan1.vercel.app) |

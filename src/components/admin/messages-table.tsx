@@ -107,7 +107,7 @@ function MessageRowItem({ message }: { message: MessageRow }) {
               disabled={isDeleting}
               className={
                 deleteArmed
-                  ? "h-8 gap-1 px-2 border-[var(--thc-loss)]/60 text-[var(--thc-loss)]"
+                  ? "h-8 gap-1 px-2 border-[var(--signalflow-loss)]/60 text-[var(--signalflow-loss)]"
                   : "h-8 gap-1 px-2 text-muted-foreground"
               }
               title={deleteArmed ? "Click again to confirm delete" : "Delete message"}
@@ -131,21 +131,21 @@ function MessageRowItem({ message }: { message: MessageRow }) {
                 <p className="mt-1 whitespace-pre-wrap text-sm">{message.message}</p>
               </div>
               <div className="flex flex-wrap gap-2">
-                <Button asChild size="sm" variant="outline" className="thc-glow">
+                <Button asChild size="sm" variant="outline" className="signalflow-glow">
                   <a href={toWhatsAppLink(message.phone)} target="_blank" rel="noopener noreferrer">
                     <WhatsAppIcon className="h-4 w-4" />
                     WhatsApp
                   </a>
                 </Button>
                 {message.email && (
-                  <Button asChild size="sm" variant="outline" className="thc-glow">
+                  <Button asChild size="sm" variant="outline" className="signalflow-glow">
                     <a href={`mailto:${message.email}`}>
                       <Mail className="h-4 w-4" />
                       Email
                     </a>
                   </Button>
                 )}
-                <Button asChild size="sm" variant="outline" className="thc-glow">
+                <Button asChild size="sm" variant="outline" className="signalflow-glow">
                   <a href={`tel:${message.phone}`}>Call</a>
                 </Button>
               </div>
@@ -164,7 +164,7 @@ function MessageRowItem({ message }: { message: MessageRow }) {
                   <Button
                     size="sm"
                     disabled={isReplying}
-                    className="thc-glow thc-btn-gradient w-fit"
+                    className="signalflow-glow signalflow-btn-gradient w-fit"
                     onClick={handleReply}
                   >
                     {isReplying ? "Saving…" : "Mark Replied"}
@@ -208,7 +208,7 @@ export function MessagesTable({ messages }: { messages: MessageRow[] }) {
         />
       </div>
 
-      <div className="thc-glass overflow-hidden rounded-xl border border-white/5">
+      <div className="signalflow-glass overflow-hidden rounded-xl border border-white/5">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>

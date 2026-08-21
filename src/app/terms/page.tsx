@@ -25,7 +25,7 @@ export default function TermsPage() {
       <main className="mx-auto flex-1 w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="font-heading text-3xl font-bold sm:text-4xl">
-            Terms &amp; <span className="thc-gold-text">Conditions</span>
+            Terms &amp; <span className="signalflow-gold-text">Conditions</span>
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
             Please read this in full before joining any {siteName} batch.
@@ -35,7 +35,7 @@ export default function TermsPage() {
         <div className="flex gap-10">
           <TocSidebar entries={SECTIONS} />
 
-          <div className="thc-glass thc-neutral-border flex min-w-0 flex-1 flex-col gap-6 rounded-2xl border p-6 sm:p-8">
+          <div className="signalflow-glass signalflow-neutral-border flex min-w-0 flex-1 flex-col gap-6 rounded-2xl border p-6 sm:p-8">
             <Section id="disclaimer" title="⚠ Disclaimer">
               <ul className="flex flex-col gap-1.5 [&>li]:pl-4 [&>li]:-indent-4">
                 <li>

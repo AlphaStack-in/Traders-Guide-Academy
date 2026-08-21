@@ -188,8 +188,8 @@ function WinLossTooltip({
       style={{ backgroundColor: "var(--popover)", color: "var(--popover-foreground)" }}
     >
       <p className="mb-1 font-semibold">{formatDdMmm(point.date)}</p>
-      <p style={{ color: "var(--thc-win)" }}>Profit: +{Math.round(point.profitPercent)}%</p>
-      <p style={{ color: "var(--thc-loss)" }}>Loss: {Math.round(point.lossPercent)}%</p>
+      <p style={{ color: "var(--signalflow-win)" }}>Profit: +{Math.round(point.profitPercent)}%</p>
+      <p style={{ color: "var(--signalflow-loss)" }}>Loss: {Math.round(point.lossPercent)}%</p>
       <p>
         Net: {point.netPercent >= 0 ? "+" : ""}
         {Math.round(point.netPercent)}%
@@ -216,19 +216,19 @@ export function WinLossBarChart({ data }: { data: DayPnl[] }) {
           <XAxis type="number" tick={axisTick} unit="%" />
           <YAxis type="category" dataKey="date" width={58} tick={axisTick} tickFormatter={formatDdMmm} />
           <Tooltip content={<WinLossTooltip />} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
-          <Bar dataKey="profitPercent" name="Total Profit %" stackId="dailyPnl" fill="var(--thc-win)" radius={[0, 3, 3, 0]} isAnimationActive={false} />
-          <Bar dataKey="lossPercent" name="Total Loss %" stackId="dailyPnl" fill="var(--thc-loss)" radius={[3, 0, 0, 3]} isAnimationActive={false}>
+          <Bar dataKey="profitPercent" name="Total Profit %" stackId="dailyPnl" fill="var(--signalflow-win)" radius={[0, 3, 3, 0]} isAnimationActive={false} />
+          <Bar dataKey="lossPercent" name="Total Loss %" stackId="dailyPnl" fill="var(--signalflow-loss)" radius={[3, 0, 0, 3]} isAnimationActive={false}>
             <LabelList dataKey="netPercent" content={makeHorizontalPnlLabel(labelData)} />
           </Bar>
         </BarChart>
       </ResponsiveContainer>
       <div className="mt-2 flex items-center justify-center gap-4 text-xs text-muted-foreground">
         <span className="flex items-center gap-1.5">
-          <span className="h-2 w-2 rounded-sm" style={{ backgroundColor: "var(--thc-win)" }} />
+          <span className="h-2 w-2 rounded-sm" style={{ backgroundColor: "var(--signalflow-win)" }} />
           Total Profit %
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-2 w-2 rounded-sm" style={{ backgroundColor: "var(--thc-loss)" }} />
+          <span className="h-2 w-2 rounded-sm" style={{ backgroundColor: "var(--signalflow-loss)" }} />
           Total Loss %
         </span>
       </div>
@@ -306,7 +306,7 @@ function LegacyWinLossBarChart({ data }: { data: DayPnl[] }) {
                   width={barWidth}
                   height={Math.max(zeroY - profitY, 0)}
                   rx={3}
-                  fill="var(--thc-win)"
+                  fill="var(--signalflow-win)"
                   opacity={isHovered ? 1 : 0.85}
                 />
               )}
@@ -317,7 +317,7 @@ function LegacyWinLossBarChart({ data }: { data: DayPnl[] }) {
                   width={barWidth}
                   height={Math.max(lossY - zeroY, 0)}
                   rx={3}
-                  fill="var(--thc-loss)"
+                  fill="var(--signalflow-loss)"
                   opacity={isHovered ? 1 : 0.85}
                 />
               )}
@@ -327,7 +327,7 @@ function LegacyWinLossBarChart({ data }: { data: DayPnl[] }) {
                 textAnchor="middle"
                 fontSize={10}
                 fontWeight={700}
-                fill={d.netPercent >= 0 ? "var(--thc-win)" : "var(--thc-loss)"}
+                fill={d.netPercent >= 0 ? "var(--signalflow-win)" : "var(--signalflow-loss)"}
               >
                 {`${d.netPercent >= 0 ? "+" : ""}${Math.round(d.netPercent)}%`}
               </text>
@@ -357,8 +357,8 @@ function LegacyWinLossBarChart({ data }: { data: DayPnl[] }) {
           }}
         >
           <p className="mb-1 font-semibold">{formatDdMmm(data[hovered].date)}</p>
-          <p style={{ color: "var(--thc-win)" }}>Profit: +{Math.round(data[hovered].profitPercent)}%</p>
-          <p style={{ color: "var(--thc-loss)" }}>Loss: {Math.round(data[hovered].lossPercent)}%</p>
+          <p style={{ color: "var(--signalflow-win)" }}>Profit: +{Math.round(data[hovered].profitPercent)}%</p>
+          <p style={{ color: "var(--signalflow-loss)" }}>Loss: {Math.round(data[hovered].lossPercent)}%</p>
           <p>
             Net: {data[hovered].netPercent >= 0 ? "+" : ""}
             {Math.round(data[hovered].netPercent)}%
@@ -368,11 +368,11 @@ function LegacyWinLossBarChart({ data }: { data: DayPnl[] }) {
 
       <div className="mt-2 flex items-center justify-center gap-4 text-xs text-muted-foreground">
         <span className="flex items-center gap-1.5">
-          <span className="h-2 w-2 rounded-sm" style={{ backgroundColor: "var(--thc-win)" }} />
+          <span className="h-2 w-2 rounded-sm" style={{ backgroundColor: "var(--signalflow-win)" }} />
           Total Profit %
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-2 w-2 rounded-sm" style={{ backgroundColor: "var(--thc-loss)" }} />
+          <span className="h-2 w-2 rounded-sm" style={{ backgroundColor: "var(--signalflow-loss)" }} />
           Total Loss %
         </span>
       </div>
@@ -405,12 +405,12 @@ export function WinRateDonutChart({
         <PieChart>
           <defs>
             <linearGradient id="winDonutFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="var(--thc-win)" stopOpacity={1} />
-              <stop offset="100%" stopColor="var(--thc-win)" stopOpacity={0.55} />
+              <stop offset="0%" stopColor="var(--signalflow-win)" stopOpacity={1} />
+              <stop offset="100%" stopColor="var(--signalflow-win)" stopOpacity={0.55} />
             </linearGradient>
             <linearGradient id="lossDonutFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="var(--thc-loss)" stopOpacity={1} />
-              <stop offset="100%" stopColor="var(--thc-loss)" stopOpacity={0.55} />
+              <stop offset="0%" stopColor="var(--signalflow-loss)" stopOpacity={1} />
+              <stop offset="100%" stopColor="var(--signalflow-loss)" stopOpacity={0.55} />
             </linearGradient>
           </defs>
           <Pie
@@ -444,7 +444,7 @@ export function WinRateDonutChart({
           <p
             className={cn(
               "font-heading text-2xl font-bold",
-              netPercent >= 0 ? "text-[var(--thc-win)]" : "text-[var(--thc-loss)]",
+              netPercent >= 0 ? "text-[var(--signalflow-win)]" : "text-[var(--signalflow-loss)]",
             )}
           >
             {pct(netPercent)}
@@ -544,7 +544,7 @@ export function InstrumentCaptureDonutChart({
           <p
             className={cn(
               "font-heading text-2xl font-bold",
-              total >= 0 ? "text-[var(--thc-win)]" : "text-[var(--thc-loss)]",
+              total >= 0 ? "text-[var(--signalflow-win)]" : "text-[var(--signalflow-loss)]",
             )}
           >
             {pctSigned(total)}
@@ -583,11 +583,11 @@ function RiskRewardTooltip({
       <p style={{ color: "var(--muted-foreground)" }}>
         Buy (Entry): <span style={{ color: "var(--popover-foreground)" }}>₹{point.buyPrice}</span>
       </p>
-      <p style={{ color: "var(--thc-win)" }}>
+      <p style={{ color: "var(--signalflow-win)" }}>
         Sell (Target): ₹{point.sellTargetPrice} ({point.gainPercent >= 0 ? "+" : ""}
         {point.gainPercent}%)
       </p>
-      <p style={{ color: "var(--thc-loss)" }}>
+      <p style={{ color: "var(--signalflow-loss)" }}>
         Sell (SL): ₹{point.sellSlPrice} ({point.lossPercent}%)
       </p>
     </div>
@@ -661,7 +661,7 @@ function makeEntryPriceLabel(data: RiskRewardPoint[]) {
         textAnchor="middle"
         fontSize={13}
         fontWeight={700}
-        fill="var(--thc-gold-start)"
+        fill="var(--signalflow-gold-start)"
       >
         {`Entry ₹${point.buyPrice}`}
       </text>
@@ -686,12 +686,12 @@ export function OngoingRiskRewardChart({ data }: { data: RiskRewardPoint[] }) {
       >
         <defs>
           <linearGradient id="riskGainFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--thc-win)" stopOpacity={0.95} />
-            <stop offset="100%" stopColor="var(--thc-win)" stopOpacity={0.35} />
+            <stop offset="0%" stopColor="var(--signalflow-win)" stopOpacity={0.95} />
+            <stop offset="100%" stopColor="var(--signalflow-win)" stopOpacity={0.35} />
           </linearGradient>
           <linearGradient id="riskLossFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--thc-loss)" stopOpacity={0.35} />
-            <stop offset="100%" stopColor="var(--thc-loss)" stopOpacity={0.95} />
+            <stop offset="0%" stopColor="var(--signalflow-loss)" stopOpacity={0.35} />
+            <stop offset="100%" stopColor="var(--signalflow-loss)" stopOpacity={0.95} />
           </linearGradient>
         </defs>
         {grid}
@@ -699,7 +699,7 @@ export function OngoingRiskRewardChart({ data }: { data: RiskRewardPoint[] }) {
         <YAxis unit="%" tick={riskRewardAxisTick} />
         <Tooltip content={<RiskRewardTooltip />} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
         <Legend formatter={riskRewardLegendText} />
-        <ReferenceLine y={0} stroke="var(--thc-gold-start)" strokeDasharray="4 4" strokeWidth={1.5} />
+        <ReferenceLine y={0} stroke="var(--signalflow-gold-start)" strokeDasharray="4 4" strokeWidth={1.5} />
         <Bar
           dataKey="gainPercent"
           name="Potential Gain %"
@@ -844,7 +844,7 @@ function BestWorstTooltip({ active, payload }: any) {
       {point.dateStr && <p className="text-muted-foreground">Date: {point.dateStr}</p>}
       <p
         className={
-          point.pnlPercent >= 0 ? "font-bold text-[var(--thc-win)]" : "font-bold text-[var(--thc-loss)]"
+          point.pnlPercent >= 0 ? "font-bold text-[var(--signalflow-win)]" : "font-bold text-[var(--signalflow-loss)]"
         }
       >
         P&amp;L: {point.pnlPercent >= 0 ? "+" : ""}
@@ -886,12 +886,12 @@ export function BestWorstBarChart({
       >
         <defs>
           <linearGradient id="bwWinFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--thc-win)" stopOpacity={0.95} />
-            <stop offset="100%" stopColor="var(--thc-win)" stopOpacity={0.35} />
+            <stop offset="0%" stopColor="var(--signalflow-win)" stopOpacity={0.95} />
+            <stop offset="100%" stopColor="var(--signalflow-win)" stopOpacity={0.35} />
           </linearGradient>
           <linearGradient id="bwLossFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--thc-loss)" stopOpacity={0.95} />
-            <stop offset="100%" stopColor="var(--thc-loss)" stopOpacity={0.35} />
+            <stop offset="0%" stopColor="var(--signalflow-loss)" stopOpacity={0.95} />
+            <stop offset="100%" stopColor="var(--signalflow-loss)" stopOpacity={0.35} />
           </linearGradient>
         </defs>
         {grid}

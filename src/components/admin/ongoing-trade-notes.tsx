@@ -72,11 +72,11 @@ function NoteEditor({ trade }: { trade: OngoingTrade }) {
   }
 
   return (
-    <div className="thc-glass rounded-xl border border-white/5 p-4">
+    <div className="signalflow-glass rounded-xl border border-white/5 p-4">
       <div className="mb-2 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm font-medium">
           Update on{" "}
-          <span className="font-heading font-bold thc-gold-text">
+          <span className="font-heading font-bold signalflow-gold-text">
             {instrumentPrefix(trade)}{trade.strike} {trade.optionType}
           </span>
         </p>
@@ -110,7 +110,7 @@ function NoteEditor({ trade }: { trade: OngoingTrade }) {
         <Button
           type="button"
           size="sm"
-          className="thc-glow thc-btn-gradient h-9 shrink-0 px-3"
+          className="signalflow-glow signalflow-btn-gradient h-9 shrink-0 px-3"
           disabled={isPending}
           onClick={handleSend}
           title="Send update (Enter)"

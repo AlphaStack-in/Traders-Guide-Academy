@@ -32,7 +32,7 @@ export interface EditableDraft {
   chartImageUrl?: string | null;
   contextTags?: string[];
   confidence?: "HIGH" | "MEDIUM" | "LOW";
-  parserName?: "THC" | "GOODWILL";
+  parserName?: "SIGNALFLOW" | "GOODWILL";
 }
 
 export function SignalDraftEditor({
@@ -49,19 +49,19 @@ export function SignalDraftEditor({
   }
 
   return (
-    <div className="thc-glass relative rounded-xl border border-white/10 bg-[#0d0e14]/80 p-4 flex flex-col gap-4">
+    <div className="signalflow-glass relative rounded-xl border border-white/10 bg-[#0d0e14]/80 p-4 flex flex-col gap-4">
       <button
         type="button"
         onClick={onRemove}
         aria-label="Remove draft"
-        className="absolute right-3 top-3 text-muted-foreground hover:text-[var(--thc-loss)]"
+        className="absolute right-3 top-3 text-muted-foreground hover:text-[var(--signalflow-loss)]"
       >
         <X className="h-4 w-4" />
       </button>
 
       <div className="flex items-center gap-2 flex-wrap text-xs">
         <span className="font-semibold text-foreground px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
-          Parser: {draft.parserName || "THC"}
+          Parser: {draft.parserName || "SIGNALFLOW"}
         </span>
         {draft.confidence && (
           <span
@@ -88,7 +88,7 @@ export function SignalDraftEditor({
       </div>
 
       {draft.warnings.length > 0 && (
-        <p className="text-xs text-[var(--thc-loss)]">
+        <p className="text-xs text-[var(--signalflow-loss)]">
           {draft.warnings.join(" · ")}
         </p>
       )}

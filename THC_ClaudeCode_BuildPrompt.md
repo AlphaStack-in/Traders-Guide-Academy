@@ -1,4 +1,4 @@
-# Claude Code Build Prompt — Traders Hub Center (THC)
+# Claude Code Build Prompt — SignalFlow (historical: originally built as "Traders Hub Center/THC")
 
 Copy everything below the line into Claude Code as your starting instruction.
 
@@ -6,7 +6,7 @@ Copy everything below the line into Claude Code as your starting instruction.
 
 ## Project Brief
 
-Build a full-stack responsive web app called **Traders Hub Center (THC)** — a platform
+Build a full-stack responsive web app called **SignalFlow** — a platform
 for publishing intraday options-buying trade signals to premium subscribers, with an
 admin dashboard for signal entry and performance analytics.
 
@@ -27,7 +27,7 @@ admin dashboard for signal entry and performance analytics.
   gateway needed yet — leave a clearly marked TODO hook for Razorpay/Stripe later)
 
 ### Repository & Deployment
-- Existing repo: **https://github.com/technojegan/Traders_Hub_Center.git** — clone
+- Existing repo: **https://github.com/technojegan/SignalFlow.git** — clone
   this repo first and check what's already scaffolded before starting from scratch;
   build on top of whatever's already there rather than overwriting it. If it's empty,
   initialize the Next.js project directly inside it.
@@ -55,7 +55,7 @@ admin dashboard for signal entry and performance analytics.
      real data pulled from Supabase
 
 ### Brand & Design System
-- Name: **Traders Hub Center**, shown as **THC** in the nav/logo mark
+- Name: **SignalFlow**, shown as **SignalFlow** in the nav/logo mark
 - Palette: **Black + Gold** — background near-black (#0B0B0D / #111114), gold accent
   (#D4AF37 / #F0C949 gradient), white/off-white text, with a subtle gold glow/border
   treatment on cards and buttons
@@ -162,7 +162,7 @@ sellPrice        : /sell(?:ing)?\s*price\s*-?\s*(\d+(\.\d+)?)/i
 ## Pages
 
 ### 1. Landing Page (`/`)
-- Hero section introducing **Traders Hub Center**, tagline around accuracy/consistency
+- Hero section introducing **SignalFlow**, tagline around accuracy/consistency
   (pull live numbers from the DB: e.g. "X% Win Rate", "Y Signals Given", "Z% Total
   Capture" — don't hardcode fake stats)
 - "Register Premium" primary CTA button (not "Register Free") → links to the
@@ -217,7 +217,7 @@ Charts (Recharts):
 ---
 
 ## Build Order (suggested)
-1. Clone the existing repo (https://github.com/technojegan/Traders_Hub_Center.git),
+1. Clone the existing repo (https://github.com/technojegan/SignalFlow.git),
    check what's already there, scaffold Next.js + Tailwind + shadcn on top of it, set
    up the Black/Gold theme tokens
 2. Set up the Supabase project + `Signal`/`Subscriber` tables, connect Prisma (or the

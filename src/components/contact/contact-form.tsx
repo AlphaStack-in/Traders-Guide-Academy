@@ -32,9 +32,9 @@ export function ContactForm() {
   }
 
   return (
-    <div className="thc-glass thc-glow mt-10 rounded-2xl border border-white/5 p-6">
+    <div className="signalflow-glass signalflow-glow mt-10 rounded-2xl border border-white/5 p-6">
       <h2 className="font-heading text-lg font-bold">
-        Send us a <span className="thc-gold-text">Message</span>
+        Send us a <span className="signalflow-gold-text">Message</span>
       </h2>
       <p className="mt-1 text-sm text-muted-foreground">
         Have a question or feedback? Drop us a message and we&apos;ll reply directly.
@@ -83,7 +83,7 @@ export function ContactForm() {
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="thc-glow thc-btn-gradient mt-1 w-fit"
+          className="signalflow-glow signalflow-btn-gradient mt-1 w-fit"
         >
           {isSubmitting ? "Sending…" : "Send Message"}
         </Button>

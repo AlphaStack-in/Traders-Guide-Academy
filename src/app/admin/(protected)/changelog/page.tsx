@@ -27,7 +27,7 @@ export default function AdminChangelogPage() {
         <div>
           <h1 className="font-heading text-2xl font-bold sm:text-3xl flex items-center gap-2.5">
             <History className="h-7 w-7 text-primary" />
-            <span>Platform <span className="thc-gold-text">Changelog</span></span>
+            <span>Platform <span className="signalflow-gold-text">Changelog</span></span>
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Complete chronological deployment audit log &amp; revision history for SignalFlow.

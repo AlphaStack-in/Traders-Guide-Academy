@@ -71,10 +71,10 @@ type SortColumn = "date" | "strike" | "entry" | "sl" | "pnl";
 type SortDirection = "asc" | "desc";
 
 function outcomeClass(pnlPercent: number | null) {
-  if (pnlPercent == null) return "border-l-[var(--thc-gold-start)]";
-  if (pnlPercent > 0) return "border-l-[var(--thc-win)]";
-  if (pnlPercent < 0) return "border-l-[var(--thc-loss)]";
-  return "border-l-[var(--thc-gold-start)]";
+  if (pnlPercent == null) return "border-l-[var(--signalflow-gold-start)]";
+  if (pnlPercent > 0) return "border-l-[var(--signalflow-win)]";
+  if (pnlPercent < 0) return "border-l-[var(--signalflow-loss)]";
+  return "border-l-[var(--signalflow-gold-start)]";
 }
 
 function sortValue(signal: SignalRow, column: SortColumn): number {
@@ -223,7 +223,7 @@ export function SignalsExplorer({
           No signals match these filters.
         </p>
       ) : (
-        <div className="thc-glass overflow-hidden rounded-xl border border-white/5">
+        <div className="signalflow-glass overflow-hidden rounded-xl border border-white/5">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
@@ -337,9 +337,9 @@ export function SignalsExplorer({
                   const isWin = signal.pnlPercent != null && signal.pnlPercent > 0;
                   const isLoss = signal.pnlPercent != null && signal.pnlPercent < 0;
                   const pnlClass = isWin
-                    ? "text-[var(--thc-win)]"
+                    ? "text-[var(--signalflow-win)]"
                     : isLoss
-                      ? "text-[var(--thc-loss)]"
+                      ? "text-[var(--signalflow-loss)]"
                       : "text-primary";
 
                   return (
@@ -365,8 +365,8 @@ export function SignalsExplorer({
                             className={cn(
                               "px-1.5 py-0 text-[10px] font-bold",
                               signal.optionType === "CE"
-                                ? "border-[var(--thc-ce)]/50 text-[var(--thc-ce)]"
-                                : "border-[var(--thc-pe)]/50 text-[var(--thc-pe)]",
+                                ? "border-[var(--signalflow-ce)]/50 text-[var(--signalflow-ce)]"
+                                : "border-[var(--signalflow-pe)]/50 text-[var(--signalflow-pe)]",
                             )}
                           >
                             {signal.optionType}

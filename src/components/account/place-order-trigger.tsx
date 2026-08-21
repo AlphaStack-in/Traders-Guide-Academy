@@ -53,7 +53,7 @@ export function PlaceOrderTrigger({
       type="button"
       size="sm"
       variant={expanded ? "outline" : "default"}
-      className={expanded ? "h-7 px-3 text-[11px]" : "thc-glow thc-btn-gradient h-7 px-3 text-[11px]"}
+      className={expanded ? "h-7 px-3 text-[11px]" : "signalflow-glow signalflow-btn-gradient h-7 px-3 text-[11px]"}
       onClick={onToggle}
     >
       {expanded ? "Cancel" : "Place Order"}

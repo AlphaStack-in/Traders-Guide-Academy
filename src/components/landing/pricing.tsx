@@ -37,7 +37,7 @@ function ContinuePremiumPanel({
       <Button
         variant={clientConfig.logoAccent ? undefined : "outline"}
         size="lg"
-        className="thc-glow mt-3 w-full border-0"
+        className="signalflow-glow mt-3 w-full border-0"
         style={
           clientConfig.logoAccent
             ? { backgroundColor: clientConfig.logoAccent, color: "#fff" }
@@ -53,7 +53,7 @@ function ContinuePremiumPanel({
   const manager = clientConfig.paymentInfo.managers[0];
 
   return (
-    <div className="thc-glass mt-3 rounded-xl border border-white/5 p-4">
+    <div className="signalflow-glass mt-3 rounded-xl border border-white/5 p-4">
       <p className="text-sm font-medium text-foreground">
         Enter your registered phone number to confirm your membership.
       </p>
@@ -69,7 +69,7 @@ function ContinuePremiumPanel({
           className="sm:flex-1"
         />
         <Button
-          className="thc-glow thc-btn-gradient"
+          className="signalflow-glow signalflow-btn-gradient"
           disabled={isChecking}
           onClick={handleCheck}
         >
@@ -80,17 +80,17 @@ function ContinuePremiumPanel({
       {result && (
         <div className="mt-3">
           {result.found ? (
-            <div className="rounded-lg border border-[var(--thc-win)]/40 bg-[var(--thc-win)]/10 p-3 text-sm">
+            <div className="rounded-lg border border-[var(--signalflow-win)]/40 bg-[var(--signalflow-win)]/10 p-3 text-sm">
               <p className="text-foreground/90">
                 {result.name ? `Welcome back, ${result.name}!` : "Membership confirmed!"}{" "}
                 Continue at{" "}
-                <span className="font-semibold text-[var(--thc-win)]">
+                <span className="font-semibold text-[var(--signalflow-win)]">
                   ₹{existingMemberPriceInr.toLocaleString("en-IN")}
                 </span>
                 .
               </p>
               {manager && (
-                <Button asChild size="sm" className="thc-glow thc-btn-gradient mt-3 w-full">
+                <Button asChild size="sm" className="signalflow-glow signalflow-btn-gradient mt-3 w-full">
                   <a
                     href={toWhatsAppLink(
                       manager.phone,
@@ -127,11 +127,11 @@ function DhanOfferCard() {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.5, delay: 0.1 }}
-      className="thc-glass thc-glow relative flex flex-col overflow-hidden rounded-2xl border border-white/5 p-6 text-center lg:max-w-xs"
+      className="signalflow-glass signalflow-glow relative flex flex-col overflow-hidden rounded-2xl border border-white/5 p-6 text-center lg:max-w-xs"
     >
       <span
         className="absolute inset-x-0 top-0 h-[3px]"
-        style={{ backgroundImage: "var(--thc-gold-gradient)" }}
+        style={{ backgroundImage: "var(--signalflow-gold-gradient)" }}
       />
       <Image
         src="/dhan-logo.jpg"
@@ -141,20 +141,20 @@ function DhanOfferCard() {
         className="mx-auto rounded-xl"
       />
       <p className="mt-3 font-heading text-lg font-bold">
-        Free Demat account with <span className="thc-gold-text">Dhan</span> 🔥
+        Free Demat account with <span className="signalflow-gold-text">Dhan</span> 🔥
       </p>
       <p className="mt-2 text-sm text-muted-foreground">
         Don&apos;t miss it — pick either offer:
       </p>
 
       <div className="mt-4 flex flex-col gap-2.5 text-sm">
-        <div className="rounded-lg border border-[var(--thc-win)]/40 bg-[var(--thc-win)]/10 px-3 py-2">
-          <span className="font-semibold text-[var(--thc-win)]">₹500 off</span>{" "}
+        <div className="rounded-lg border border-[var(--signalflow-win)]/40 bg-[var(--signalflow-win)]/10 px-3 py-2">
+          <span className="font-semibold text-[var(--signalflow-win)]">₹500 off</span>{" "}
           <span className="text-foreground/90">your next premium batch</span>
         </div>
         <p className="text-center text-xs text-muted-foreground">— or —</p>
-        <div className="rounded-lg border border-[var(--thc-win)]/40 bg-[var(--thc-win)]/10 px-3 py-2">
-          <span className="font-semibold text-[var(--thc-win)]">15% off</span>{" "}
+        <div className="rounded-lg border border-[var(--signalflow-win)]/40 bg-[var(--signalflow-win)]/10 px-3 py-2">
+          <span className="font-semibold text-[var(--signalflow-win)]">15% off</span>{" "}
           <span className="text-foreground/90">your brokerage</span>
         </div>
       </div>
@@ -174,7 +174,7 @@ function DhanOfferCard() {
         </p>
       </div>
 
-      <Button asChild size="sm" variant="outline" className="thc-glow mt-auto w-full">
+      <Button asChild size="sm" variant="outline" className="signalflow-glow mt-auto w-full">
         <a href={clientConfig.whatsappUrl} target="_blank" rel="noopener noreferrer">
           <WhatsAppIcon className="h-4 w-4" />
           Grab this offer
@@ -200,7 +200,7 @@ export function Pricing() {
       <div className="mx-auto max-w-5xl">
         <div className="text-center">
           <h2 className="font-heading text-2xl font-bold sm:text-3xl">
-            Join the <span className="thc-gold-text">{headline}</span>
+            Join the <span className="signalflow-gold-text">{headline}</span>
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
             Every call, live Zoom session, and WhatsApp signal — one flat price.
@@ -213,10 +213,10 @@ export function Pricing() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 0.5 }}
-          className="thc-glass thc-gold-border thc-glow rounded-2xl p-8 lg:max-w-xl lg:flex-1"
+          className="signalflow-glass signalflow-gold-border signalflow-glow rounded-2xl p-8 lg:max-w-xl lg:flex-1"
         >
           <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <p className="font-heading text-4xl font-bold thc-gold-text">
+            <p className="font-heading text-4xl font-bold signalflow-gold-text">
               ₹{batchInfo.priceInr.toLocaleString("en-IN")}
             </p>
             <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-muted-foreground">
@@ -255,7 +255,7 @@ export function Pricing() {
             </Link>
           </p>
 
-          <Button asChild size="lg" className="thc-glow thc-btn-gradient mt-6 w-full">
+          <Button asChild size="lg" className="signalflow-glow signalflow-btn-gradient mt-6 w-full">
             <Link href="/register">Register for this Batch</Link>
           </Button>
 

@@ -215,15 +215,15 @@ export function ReferEarnView({
   return (
     <div className="flex flex-col gap-8">
       {/* 1. TOP HERO HEADER */}
-      <div className="thc-glass thc-gold-border relative overflow-hidden rounded-3xl p-6 sm:p-10">
+      <div className="signalflow-glass signalflow-gold-border relative overflow-hidden rounded-3xl p-6 sm:p-10">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex-1">
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3.5 py-1 text-xs font-bold text-primary thc-glow mb-3">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3.5 py-1 text-xs font-bold text-primary signalflow-glow mb-3">
               <Sparkles className="h-3.5 w-3.5" />
               <span>₹1,000 PER SUCCESSFUL REFERRAL</span>
             </div>
             <h1 className="font-heading text-2xl font-bold sm:text-4xl">
-              Refer Friends. Earn <span className="thc-gold-text">Subscription Credits</span>. Trade Together.
+              Refer Friends. Earn <span className="signalflow-gold-text">Subscription Credits</span>. Trade Together.
             </h1>
             <p className="mt-2 text-xs sm:text-sm text-muted-foreground max-w-2xl leading-relaxed">
               Invite friends to {brandName} and earn ₹1,000 toward your next subscription renewal for every successful referral.
@@ -233,7 +233,7 @@ export function ReferEarnView({
           {/* Action CTAs */}
           <div className="flex flex-wrap items-center gap-3 mt-2 lg:mt-0">
             <Button
-              className="thc-glow thc-btn-gradient h-11 gap-2 px-6 font-semibold text-xs sm:text-sm"
+              className="signalflow-glow signalflow-btn-gradient h-11 gap-2 px-6 font-semibold text-xs sm:text-sm"
               onClick={copyLink}
             >
               <Copy className="h-4 w-4" />
@@ -254,21 +254,21 @@ export function ReferEarnView({
       {/* 2. 5 PROMINENT STAT CARDS */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {/* TOTAL EARNED */}
-        <div className="thc-glass thc-gold-border relative flex flex-col justify-between overflow-hidden rounded-2xl p-5">
+        <div className="signalflow-glass signalflow-gold-border relative flex flex-col justify-between overflow-hidden rounded-2xl p-5">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
               Total Earned
             </span>
             <Gift className="h-4 w-4 text-primary" />
           </div>
-          <p className="mt-3 font-heading text-3xl font-bold thc-gold-text">
+          <p className="mt-3 font-heading text-3xl font-bold signalflow-gold-text">
             ₹{totalEarned.toLocaleString("en-IN")}
           </p>
           <p className="mt-1 text-[11px] text-muted-foreground">Lifetime referral &amp; social credits</p>
         </div>
 
         {/* AVAILABLE CREDIT */}
-        <div className="thc-glass relative flex flex-col justify-between overflow-hidden rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-5">
+        <div className="signalflow-glass relative flex flex-col justify-between overflow-hidden rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-5">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
               Available Credit
@@ -282,7 +282,7 @@ export function ReferEarnView({
         </div>
 
         {/* PENDING REWARDS */}
-        <div className="thc-glass relative flex flex-col justify-between overflow-hidden rounded-2xl border border-amber-500/30 bg-amber-500/5 p-5">
+        <div className="signalflow-glass relative flex flex-col justify-between overflow-hidden rounded-2xl border border-amber-500/30 bg-amber-500/5 p-5">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold uppercase tracking-wider text-amber-400">
               Pending Rewards
@@ -296,7 +296,7 @@ export function ReferEarnView({
         </div>
 
         {/* SUCCESSFUL REFERRALS */}
-        <div className="thc-glass relative flex flex-col justify-between overflow-hidden rounded-2xl border border-white/10 p-5">
+        <div className="signalflow-glass relative flex flex-col justify-between overflow-hidden rounded-2xl border border-white/10 p-5">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
               Successful Referrals
@@ -310,7 +310,7 @@ export function ReferEarnView({
         </div>
 
         {/* REDEEMED */}
-        <div className="thc-glass relative flex flex-col justify-between overflow-hidden rounded-2xl border border-white/10 p-5">
+        <div className="signalflow-glass relative flex flex-col justify-between overflow-hidden rounded-2xl border border-white/10 p-5">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
               Redeemed Credit
@@ -325,7 +325,7 @@ export function ReferEarnView({
       </div>
 
       {/* 3. PRIMARY REFERRAL CARD */}
-      <div className="thc-glass relative flex flex-col gap-6 rounded-2xl border border-white/10 p-6 sm:p-8">
+      <div className="signalflow-glass relative flex flex-col gap-6 rounded-2xl border border-white/10 p-6 sm:p-8">
         <div>
           <div className="flex items-center gap-2">
             <Link2 className="h-5 w-5 text-primary" />
@@ -344,7 +344,7 @@ export function ReferEarnView({
           />
           <div className="flex flex-wrap items-center gap-2">
             <Button
-              className="thc-glow thc-btn-gradient h-11 gap-1.5 px-5 font-semibold text-xs"
+              className="signalflow-glow signalflow-btn-gradient h-11 gap-1.5 px-5 font-semibold text-xs"
               onClick={copyLink}
             >
               <Copy className="h-3.5 w-3.5" />
@@ -380,7 +380,7 @@ export function ReferEarnView({
       </div>
 
       {/* 4. HOW IT WORKS FLOW */}
-      <div className="thc-glass relative flex flex-col gap-6 rounded-2xl border border-white/10 p-6">
+      <div className="signalflow-glass relative flex flex-col gap-6 rounded-2xl border border-white/10 p-6">
         <div>
           <h2 className="font-heading text-lg font-bold">How Referral Credits Work</h2>
           <p className="mt-1 text-xs text-muted-foreground">
@@ -440,7 +440,7 @@ export function ReferEarnView({
       </div>
 
       {/* 5. PROMOTE & EARN (₹10/DAY SOCIAL PROMOTION) */}
-      <div className="thc-glass thc-gold-border relative flex flex-col gap-6 rounded-2xl p-6">
+      <div className="signalflow-glass signalflow-gold-border relative flex flex-col gap-6 rounded-2xl p-6">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2">
@@ -492,7 +492,7 @@ export function ReferEarnView({
               <Button
                 size="sm"
                 disabled={isClaimingSocial}
-                className="thc-glow thc-btn-gradient w-fit gap-1.5 text-xs font-semibold"
+                className="signalflow-glow signalflow-btn-gradient w-fit gap-1.5 text-xs font-semibold"
                 onClick={() => handlePromoteAndEarn("NATIVE")}
               >
                 <Share2 className="h-3.5 w-3.5" />
@@ -545,7 +545,7 @@ export function ReferEarnView({
       {/* 6. REFERRAL MILESTONES & STREAK */}
       <div className="grid gap-6 md:grid-cols-2">
         {/* MILESTONES */}
-        <div className="thc-glass relative flex flex-col gap-4 rounded-2xl border border-white/10 p-6">
+        <div className="signalflow-glass relative flex flex-col gap-4 rounded-2xl border border-white/10 p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Award className="h-5 w-5 text-primary" />
@@ -593,7 +593,7 @@ export function ReferEarnView({
                   key={m}
                   className={`flex flex-col items-center rounded-xl border p-2 text-center text-xs transition-colors ${
                     achieved
-                      ? "border-primary/40 bg-primary/10 text-primary font-bold thc-glow"
+                      ? "border-primary/40 bg-primary/10 text-primary font-bold signalflow-glow"
                       : "border-white/10 bg-black/20 text-muted-foreground"
                   }`}
                 >
@@ -607,7 +607,7 @@ export function ReferEarnView({
         </div>
 
         {/* MONTHLY STREAK */}
-        <div className="thc-glass relative flex flex-col justify-between gap-4 rounded-2xl border border-white/10 p-6">
+        <div className="signalflow-glass relative flex flex-col justify-between gap-4 rounded-2xl border border-white/10 p-6">
           <div>
             <div className="flex items-center gap-2">
               <Flame className="h-5 w-5 text-amber-500 animate-pulse" />
@@ -619,7 +619,7 @@ export function ReferEarnView({
           </div>
 
           <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-amber-500/20 bg-amber-500/5 p-6 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full border border-amber-500/40 bg-amber-500/10 text-amber-400 thc-glow">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full border border-amber-500/40 bg-amber-500/10 text-amber-400 signalflow-glow">
               <Flame className="h-7 w-7" />
             </div>
             <p className="font-heading text-3xl font-bold text-amber-400">
@@ -638,7 +638,7 @@ export function ReferEarnView({
       </div>
 
       {/* 7. REFERRAL HISTORY ACTIVITY TABLE */}
-      <div className="thc-glass relative flex flex-col gap-4 rounded-2xl border border-white/10 p-6">
+      <div className="signalflow-glass relative flex flex-col gap-4 rounded-2xl border border-white/10 p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Users className="h-5 w-5 text-primary" />
@@ -658,7 +658,7 @@ export function ReferEarnView({
             </p>
             <Button
               size="sm"
-              className="thc-glow thc-btn-gradient mt-2 gap-1.5"
+              className="signalflow-glow signalflow-btn-gradient mt-2 gap-1.5"
               onClick={copyLink}
             >
               <Copy className="h-3.5 w-3.5" />
@@ -739,7 +739,7 @@ export function ReferEarnView({
       </div>
 
       {/* 8. REWARD WALLET & CREDIT HISTORY LEDGER */}
-      <div className="thc-glass relative flex flex-col gap-4 rounded-2xl border border-white/10 p-6">
+      <div className="signalflow-glass relative flex flex-col gap-4 rounded-2xl border border-white/10 p-6">
         <div className="flex items-center gap-2">
           <History className="h-5 w-5 text-primary" />
           <h2 className="font-heading text-lg font-bold">Reward &amp; Credit Ledger</h2>
@@ -815,7 +815,7 @@ export function ReferEarnView({
 
       {/* 9. TOP REFERRERS LEADERBOARD */}
       {REFERRAL_CONFIG.LEADERBOARD_ENABLED && leaderboard.length > 0 && (
-        <div className="thc-glass relative flex flex-col gap-4 rounded-2xl border border-white/10 p-6">
+        <div className="signalflow-glass relative flex flex-col gap-4 rounded-2xl border border-white/10 p-6">
           <div className="flex items-center gap-2">
             <Trophy className="h-5 w-5 text-amber-400" />
             <h2 className="font-heading text-lg font-bold">Top Referrers Leaderboard</h2>
@@ -852,7 +852,7 @@ export function ReferEarnView({
                     <TableCell className="text-center font-bold text-xs text-sky-400">
                       {row.referralCount}
                     </TableCell>
-                    <TableCell className="text-right font-bold text-xs thc-gold-text">
+                    <TableCell className="text-right font-bold text-xs signalflow-gold-text">
                       ₹{row.totalEarned.toLocaleString("en-IN")}
                     </TableCell>
                   </TableRow>
@@ -866,7 +866,7 @@ export function ReferEarnView({
       {/* REDEEM CREDIT MODAL */}
       {showRedeemModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md">
-          <div className="thc-glass thc-gold-border relative flex w-full max-w-md flex-col overflow-hidden rounded-2xl border border-white/10 p-6 shadow-2xl">
+          <div className="signalflow-glass signalflow-gold-border relative flex w-full max-w-md flex-col overflow-hidden rounded-2xl border border-white/10 p-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div className="flex items-center gap-2">
                 <Wallet className="h-5 w-5 text-emerald-400" />
@@ -908,7 +908,7 @@ export function ReferEarnView({
                 </Button>
                 <Button
                   disabled={isRedeeming || availableCredit <= 0}
-                  className="thc-glow thc-btn-gradient font-semibold"
+                  className="signalflow-glow signalflow-btn-gradient font-semibold"
                   onClick={handleConfirmRedeem}
                 >
                   {isRedeeming ? "Processing..." : "Confirm Redemption"}

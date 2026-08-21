@@ -45,9 +45,9 @@ export function RecentSignalsList({ signals }: { signals: RecentSignalItem[] }) 
             const isWin = signal.pnlPercent != null && signal.pnlPercent > 0;
             const isLoss = signal.pnlPercent != null && signal.pnlPercent < 0;
             const dotColor = isWin
-              ? "bg-[var(--thc-win)]"
+              ? "bg-[var(--signalflow-win)]"
               : isLoss
-                ? "bg-[var(--thc-loss)]"
+                ? "bg-[var(--signalflow-loss)]"
                 : "bg-primary";
 
             return (
@@ -67,8 +67,8 @@ export function RecentSignalsList({ signals }: { signals: RecentSignalItem[] }) 
                       className={cn(
                         "px-1.5 py-0 text-[10px] font-bold",
                         signal.optionType === "CE"
-                          ? "border-[var(--thc-ce)]/50 text-[var(--thc-ce)]"
-                          : "border-[var(--thc-pe)]/50 text-[var(--thc-pe)]",
+                          ? "border-[var(--signalflow-ce)]/50 text-[var(--signalflow-ce)]"
+                          : "border-[var(--signalflow-pe)]/50 text-[var(--signalflow-pe)]",
                       )}
                     >
                       {signal.optionType}
@@ -82,9 +82,9 @@ export function RecentSignalsList({ signals }: { signals: RecentSignalItem[] }) 
                   className={cn(
                     "text-right font-heading font-bold",
                     isWin
-                      ? "text-[var(--thc-win)]"
+                      ? "text-[var(--signalflow-win)]"
                       : isLoss
-                        ? "text-[var(--thc-loss)]"
+                        ? "text-[var(--signalflow-loss)]"
                         : "text-muted-foreground",
                   )}
                 >

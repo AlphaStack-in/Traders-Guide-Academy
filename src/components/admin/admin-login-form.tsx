@@ -79,7 +79,7 @@ export function AdminLoginForm() {
       {error && (
         <div
           role="alert"
-          className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs font-medium text-[var(--thc-loss)] leading-relaxed"
+          className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs font-medium text-[var(--signalflow-loss)] leading-relaxed"
         >
           {error}
         </div>

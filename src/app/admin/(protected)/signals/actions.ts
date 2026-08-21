@@ -63,7 +63,7 @@ function toSignalCreateData(input: SignalInput) {
     target2: input.target2 ?? (input.targets[1] || null),
     contextTags: input.contextTags ?? [],
     confidence: input.confidence ?? "HIGH",
-    parserName: input.parserName ?? "THC",
+    parserName: input.parserName ?? "SIGNALFLOW",
   };
 }
 

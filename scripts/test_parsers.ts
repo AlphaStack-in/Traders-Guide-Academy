@@ -1,4 +1,4 @@
-import { parseSignalMessage, parseGoodwillMessage, parseThcMessage } from "../src/lib/parser";
+import { parseSignalMessage, parseGoodwillMessage, parseSignalFlowMessage } from "../src/lib/parser";
 
 const GOODWILL_SAMPLES = [
   "ALERT : NIFTY 24500 CE BUY AROUND 22/10 TRG OPEN RISK TRADE",
@@ -23,7 +23,7 @@ const GOODWILL_SAMPLES = [
   "Buy copper 1400ce @ 21.5/20 sl 17 target 25/30"
 ];
 
-const THC_SAMPLES = [
+const SIGNALFLOW_SAMPLES = [
   "24500 CE Above 120 SL 90 Target 150, 180 Now 125",
   "24400 PE Above 110 SL 85 Trgt 140 Now 115 selling price 140"
 ];
@@ -31,11 +31,11 @@ const THC_SAMPLES = [
 function runTests() {
   console.log("=== RUNNING MULTI-CUSTOMER PARSER TEST SUITE ===\n");
 
-  console.log("--- 1. Testing Existing THC Parser ---");
-  for (const sample of THC_SAMPLES) {
-    const parsed = parseThcMessage(sample);
-    console.assert(parsed.length > 0, `THC parse failed for: ${sample}`);
-    console.log(`✓ THC Parsed: ${parsed[0].instrument} ${parsed[0].strike}${parsed[0].optionType} Entry: ${parsed[0].entryPrice} SL: ${parsed[0].stopLoss}`);
+  console.log("--- 1. Testing Existing SignalFlow Parser ---");
+  for (const sample of SIGNALFLOW_SAMPLES) {
+    const parsed = parseSignalFlowMessage(sample);
+    console.assert(parsed.length > 0, `SignalFlow parse failed for: ${sample}`);
+    console.log(`✓ SignalFlow Parsed: ${parsed[0].instrument} ${parsed[0].strike}${parsed[0].optionType} Entry: ${parsed[0].entryPrice} SL: ${parsed[0].stopLoss}`);
   }
 
   console.log("\n--- 2. Testing Goodwill Parser (All 20 Sample Categories) ---");

@@ -13,8 +13,8 @@ import { OrderExpansionPanel } from "@/components/account/order-expansion-panel"
 
 const ORDER_BROKER = getActiveOrderBroker();
 
-const CLEARED_AT_KEY = "thc-notifications-cleared-at";
-const READ_IDS_KEY = "thc-notifications-read-ids";
+const CLEARED_AT_KEY = "signalflow-notifications-cleared-at";
+const READ_IDS_KEY = "signalflow-notifications-read-ids";
 const READ_IDS_CAP = 500;
 const MARK_READ_DELAY_MS = 1500;
 
@@ -256,7 +256,7 @@ export function NotificationBell() {
       >
         <Bell className="h-4 w-4" />
         {totalUnread > 0 && (
-          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--thc-loss)] px-1 text-[9px] font-bold text-black">
+          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--signalflow-loss)] px-1 text-[9px] font-bold text-black">
             {totalUnread > 9 ? "9+" : totalUnread}
           </span>
         )}
@@ -264,7 +264,7 @@ export function NotificationBell() {
 
       {open && (
         <div
-          className="thc-glass absolute right-0 top-11 z-50 max-h-[70vh] w-80 overflow-y-auto rounded-xl border border-white/10 p-3 shadow-xl sm:w-96"
+          className="signalflow-glass absolute right-0 top-11 z-50 max-h-[70vh] w-80 overflow-y-auto rounded-xl border border-white/10 p-3 shadow-xl sm:w-96"
           style={{ background: "color-mix(in oklab, var(--card) 97%, transparent)" }}
         >
           <div className="mb-2 flex items-center justify-between">
@@ -308,9 +308,9 @@ export function NotificationBell() {
                           onClick={() => toggleExpanded(group.signalId)}
                           className="flex w-full items-center justify-between gap-2 text-left"
                         >
-                          <span className="flex items-center gap-1.5 font-heading font-normal thc-gold-text">
+                          <span className="flex items-center gap-1.5 font-heading font-normal signalflow-gold-text">
                             {isUnread && (
-                              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--thc-loss)]" />
+                              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--signalflow-loss)]" />
                             )}
                             {signalLabel(group.latest)}
                           </span>

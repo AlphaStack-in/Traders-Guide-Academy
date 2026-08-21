@@ -47,7 +47,7 @@ export function RegisterForm() {
   if (submitted) {
     return (
       <div className="flex flex-col items-center gap-5 py-6 text-center">
-        <h2 className="font-heading text-2xl font-bold thc-gold-text">You&apos;re in!</h2>
+        <h2 className="font-heading text-2xl font-bold signalflow-gold-text">You&apos;re in!</h2>
         <p className="text-sm text-muted-foreground">
           {`Thanks, ${name.split(" ")[0]} — we've saved your details. Complete payment below, then join WhatsApp so we can add you to the group.`}
         </p>
@@ -82,7 +82,7 @@ export function RegisterForm() {
           </p>
         </div>
 
-        <Button asChild className="thc-glow thc-btn-gradient w-full">
+        <Button asChild className="signalflow-glow signalflow-btn-gradient w-full">
           <a href={clientConfig.whatsappUrl} target="_blank" rel="noopener noreferrer">
             <WhatsAppIcon className="h-4 w-4" />
             Join WhatsApp Group
@@ -97,7 +97,7 @@ export function RegisterForm() {
       {/* Current Running Batch Indicator */}
       <div className="rounded-lg border border-primary/30 bg-primary/10 p-3">
         <p className="text-xs text-muted-foreground">Joining Batch</p>
-        <p className="font-heading text-sm font-semibold thc-gold-text">
+        <p className="font-heading text-sm font-semibold signalflow-gold-text">
           Batch {clientConfig.batchInfo.batchNumber} ({clientConfig.batchInfo.startDate})
         </p>
       </div>
@@ -153,8 +153,8 @@ export function RegisterForm() {
         </select>
       </div>
 
-      {error && <p className="text-sm text-[var(--thc-loss)]">{error}</p>}
-      <Button type="submit" disabled={isPending} className="thc-glow thc-btn-gradient mt-2">
+      {error && <p className="text-sm text-[var(--signalflow-loss)]">{error}</p>}
+      <Button type="submit" disabled={isPending} className="signalflow-glow signalflow-btn-gradient mt-2">
         {isPending ? "Registering…" : "Register Premium"}
       </Button>
     </form>

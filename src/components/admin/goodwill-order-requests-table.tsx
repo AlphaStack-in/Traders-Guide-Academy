@@ -27,7 +27,7 @@ export interface GoodwillOrderRequestRow {
 // them manually until real GIGAPRO integration exists.
 export function GoodwillOrderRequestsTable({ requests }: { requests: GoodwillOrderRequestRow[] }) {
   return (
-    <div className="thc-glass thc-neutral-border overflow-x-auto rounded-xl border">
+    <div className="signalflow-glass signalflow-neutral-border overflow-x-auto rounded-xl border">
       <Table>
         <TableHeader>
           <TableRow>

@@ -16,7 +16,7 @@ export interface SlHitEvent {
   sellPrice: number;
 }
 
-const CONFETTI_COLORS = ["var(--thc-gold-start)", "var(--thc-gold-end)", "var(--thc-win)", "#ffffff"];
+const CONFETTI_COLORS = ["var(--signalflow-gold-start)", "var(--signalflow-gold-end)", "var(--signalflow-win)", "#ffffff"];
 
 interface ConfettiPiece {
   id: number;
@@ -72,7 +72,7 @@ function SlHitPulse() {
       className="pointer-events-none fixed inset-0 z-[100]"
       style={{
         background:
-          "radial-gradient(60% 60% at 50% 50%, color-mix(in oklab, var(--thc-loss) 60%, transparent), transparent 70%)",
+          "radial-gradient(60% 60% at 50% 50%, color-mix(in oklab, var(--signalflow-loss) 60%, transparent), transparent 70%)",
       }}
     />
   );

@@ -15,7 +15,7 @@ function num(match: RegExpMatchArray | null): number | null {
   return Number.isFinite(value) ? value : null;
 }
 
-export function splitThcSignalBlocks(rawText: string): string[] {
+export function splitSignalFlowSignalBlocks(rawText: string): string[] {
   const text = rawText.trim();
   if (!text) return [];
 
@@ -37,7 +37,7 @@ export function splitThcSignalBlocks(rawText: string): string[] {
   return blocks;
 }
 
-export function parseThcSignalBlock(block: string, rawTextContext?: string): CanonicalSignalDraft {
+export function parseSignalFlowSignalBlock(block: string, rawTextContext?: string): CanonicalSignalDraft {
   const warnings: string[] = [];
 
   const strikeTypeMatch = block.match(STRIKE_TYPE);
@@ -93,7 +93,7 @@ export function parseThcSignalBlock(block: string, rawTextContext?: string): Can
   const confidence = warnings.length === 0 ? "HIGH" : warnings.length <= 2 ? "MEDIUM" : "LOW";
 
   return {
-    customer: "THC",
+    customer: "SIGNALFLOW",
     instrument,
     mappedInstrument: instrument,
     instrumentType: "INDEX_OPTION",
@@ -113,7 +113,7 @@ export function parseThcSignalBlock(block: string, rawTextContext?: string): Can
     context: [],
     status: sellPrice != null ? "CLOSED_MANUAL" : "OPEN",
     rawMessage: block,
-    parserName: "THC",
+    parserName: "SIGNALFLOW",
     parserVersion: "1.0.0",
     confidence,
     warnings,
@@ -123,6 +123,6 @@ export function parseThcSignalBlock(block: string, rawTextContext?: string): Can
   };
 }
 
-export function parseThcMessage(rawText: string): CanonicalSignalDraft[] {
-  return splitThcSignalBlocks(rawText).map((block) => parseThcSignalBlock(block, rawText));
+export function parseSignalFlowMessage(rawText: string): CanonicalSignalDraft[] {
+  return splitSignalFlowSignalBlocks(rawText).map((block) => parseSignalFlowSignalBlock(block, rawText));
 }

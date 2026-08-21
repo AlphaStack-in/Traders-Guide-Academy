@@ -13,7 +13,7 @@ export async function Navbar() {
   const subscriber = await getCurrentSubscriber();
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-white/5 thc-glass">
+    <header className="sticky top-0 z-50 w-full border-b border-white/5 signalflow-glass">
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Logo />
         <DesktopNavigation />
@@ -23,7 +23,7 @@ export async function Navbar() {
           <SubscriberNavStatus subscriberName={subscriber?.name ?? null} />
           <AdminNavLink />
           {!subscriber && (
-            <Button asChild size="sm" className="thc-glow thc-btn-gradient text-xs font-semibold">
+            <Button asChild size="sm" className="signalflow-glow signalflow-btn-gradient text-xs font-semibold">
               <Link href="/register">Register Premium</Link>
             </Button>
           )}

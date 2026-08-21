@@ -2,7 +2,7 @@
 // Vercel project's env vars. Same repo/branch, different deployment picks a
 // different entry below. See CLAUDE.md/AGENTS.md history for the multi-client
 // deployment model this supports.
-export type ClientId = "thc" | "stockops" | "goodwill";
+export type ClientId = "signalflow" | "stockops" | "goodwill";
 
 export interface BatchInfo {
   batchNumber: number;
@@ -38,7 +38,7 @@ export interface ClientConfig {
   id: ClientId;
   // Gate on /admin/* login + auth-checked server actions. Set false only for
   // a deployment that's intentionally left open (e.g. a fresh client still
-  // being configured) — never flip THC's to false, its admin manages real
+  // being configured) — never flip SignalFlow's to false, its admin manages real
   // subscriber/signal data.
   requireAdminAuth: boolean;
   siteName: string;
@@ -72,7 +72,7 @@ export interface ClientConfig {
   youtubeUrl: string;
   linkedinUrl: string;
   // Overrides the default "{batchNumber}th Batch" pricing headline when a
-  // client doesn't use THC's batch model.
+  // client doesn't use SignalFlow's batch model.
   pricingHeadline?: string;
   // Where instagramThumbnails' videos actually come from — defaults to
   // "Instagram". Set to e.g. "YouTube" when a client's reels come from a
@@ -80,7 +80,7 @@ export interface ClientConfig {
   reelsSourceLabel?: string;
   dhanOfferEnabled: boolean;
   // Gates the "Connect Dhan" broker-connect feature (place real orders from
-  // signals). THC-only while this is being built out.
+  // signals). SignalFlow-only while this is being built out.
   dhanConnectEnabled: boolean;
   // Gates Goodwill's own "Place Order" UI (their broker is GIGAPRO, not
   // Dhan — no personal-token connect step, and no real order API yet). For
@@ -94,16 +94,16 @@ export interface ClientConfig {
 }
 
 const CLIENTS: Record<ClientId, ClientConfig> = {
-  thc: {
-    id: "thc",
+  signalflow: {
+    id: "signalflow",
     requireAdminAuth: true,
-    siteName: "Traders Hub Center",
-    siteNameShort: "THC",
+    siteName: "SignalFlow",
+    siteNameShort: "SignalFlow",
     siteDescription:
-      "Traders Hub Center (THC) publishes intraday options-buying trade signals to premium subscribers, backed by transparent performance analytics.",
-    logoSrc: "/thc-logo.jpg",
-    logoAlt: "Traders Hub Center",
-    faviconSrc: "/thc-favicon.jpg",
+      "SignalFlow publishes intraday options-buying trade signals to premium subscribers, backed by transparent performance analytics.",
+    logoSrc: "/signalflow-logo.jpg",
+    logoAlt: "SignalFlow",
+    faviconSrc: "/signalflow-favicon.jpg",
     goldStart: "#d4af37",
     goldEnd: "#f0c949",
     instrumentDonutColors: ["#f5d576", "#d4af37", "#a8842a", "#7a5f1c"],
@@ -214,7 +214,7 @@ const CLIENTS: Record<ClientId, ClientConfig> = {
       {
         thumbnailUrl: "/instagram/placeholder-5.svg",
         videoUrl: "https://www.instagram.com/stories/highlights/17962075925922683/",
-        label: "More from Traders Hub Center",
+        label: "More from SignalFlow",
       },
     ],
   },
@@ -462,9 +462,9 @@ const CLIENTS: Record<ClientId, ClientConfig> = {
   },
 };
 
-const CLIENT_ID = ((process.env.NEXT_PUBLIC_CLIENT as ClientId | undefined) ?? "thc") in CLIENTS
-  ? ((process.env.NEXT_PUBLIC_CLIENT as ClientId | undefined) ?? "thc")
-  : "thc";
+const CLIENT_ID = ((process.env.NEXT_PUBLIC_CLIENT as ClientId | undefined) ?? "signalflow") in CLIENTS
+  ? ((process.env.NEXT_PUBLIC_CLIENT as ClientId | undefined) ?? "signalflow")
+  : "signalflow";
 
 export const clientConfig: ClientConfig = CLIENTS[CLIENT_ID];
 

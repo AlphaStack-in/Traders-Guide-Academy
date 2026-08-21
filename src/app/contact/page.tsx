@@ -8,8 +8,8 @@ import { ContactForm } from "@/components/contact/contact-form";
 import { clientConfig } from "@/lib/client-config";
 
 const PROMO_BANNERS = [
-  { src: "/promo/offer1.jpeg", width: 852, height: 1280, alt: "Traders Hub Center jackpot offer" },
-  { src: "/promo/offer2.jpeg", width: 1024, height: 1536, alt: "Traders Hub Center 13th batch offer" },
+  { src: "/promo/offer1.jpeg", width: 852, height: 1280, alt: "SignalFlow jackpot offer" },
+  { src: "/promo/offer2.jpeg", width: 1024, height: 1536, alt: "SignalFlow 13th batch offer" },
 ];
 
 function toWhatsAppLink(phone: string) {
@@ -23,7 +23,7 @@ export default function ContactPage() {
       <main className="mx-auto flex-1 w-full max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="font-heading text-3xl font-bold sm:text-4xl">
-            Get in <span className="thc-gold-text">Touch</span>
+            Get in <span className="signalflow-gold-text">Touch</span>
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
             Questions about a signal, a batch, or payment — reach us directly.
@@ -35,11 +35,11 @@ export default function ContactPage() {
             href={clientConfig.whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="thc-glass thc-glow group relative overflow-hidden rounded-2xl border border-white/5 p-6 transition-colors hover:border-primary/40"
+            className="signalflow-glass signalflow-glow group relative overflow-hidden rounded-2xl border border-white/5 p-6 transition-colors hover:border-primary/40"
           >
             <span
               className="absolute inset-x-0 top-0 h-[3px]"
-              style={{ backgroundImage: "var(--thc-gold-gradient)" }}
+              style={{ backgroundImage: "var(--signalflow-gold-gradient)" }}
             />
             <WhatsAppIcon className="h-8 w-8 text-primary" />
             <p className="mt-4 font-heading text-lg font-bold">WhatsApp Group</p>
@@ -52,11 +52,11 @@ export default function ContactPage() {
             href={clientConfig.instagramUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="thc-glass thc-glow group relative overflow-hidden rounded-2xl border border-white/5 p-6 transition-colors hover:border-primary/40"
+            className="signalflow-glass signalflow-glow group relative overflow-hidden rounded-2xl border border-white/5 p-6 transition-colors hover:border-primary/40"
           >
             <span
               className="absolute inset-x-0 top-0 h-[3px]"
-              style={{ backgroundImage: "var(--thc-gold-gradient)" }}
+              style={{ backgroundImage: "var(--signalflow-gold-gradient)" }}
             />
             <InstagramIcon className="h-8 w-8 text-primary" />
             <p className="mt-4 font-heading text-lg font-bold">Instagram</p>
@@ -74,15 +74,15 @@ export default function ContactPage() {
             {clientConfig.paymentInfo.managers.map((manager) => (
               <div
                 key={manager.phone}
-                className="thc-glass rounded-xl border border-white/5 p-5"
+                className="signalflow-glass rounded-xl border border-white/5 p-5"
               >
                 <p className="font-heading text-base font-bold">{manager.name}</p>
                 <p className="mt-1 text-sm text-muted-foreground">{manager.phone}</p>
                 <div className="mt-4 flex flex-wrap gap-2">
-                  <Button asChild size="sm" variant="outline" className="thc-glow">
+                  <Button asChild size="sm" variant="outline" className="signalflow-glow">
                     <a href={`tel:${manager.phone}`}>Call</a>
                   </Button>
-                  <Button asChild size="sm" className="thc-glow thc-btn-gradient">
+                  <Button asChild size="sm" className="signalflow-glow signalflow-btn-gradient">
                     <a
                       href={toWhatsAppLink(manager.phone)}
                       target="_blank"
@@ -102,7 +102,7 @@ export default function ContactPage() {
 
         <ReferralForm />
 
-        {clientConfig.id === "thc" && (
+        {clientConfig.id === "signalflow" && (
           <div className="mt-10 grid gap-4 sm:grid-cols-2">
             {PROMO_BANNERS.map((banner) => (
               <a
@@ -110,7 +110,7 @@ export default function ContactPage() {
                 href={clientConfig.whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="thc-glow overflow-hidden rounded-2xl border border-white/5"
+                className="signalflow-glow overflow-hidden rounded-2xl border border-white/5"
               >
                 <Image
                   src={banner.src}

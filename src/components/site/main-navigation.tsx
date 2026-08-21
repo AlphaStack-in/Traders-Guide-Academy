@@ -35,7 +35,7 @@ export function DesktopNavigation() {
             className={cn(
               "flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-all",
               active
-                ? "border border-primary/40 bg-primary/10 text-primary thc-glow font-semibold shadow-sm"
+                ? "border border-primary/40 bg-primary/10 text-primary signalflow-glow font-semibold shadow-sm"
                 : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
             )}
           >
@@ -64,7 +64,7 @@ export function MobileNavigation() {
             className={cn(
               "flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all",
               active
-                ? "border border-primary/40 bg-primary/10 text-primary thc-glow font-semibold"
+                ? "border border-primary/40 bg-primary/10 text-primary signalflow-glow font-semibold"
                 : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
             )}
           >

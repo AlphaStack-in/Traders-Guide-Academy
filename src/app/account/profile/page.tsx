@@ -25,10 +25,10 @@ export default async function ProfilePage() {
       <Navbar />
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-4 py-12 sm:px-6">
         <h1 className="font-heading text-2xl font-bold">
-          Your <span className="thc-gold-text">Profile</span>
+          Your <span className="signalflow-gold-text">Profile</span>
         </h1>
 
-        <div className="thc-glass thc-neutral-border flex flex-col gap-3 rounded-2xl border p-5">
+        <div className="signalflow-glass signalflow-neutral-border flex flex-col gap-3 rounded-2xl border p-5">
           <div>
             <p className="text-xs text-muted-foreground">Name</p>
             <p className="font-heading font-semibold">{subscriber.name}</p>
@@ -55,15 +55,15 @@ export default async function ProfilePage() {
           </div>
         </div>
 
-        <div className="thc-glass thc-gold-border flex flex-col gap-3 rounded-2xl border p-5">
+        <div className="signalflow-glass signalflow-gold-border flex flex-col gap-3 rounded-2xl border p-5">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-heading font-bold text-base">Refer &amp; <span className="thc-gold-text">Earn</span></h3>
+              <h3 className="font-heading font-bold text-base">Refer &amp; <span className="signalflow-gold-text">Earn</span></h3>
               <p className="text-xs text-muted-foreground mt-0.5">Invite friends and earn rewards for every verified member.</p>
             </div>
             <a
               href="/account/refer"
-              className="thc-glow thc-btn-gradient inline-flex h-9 items-center justify-center rounded-lg px-4 text-xs font-semibold text-black"
+              className="signalflow-glow signalflow-btn-gradient inline-flex h-9 items-center justify-center rounded-lg px-4 text-xs font-semibold text-black"
             >
               Open Referrals
             </a>
@@ -71,9 +71,9 @@ export default async function ProfilePage() {
         </div>
 
         {clientConfig.dhanConnectEnabled && (
-          <div className="thc-glass thc-gold-border rounded-2xl border p-5">
+          <div className="signalflow-glass signalflow-gold-border rounded-2xl border p-5">
             <h2 className="font-heading text-lg font-bold">
-              Broker <span className="thc-gold-text">Connect</span>
+              Broker <span className="signalflow-gold-text">Connect</span>
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
               Connect your Dhan account to place orders straight from ongoing trade signals.

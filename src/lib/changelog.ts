@@ -154,7 +154,7 @@ export const CHANGELOG: ChangelogEntry[] = [
       "Added TradingView chart image clipboard paste (Ctrl+V) & upload",
       "Added common News & Market Alerts platform section",
       "Added multi-instrument signal parsing support",
-      "Preserved 100% THC parser compatibility",
+      "Preserved 100% SignalFlow parser compatibility",
     ],
   },
 ];

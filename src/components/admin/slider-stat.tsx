@@ -15,10 +15,10 @@ export function SliderStat({
 
   const gradient =
     accent === "win"
-      ? "linear-gradient(90deg, color-mix(in oklab, var(--thc-win) 60%, transparent), var(--thc-win))"
+      ? "linear-gradient(90deg, color-mix(in oklab, var(--signalflow-win) 60%, transparent), var(--signalflow-win))"
       : accent === "loss"
-        ? "linear-gradient(90deg, color-mix(in oklab, var(--thc-loss) 60%, transparent), var(--thc-loss))"
-        : "var(--thc-gold-gradient)";
+        ? "linear-gradient(90deg, color-mix(in oklab, var(--signalflow-loss) 60%, transparent), var(--signalflow-loss))"
+        : "var(--signalflow-gold-gradient)";
 
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-white/5 bg-black/20 p-4">

@@ -40,7 +40,7 @@ export function formatUpdateTime(date: string | Date) {
 }
 
 // Dynamic runtime join URL resolver — enforces Goodwill's public join URL
-// (https://gwcindia.in/register) and THC's domain without cross-client leaks.
+// (https://gwcindia.in/register) and SignalFlow's domain without cross-client leaks.
 export function getClientJoinUrl(referralToken?: string | null): string {
   if (clientConfig.id === "goodwill") {
     return "https://gwcindia.in/register";

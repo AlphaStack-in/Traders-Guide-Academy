@@ -1,4 +1,4 @@
-import { parseThcMessage } from "./thc-parser";
+import { parseSignalFlowMessage } from "./signalflow-parser";
 import { parseGoodwillMessage } from "./goodwill-parser";
 import type { CanonicalSignalDraft, CustomerType, ParserOptions } from "./types";
 
@@ -6,7 +6,9 @@ export function resolveCustomerParser(customer?: CustomerType | string, rawText?
   if (customer) {
     const norm = customer.toUpperCase().trim();
     if (norm === "GOODWILL") return "GOODWILL";
-    if (norm === "THC" || norm === "TRADERS_HUB_CENTER") return "THC";
+    // "SignalFlow" / "TRADERS_HUB_CENTER" kept as accepted aliases for backward compatibility
+    // with any caller still passing the pre-rebrand customer value.
+    if (norm === "SIGNALFLOW" || norm === "SignalFlow" || norm === "TRADERS_HUB_CENTER") return "SIGNALFLOW";
   }
 
   // Auto-detection based on message heuristics if customer is unspecified
@@ -15,7 +17,7 @@ export function resolveCustomerParser(customer?: CustomerType | string, rawText?
     if (isGoodwill) return "GOODWILL";
   }
 
-  return "THC";
+  return "SIGNALFLOW";
 }
 
 export function parseSignalMessage(
@@ -36,5 +38,5 @@ export function parseSignalMessage(
     return parseGoodwillMessage(rawText);
   }
 
-  return parseThcMessage(rawText);
+  return parseSignalFlowMessage(rawText);
 }

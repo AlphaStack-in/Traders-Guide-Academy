@@ -82,11 +82,11 @@ export function BrokerConnectPanel({
     return (
       <div className="flex flex-col gap-3">
         {justConnected && (
-          <div className="thc-glass thc-gold-border thc-glow flex items-start justify-between gap-3 rounded-xl border p-4">
+          <div className="signalflow-glass signalflow-gold-border signalflow-glow flex items-start justify-between gap-3 rounded-xl border p-4">
             <div className="flex items-start gap-2.5">
               <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
               <p className="text-sm font-medium">
-                <span className="font-heading font-bold thc-gold-text">Successfully connected!</span>{" "}
+                <span className="font-heading font-bold signalflow-gold-text">Successfully connected!</span>{" "}
                 You&apos;re all set to receive one-tap order forms on live signals.
               </p>
             </div>
@@ -100,7 +100,7 @@ export function BrokerConnectPanel({
             </button>
           </div>
         )}
-        <div className="thc-glass thc-neutral-border flex flex-col gap-3 rounded-xl border p-4">
+        <div className="signalflow-glass signalflow-neutral-border flex flex-col gap-3 rounded-xl border p-4">
           <div className="flex items-center justify-between">
             <p className="font-heading text-sm font-semibold">
               {initialConnection.dhanClientName ?? "Dhan Account"}
@@ -155,8 +155,8 @@ export function BrokerConnectPanel({
           onChange={(e) => setAccessToken(e.target.value)}
         />
       </div>
-      {error && <p className="text-sm text-[var(--thc-loss)]">{error}</p>}
-      <Button type="submit" disabled={loading} className="thc-glow thc-btn-gradient mt-2 w-fit">
+      {error && <p className="text-sm text-[var(--signalflow-loss)]">{error}</p>}
+      <Button type="submit" disabled={loading} className="signalflow-glow signalflow-btn-gradient mt-2 w-fit">
         {loading ? "Connecting…" : "Connect Dhan"}
       </Button>
     </form>

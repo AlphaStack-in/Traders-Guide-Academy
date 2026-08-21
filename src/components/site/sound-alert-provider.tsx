@@ -20,7 +20,7 @@ import {
   type SlHitEvent,
 } from "@/components/site/trade-alert-overlay";
 
-const STORAGE_KEY = "thc-sound-alerts-enabled";
+const STORAGE_KEY = "signalflow-sound-alerts-enabled";
 // How recently a signal's closedTime must be for this UPDATE event to count
 // as "just closed" rather than a later edit to an already-closed trade —
 // same window convention as the existing silentUpdateAt check below.

@@ -1,4 +1,4 @@
-Context: This is the Traders Hub Center app. There's a notification panel ("Updates from Admin") shown to users on the main site, and an admin panel at /admin/signals/new with a section called "Update Subscribers on Ongoing Trade" where the admin picks a signal (e.g. "Sensex 77800 CE") and clicks status buttons (READY, HOLD, ENTRY NOW, EXIT NOW, TARGET HIT, etc.) or types a custom message to notify subscribers.
+Context: This is the SignalFlow app. There's a notification panel ("Updates from Admin") shown to users on the main site, and an admin panel at /admin/signals/new with a section called "Update Subscribers on Ongoing Trade" where the admin picks a signal (e.g. "Sensex 77800 CE") and clicks status buttons (READY, HOLD, ENTRY NOW, EXIT NOW, TARGET HIT, etc.) or types a custom message to notify subscribers.
 
 First, investigate before changing anything:
 Look through this repo and identify:

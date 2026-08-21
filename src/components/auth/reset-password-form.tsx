@@ -59,7 +59,7 @@ export function ResetPasswordForm() {
   if (success) {
     return (
       <div className="flex flex-col items-center gap-3 text-center py-4">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 thc-glow">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 signalflow-glow">
           <CheckCircle2 className="h-6 w-6" />
         </div>
         <h2 className="font-heading text-xl font-bold text-foreground">Password Reset Successful!</h2>
@@ -107,9 +107,9 @@ export function ResetPasswordForm() {
         />
       </div>
 
-      {error && <p className="text-xs font-medium text-[var(--thc-loss)] leading-relaxed">{error}</p>}
+      {error && <p className="text-xs font-medium text-[var(--signalflow-loss)] leading-relaxed">{error}</p>}
 
-      <Button type="submit" disabled={loading} className="thc-glow thc-btn-gradient mt-2 font-semibold">
+      <Button type="submit" disabled={loading} className="signalflow-glow signalflow-btn-gradient mt-2 font-semibold">
         {loading ? "Updating Password…" : "Set New Password"}
       </Button>
     </form>

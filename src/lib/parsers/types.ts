@@ -1,13 +1,13 @@
 import type { InstrumentLiteral } from "@/lib/instruments";
 
 export type OptionTypeLiteral = "CE" | "PE";
-export type CustomerType = "THC" | "GOODWILL";
+export type CustomerType = "SIGNALFLOW" | "GOODWILL";
 export type ParserConfidence = "HIGH" | "MEDIUM" | "LOW";
 
 export interface CanonicalSignalDraft {
   customer?: CustomerType;
   instrument: string; // e.g. "NIFTY", "SENSEX", "BANKNIFTY", "FINNIFTY", "MIDCPNIFTY", "RVNL", "TCS", "ADANI ENT", "JUBILANT", "GOLD", "CRUDE", "COPPER", etc.
-  mappedInstrument?: InstrumentLiteral; // Mapped to THC enum if applicable
+  mappedInstrument?: InstrumentLiteral; // Mapped to SignalFlow enum if applicable
   instrumentType: "INDEX_OPTION" | "STOCK_OPTION" | "COMMODITY_OPTION" | "FUTURE" | "EQUITY";
   strike: number | null;
   optionType: OptionTypeLiteral | null;

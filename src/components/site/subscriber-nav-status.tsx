@@ -25,7 +25,7 @@ export function SubscriberNavStatus({ subscriberName }: { subscriberName: string
         className={cn(
           "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all sm:inline-flex",
           isLoginActive
-            ? "border border-primary/40 bg-primary/10 text-primary thc-glow font-semibold"
+            ? "border border-primary/40 bg-primary/10 text-primary signalflow-glow font-semibold"
             : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
         )}
       >
@@ -51,7 +51,7 @@ export function SubscriberNavStatus({ subscriberName }: { subscriberName: string
         className={cn(
           "flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-2.5 text-xs font-semibold outline-none transition-colors",
           isAccountActive
-            ? "border-primary/60 bg-primary/20 text-primary thc-glow"
+            ? "border-primary/60 bg-primary/20 text-primary signalflow-glow"
             : "border-primary/40 bg-primary/10 text-primary hover:border-primary/70"
         )}
       >

@@ -62,8 +62,8 @@ export function LoginForm() {
           onChange={(e) => setPassword(e.target.value)}
         />
       </div>
-      {error && <p className="text-sm text-[var(--thc-loss)]">{error}</p>}
-      <Button type="submit" disabled={loading} className="thc-glow thc-btn-gradient mt-2">
+      {error && <p className="text-sm text-[var(--signalflow-loss)]">{error}</p>}
+      <Button type="submit" disabled={loading} className="signalflow-glow signalflow-btn-gradient mt-2">
         {loading ? "Signing in…" : "Sign In"}
       </Button>
     </form>

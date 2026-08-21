@@ -111,7 +111,7 @@ export function AdminUsersClient({ initialUsers }: { initialUsers: AdminUser[] }
         </div>
       )}
       {error && (
-        <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-2.5 text-sm font-medium text-[var(--thc-loss)]">
+        <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-2.5 text-sm font-medium text-[var(--signalflow-loss)]">
           {error}
         </div>
       )}
@@ -123,7 +123,7 @@ export function AdminUsersClient({ initialUsers }: { initialUsers: AdminUser[] }
           id="add-admin-user-btn"
           size="sm"
           onClick={() => setShowAdd((v) => !v)}
-          className="gap-1.5 text-xs thc-btn-gradient thc-glow"
+          className="gap-1.5 text-xs signalflow-btn-gradient signalflow-glow"
         >
           <UserPlus className="h-3.5 w-3.5" />
           Add Admin User
@@ -132,7 +132,7 @@ export function AdminUsersClient({ initialUsers }: { initialUsers: AdminUser[] }
 
       {/* Add user form */}
       {showAdd && (
-        <div className="thc-glass rounded-xl border border-white/10 p-4 flex flex-col gap-3">
+        <div className="signalflow-glass rounded-xl border border-white/10 p-4 flex flex-col gap-3">
           <p className="text-sm font-semibold">New Admin User</p>
           <p className="text-xs text-muted-foreground">
             The user must sign in with this Google account. Access is activated on their
@@ -168,7 +168,7 @@ export function AdminUsersClient({ initialUsers }: { initialUsers: AdminUser[] }
               size="sm"
               disabled={isPending || !newEmail.trim()}
               onClick={handleAddUser}
-              className="gap-1.5 text-xs thc-btn-gradient thc-glow"
+              className="gap-1.5 text-xs signalflow-btn-gradient signalflow-glow"
             >
               <ShieldCheck className="h-3.5 w-3.5" />
               {isPending ? "Creating…" : "Create Admin User"}

@@ -222,7 +222,7 @@ export function SubscriberLoginForm() {
 
       {/* ERROR MESSAGE DISPLAY */}
       {error && (
-        <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs font-medium text-[var(--thc-loss)] leading-relaxed">
+        <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs font-medium text-[var(--signalflow-loss)] leading-relaxed">
           {error}
         </div>
       )}
@@ -279,7 +279,7 @@ export function SubscriberLoginForm() {
             </div>
           </div>
 
-          <Button type="submit" disabled={loading} className="thc-glow thc-btn-gradient mt-1 font-semibold h-11">
+          <Button type="submit" disabled={loading} className="signalflow-glow signalflow-btn-gradient mt-1 font-semibold h-11">
             {loading ? "Logging in…" : "Login"}
           </Button>
 
@@ -341,7 +341,7 @@ export function SubscriberLoginForm() {
                 />
               </div>
 
-              <Button type="submit" disabled={loading} className="thc-glow thc-btn-gradient h-11 font-semibold">
+              <Button type="submit" disabled={loading} className="signalflow-glow signalflow-btn-gradient h-11 font-semibold">
                 {loading ? "Sending…" : "Send Sign-In Link"}
               </Button>
 
@@ -406,7 +406,7 @@ export function SubscriberLoginForm() {
                 />
               </div>
 
-              <Button type="submit" disabled={loading} className="thc-glow thc-btn-gradient h-11 font-semibold">
+              <Button type="submit" disabled={loading} className="signalflow-glow signalflow-btn-gradient h-11 font-semibold">
                 {loading ? "Sending Reset Link…" : "Send Reset Link"}
               </Button>
 

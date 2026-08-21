@@ -27,7 +27,7 @@ export async function AdminNavLink() {
       className={cn(
         "hidden items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all sm:inline-flex",
         isAdmin
-          ? "border border-primary/40 bg-primary/10 text-primary thc-glow font-semibold"
+          ? "border border-primary/40 bg-primary/10 text-primary signalflow-glow font-semibold"
           : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
       )}
     >

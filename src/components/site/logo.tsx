@@ -12,12 +12,12 @@ export function Logo({ className }: { className?: string }) {
         alt={clientConfig.logoAlt}
         width={56}
         height={56}
-        className="h-12 w-12 rounded-full shadow-[0_2px_16px_-4px_var(--thc-gold-start)] transition-transform group-hover:scale-105 sm:h-14 sm:w-14"
+        className="h-12 w-12 rounded-full shadow-[0_2px_16px_-4px_var(--signalflow-gold-start)] transition-transform group-hover:scale-105 sm:h-14 sm:w-14"
         priority
       />
       <span className="flex flex-col leading-tight">
         <span className="font-heading text-lg font-bold tracking-tight sm:text-xl">
-          <span className="thc-gold-text">{firstWord}</span>{" "}
+          <span className="signalflow-gold-text">{firstWord}</span>{" "}
           {rest.length > 0 && <span className="text-foreground">{rest.join(" ")}</span>}
         </span>
         {clientConfig.tagline && (

@@ -60,7 +60,7 @@ export function DashboardContent({
           <Button
             size="sm"
             variant="outline"
-            className="thc-glow h-9 gap-1.5 self-start sm:self-auto"
+            className="signalflow-glow h-9 gap-1.5 self-start sm:self-auto"
             onClick={() => setShareOpen(true)}
           >
             <Share2 className="h-4 w-4 text-primary" />
@@ -113,17 +113,17 @@ export function DashboardContent({
         </div>
 
         {/* 01 Cumulative % */}
-        <div className="thc-glass thc-gold-border relative rounded-2xl p-6">
+        <div className="signalflow-glass signalflow-gold-border relative rounded-2xl p-6">
           <div className="mb-4 flex items-center gap-2">
             <SectionNumber n={1} />
             <h2 className="font-heading text-sm font-semibold">Cumulative %</h2>
           </div>
           <div className="grid gap-6 lg:grid-cols-3 lg:items-stretch">
             <div className="grid gap-6 sm:grid-cols-[minmax(160px,220px)_1fr] sm:items-center lg:col-span-2">
-              <div className="thc-glow relative overflow-hidden rounded-xl border border-white/5 bg-black/20 p-5 text-center sm:text-left">
+              <div className="signalflow-glow relative overflow-hidden rounded-xl border border-white/5 bg-black/20 p-5 text-center sm:text-left">
                 <span
                   className="absolute inset-x-0 top-0 h-[3px]"
-                  style={{ backgroundImage: "var(--thc-gold-gradient)" }}
+                  style={{ backgroundImage: "var(--signalflow-gold-gradient)" }}
                 />
                 <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
                   Total % Won this Batch
@@ -132,8 +132,8 @@ export function DashboardContent({
                   className={cn(
                     "mt-2 font-heading text-4xl font-bold leading-none sm:text-5xl",
                     metrics.totalCapturePercent >= 0
-                      ? "text-[var(--thc-win)]"
-                      : "text-[var(--thc-loss)]",
+                      ? "text-[var(--signalflow-win)]"
+                      : "text-[var(--signalflow-loss)]",
                   )}
                 >
                   {pct(metrics.totalCapturePercent)}
@@ -141,7 +141,7 @@ export function DashboardContent({
               </div>
               <CumulativeLineChart data={metrics.cumulativeSeries} />
             </div>
-            <div className="thc-glass rounded-xl border border-white/5 p-4">
+            <div className="signalflow-glass rounded-xl border border-white/5 p-4">
               <p className="mb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
                 Total % Won
               </p>
@@ -185,7 +185,7 @@ export function DashboardContent({
 
         {/* 03 Win Rate, 04 Profit vs Loss, 05 Best & Worst Trades */}
         <div className="grid gap-6 lg:grid-cols-3">
-          <div className="thc-glass rounded-xl border border-white/5 p-4">
+          <div className="signalflow-glass rounded-xl border border-white/5 p-4">
             <div className="mb-2 flex items-center gap-2">
               <SectionNumber n={3} />
               <h2 className="font-heading text-sm font-semibold">Win Rate</h2>
@@ -199,14 +199,14 @@ export function DashboardContent({
               />
             </div>
           </div>
-          <div className="thc-glass rounded-xl border border-white/5 p-4">
+          <div className="signalflow-glass rounded-xl border border-white/5 p-4">
             <div className="mb-2 flex items-center gap-2">
               <SectionNumber n={4} />
               <h2 className="font-heading text-sm font-semibold">Profit vs. Loss % by Day</h2>
             </div>
             <WinLossBarChart data={metrics.winLossByDay} />
           </div>
-          <div className="thc-glass rounded-xl border border-white/5 p-4">
+          <div className="signalflow-glass rounded-xl border border-white/5 p-4">
             <div className="mb-2 flex items-center gap-2">
               <SectionNumber n={5} />
               <h2 className="font-heading text-sm font-semibold">Best &amp; Worst Trades</h2>
@@ -216,10 +216,10 @@ export function DashboardContent({
         </div>
 
         {/* JOIN COMMUNITY BANNER */}
-        <div className="thc-glass thc-gold-border relative overflow-hidden rounded-xl border border-white/10 p-5 shadow-lg bg-gradient-to-r from-black/60 via-primary/5 to-black/60">
+        <div className="signalflow-glass signalflow-gold-border relative overflow-hidden rounded-xl border border-white/10 p-5 shadow-lg bg-gradient-to-r from-black/60 via-primary/5 to-black/60">
           <span
             className="absolute inset-x-0 top-0 h-[3px]"
-            style={{ backgroundImage: "var(--thc-gold-gradient)" }}
+            style={{ backgroundImage: "var(--signalflow-gold-gradient)" }}
           />
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-col gap-1">
@@ -241,7 +241,7 @@ export function DashboardContent({
       </div>
 
       {/* 06 Recent Signals (EXCLUDED FROM SNAPSHOT CONTAINER) */}
-      <div className="thc-glass rounded-xl border border-white/5 p-4">
+      <div className="signalflow-glass rounded-xl border border-white/5 p-4">
         <div className="mb-2 flex items-center gap-2">
           <SectionNumber n={6} />
           <h2 className="font-heading text-sm font-semibold">Recent Signals</h2>

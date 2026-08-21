@@ -1,7 +1,7 @@
 $yaml = @'
 project:
   owner: technojegan
-  repo: Traders_Hub_Center
+  repo: SignalFlow
 
 labels:
   - P0

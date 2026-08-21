@@ -48,7 +48,7 @@ model Signal {
   target2        Float?
   contextTags    String[]     @default([])
   confidence     String?      @default("HIGH")
-  parserName     String?      @default("THC")
+  parserName     String?      @default("SIGNALFLOW")
   parserVersion  String?      @default("1.0.0")
 
   @@index([signalTime])
@@ -92,7 +92,7 @@ enum ReferralStatus {
 
 // One Dhan account per subscriber. connectMethod is PERSONAL_TOKEN today (a
 // pasted self-generated Dhan access token — no partner approval needed);
-// PARTNER_OAUTH is reserved for once THC's Dhan partner_id/secret arrive, at
+// PARTNER_OAUTH is reserved for once SignalFlow's Dhan partner_id/secret arrive, at
 // which point only the connect flow changes, not this model or anything
 // downstream (order placement, square-off).
 model BrokerConnection {

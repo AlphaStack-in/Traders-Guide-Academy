@@ -32,7 +32,7 @@ export function AddSignalForm() {
     }
 
     setParsedResults(results);
-    toast.success(`Successfully parsed ${results.length} signal${results.length === 1 ? "" : "s"} (${results[0].parserName || "THC"}).`);
+    toast.success(`Successfully parsed ${results.length} signal${results.length === 1 ? "" : "s"} (${results[0].parserName || "SIGNALFLOW"}).`);
   }
 
   function handleUseParsedData(parsed: ParsedSignalDraft) {
@@ -108,7 +108,7 @@ export function AddSignalForm() {
           <Button
             type="button"
             onClick={handleParse}
-            className="thc-glow thc-btn-gradient gap-2 px-6 h-9 font-semibold justify-start text-xs"
+            className="signalflow-glow signalflow-btn-gradient gap-2 px-6 h-9 font-semibold justify-start text-xs"
           >
             <Sparkles className="h-4 w-4" />
             Parse Signal
@@ -135,7 +135,7 @@ export function AddSignalForm() {
                       {parsed.mappedInstrument || parsed.instrument} {parsed.strike} {parsed.optionType}
                     </span>
                     <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-primary/20 text-primary border border-primary/30">
-                      Parser: {parsed.parserName || "THC"}
+                      Parser: {parsed.parserName || "SIGNALFLOW"}
                     </span>
                   </div>
 

@@ -32,7 +32,7 @@ export default function RootLayout({
       className={`${inter.variable} ${sora.variable} dark h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        {/* Per-client brand colors — overrides the THC defaults baked into
+        {/* Per-client brand colors — overrides the SignalFlow defaults baked into
             globals.css so one codebase can serve multiple deployments. */}
         <style>{`
           :root {
@@ -43,13 +43,13 @@ export default function RootLayout({
             --sidebar-ring: ${clientConfig.goldStart};
             --accent: ${clientConfig.goldEnd};
             --chart-4: ${clientConfig.goldEnd};
-            --thc-gold-start: ${clientConfig.goldStart};
-            --thc-gold-end: ${clientConfig.goldEnd};
-            --thc-logo-accent: ${clientConfig.logoAccent ?? clientConfig.goldStart};
-            --thc-logo-accent-mix: ${clientConfig.logoAccent ? "18%" : "0%"};
+            --signalflow-gold-start: ${clientConfig.goldStart};
+            --signalflow-gold-end: ${clientConfig.goldEnd};
+            --signalflow-logo-accent: ${clientConfig.logoAccent ?? clientConfig.goldStart};
+            --signalflow-logo-accent-mix: ${clientConfig.logoAccent ? "18%" : "0%"};
           }
         `}</style>
-        <div className="thc-mesh-bg" aria-hidden="true" />
+        <div className="signalflow-mesh-bg" aria-hidden="true" />
         <SoundAlertProvider>{children}</SoundAlertProvider>
         <Toaster richColors theme="dark" />
       </body>

@@ -27,7 +27,7 @@ export function HowItWorks() {
     <section id="how-it-works" className="px-4 py-16 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl">
         <h2 className="text-center font-heading text-2xl font-bold sm:text-3xl">
-          How it <span className="thc-gold-text">works</span>
+          How it <span className="signalflow-gold-text">works</span>
         </h2>
         <div className="mt-10 flex flex-col items-stretch gap-4 sm:flex-row sm:items-center">
           {steps.map((step, i) => (
@@ -43,9 +43,9 @@ export function HowItWorks() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-80px" }}
                 transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="thc-glass thc-glow flex-1 rounded-xl border border-white/5 p-6 text-center"
+                className="signalflow-glass signalflow-glow flex-1 rounded-xl border border-white/5 p-6 text-center"
               >
-                <span className="mx-auto flex h-9 w-9 items-center justify-center rounded-full thc-gold-border font-heading text-sm font-bold text-primary">
+                <span className="mx-auto flex h-9 w-9 items-center justify-center rounded-full signalflow-gold-border font-heading text-sm font-bold text-primary">
                   {i + 1}
                 </span>
                 <h3 className="mt-4 font-heading text-lg font-semibold">{step.title}</h3>

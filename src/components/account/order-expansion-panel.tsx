@@ -88,7 +88,7 @@ export function OrderExpansionPanel({
 
   if (!details) {
     return (
-      <div className="thc-glass thc-neutral-border rounded-xl border p-3 text-xs text-muted-foreground">
+      <div className="signalflow-glass signalflow-neutral-border rounded-xl border p-3 text-xs text-muted-foreground">
         Loading order details…
       </div>
     );
@@ -96,12 +96,12 @@ export function OrderExpansionPanel({
 
   if (brokerType === "dhan" && details.brokerStatus !== "ACTIVE") {
     return (
-      <div className="thc-glass thc-gold-border flex items-center justify-between gap-3 rounded-xl border p-3">
+      <div className="signalflow-glass signalflow-gold-border flex items-center justify-between gap-3 rounded-xl border p-3">
         <div>
           <p className="text-sm font-medium">Broker Not Connected</p>
           <p className="text-xs text-muted-foreground">Connect your Dhan account to place this order.</p>
         </div>
-        <Button asChild size="sm" className="thc-glow thc-btn-gradient shrink-0">
+        <Button asChild size="sm" className="signalflow-glow signalflow-btn-gradient shrink-0">
           <Link href="/account/profile">Connect Now</Link>
         </Button>
       </div>
@@ -110,7 +110,7 @@ export function OrderExpansionPanel({
 
   if (details.contractError) {
     return (
-      <div className="thc-glass rounded-xl border border-[var(--thc-loss)]/40 p-3 text-sm text-[var(--thc-loss)]">
+      <div className="signalflow-glass rounded-xl border border-[var(--signalflow-loss)]/40 p-3 text-sm text-[var(--signalflow-loss)]">
         {details.contractError}
       </div>
     );
@@ -139,7 +139,7 @@ export function OrderExpansionPanel({
   }
 
   return (
-    <div className="thc-glass thc-neutral-border flex flex-col gap-3 rounded-xl border p-3">
+    <div className="signalflow-glass signalflow-neutral-border flex flex-col gap-3 rounded-xl border p-3">
       <div className="flex flex-wrap gap-4">
         <div className="flex flex-col gap-1">
           <label className="text-[10px] uppercase tracking-wide text-muted-foreground">
@@ -174,7 +174,7 @@ export function OrderExpansionPanel({
             >
               <Minus className="h-3.5 w-3.5" />
             </button>
-            <span className="w-5 text-center font-heading font-bold thc-gold-text">{lots}</span>
+            <span className="w-5 text-center font-heading font-bold signalflow-gold-text">{lots}</span>
             <button
               type="button"
               onClick={() => setLots((n) => n + 1)}
@@ -209,7 +209,7 @@ export function OrderExpansionPanel({
       </div>
 
       {result && (
-        <p className={`text-xs ${result.success ? "text-[var(--thc-win)]" : "text-[var(--thc-loss)]"}`}>
+        <p className={`text-xs ${result.success ? "text-[var(--signalflow-win)]" : "text-[var(--signalflow-loss)]"}`}>
           {result.text}
         </p>
       )}
@@ -219,7 +219,7 @@ export function OrderExpansionPanel({
           type="button"
           disabled={placing || result?.success}
           onClick={handlePlaceOrder}
-          className="thc-glow thc-btn-gradient"
+          className="signalflow-glow signalflow-btn-gradient"
         >
           {placing ? "Placing…" : result?.success ? "Order Placed" : "Place Order"}
         </Button>

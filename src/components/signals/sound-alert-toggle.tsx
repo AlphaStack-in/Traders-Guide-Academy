@@ -20,7 +20,7 @@ export function SoundAlertToggle() {
       className={cn(
         "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition-colors",
         enabled
-          ? "border-[var(--thc-win)]/50 bg-[var(--thc-win)]/10 text-[var(--thc-win)]"
+          ? "border-[var(--signalflow-win)]/50 bg-[var(--signalflow-win)]/10 text-[var(--signalflow-win)]"
           : "border-white/10 text-muted-foreground hover:text-foreground",
         justAlerted && "animate-pulse",
       )}

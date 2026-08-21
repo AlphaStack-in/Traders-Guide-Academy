@@ -251,7 +251,7 @@ export function DashboardShareModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md">
-      <div className="thc-glass thc-gold-border relative flex max-h-[95vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-white/10 p-6 shadow-2xl">
+      <div className="signalflow-glass signalflow-gold-border relative flex max-h-[95vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-white/10 p-6 shadow-2xl">
         {/* Modal Header */}
         <div className="flex items-center justify-between border-b border-white/10 pb-4">
           <div>
@@ -327,7 +327,7 @@ export function DashboardShareModal({
 
                 <Button
                   size="sm"
-                  className="thc-glow thc-btn-gradient h-9 gap-1.5 text-xs font-semibold"
+                  className="signalflow-glow signalflow-btn-gradient h-9 gap-1.5 text-xs font-semibold"
                   onClick={copyReferralLink}
                 >
                   <Link2 className="h-3.5 w-3.5" />

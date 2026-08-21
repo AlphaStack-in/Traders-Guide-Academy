@@ -21,7 +21,7 @@ export function InstagramGrid() {
     <section className="py-16">
       <div className="mx-auto max-w-6xl px-4 text-center sm:px-6 lg:px-8">
         <h2 className="font-heading text-2xl font-bold sm:text-3xl">
-          Watch us <span className="thc-gold-text">in action</span>
+          Watch us <span className="signalflow-gold-text">in action</span>
         </h2>
         <p className="mt-2 text-sm text-muted-foreground">
           Videos from our {reelsSourceLabel} — tap any thumbnail to watch.
@@ -36,8 +36,8 @@ export function InstagramGrid() {
         }}
       >
         <div
-          className="thc-marquee-track flex w-max"
-          style={{ ["--thc-marquee-duration" as string]: "56s" }}
+          className="signalflow-marquee-track flex w-max"
+          style={{ ["--signalflow-marquee-duration" as string]: "56s" }}
         >
           {items.map((item, i) => (
             <a
@@ -46,7 +46,7 @@ export function InstagramGrid() {
               target="_blank"
               rel="noopener noreferrer"
               className={cn(
-                "thc-glow group mr-4 shrink-0 overflow-hidden rounded-xl border border-white/5",
+                "signalflow-glow group mr-4 shrink-0 overflow-hidden rounded-xl border border-white/5",
                 isLandscape ? "w-56 sm:w-64" : "w-40 sm:w-48",
               )}
             >
@@ -60,7 +60,7 @@ export function InstagramGrid() {
                   className="object-cover transition-transform duration-300 group-hover:scale-105"
                 />
               </div>
-              <p className="thc-glass px-2.5 py-2 text-xs font-medium text-foreground">
+              <p className="signalflow-glass px-2.5 py-2 text-xs font-medium text-foreground">
                 {item.label}
               </p>
             </a>

@@ -94,7 +94,7 @@ export function AdminNav({ isSuperAdmin = false }: { isSuperAdmin?: boolean }) {
               className={cn(
                 "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium transition-all",
                 active
-                  ? "border border-primary/40 bg-primary/10 text-primary thc-glow font-semibold"
+                  ? "border border-primary/40 bg-primary/10 text-primary signalflow-glow font-semibold"
                   : "text-muted-foreground hover:bg-white/5 hover:text-foreground",
               )}
             >
@@ -110,7 +110,7 @@ export function AdminNav({ isSuperAdmin = false }: { isSuperAdmin?: boolean }) {
             className={cn(
               "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium outline-none transition-all cursor-pointer",
               isMembersActive
-                ? "border border-primary/40 bg-primary/10 text-primary thc-glow font-semibold"
+                ? "border border-primary/40 bg-primary/10 text-primary signalflow-glow font-semibold"
                 : "text-muted-foreground hover:bg-white/5 hover:text-foreground",
             )}
           >
@@ -141,7 +141,7 @@ export function AdminNav({ isSuperAdmin = false }: { isSuperAdmin?: boolean }) {
             className={cn(
               "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium outline-none transition-all cursor-pointer",
               isAdminGroupActive
-                ? "border border-primary/40 bg-primary/10 text-primary thc-glow font-semibold"
+                ? "border border-primary/40 bg-primary/10 text-primary signalflow-glow font-semibold"
                 : "text-muted-foreground hover:bg-white/5 hover:text-foreground",
             )}
           >
@@ -198,7 +198,7 @@ export function AdminMobileNav({ isSuperAdmin = false }: { isSuperAdmin?: boolea
             className={cn(
               "whitespace-nowrap rounded-lg px-2.5 py-1 text-xs font-medium transition-all",
               active
-                ? "border border-primary/40 bg-primary/10 text-primary thc-glow font-semibold"
+                ? "border border-primary/40 bg-primary/10 text-primary signalflow-glow font-semibold"
                 : "text-muted-foreground hover:bg-white/5 hover:text-foreground",
             )}
           >

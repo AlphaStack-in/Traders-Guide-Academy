@@ -75,7 +75,7 @@ export function OngoingSignals({
     : 0;
 
   return (
-    <div className="thc-glass thc-neutral-border mb-8 rounded-2xl border p-4 sm:p-6">
+    <div className="signalflow-glass signalflow-neutral-border mb-8 rounded-2xl border p-4 sm:p-6">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
           <div className="flex items-center gap-2">
@@ -96,7 +96,7 @@ export function OngoingSignals({
                 key={signal.id}
                 className="flex items-center gap-1.5 rounded-full border border-white/10 bg-black/20 px-3 py-1 text-sm text-muted-foreground"
               >
-                <span className="font-heading text-base font-bold thc-gold-text">
+                <span className="font-heading text-base font-bold signalflow-gold-text">
                   {instrumentPrefix(signal)}{signal.strike} {signal.optionType}
                 </span>
                 <span>
@@ -106,8 +106,8 @@ export function OngoingSignals({
                       "font-heading text-base font-bold",
                       // The blue gradient clip reads poorly on this small chip
                       // for StockOps — plain bright text is more legible there,
-                      // while THC's gold gradient stays as-is.
-                      clientConfig.id === "stockops" ? "text-foreground" : "thc-gold-text",
+                      // while SignalFlow's gold gradient stays as-is.
+                      clientConfig.id === "stockops" ? "text-foreground" : "signalflow-gold-text",
                     )}
                   >
                     ₹{signal.entryPrice}
@@ -147,37 +147,37 @@ export function OngoingSignals({
         </div>
 
         <div className="flex flex-col gap-3 lg:h-full">
-          <div className="thc-glass flex flex-1 flex-col items-center justify-center rounded-xl border border-white/5 p-3 text-center">
+          <div className="signalflow-glass flex flex-1 flex-col items-center justify-center rounded-xl border border-white/5 p-3 text-center">
             <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
               Avg Potential Gain
             </p>
             <p
               className={cn(
                 "mt-1 font-heading text-2xl font-bold",
-                isEmpty ? "text-muted-foreground" : "text-[var(--thc-win)]",
+                isEmpty ? "text-muted-foreground" : "text-[var(--signalflow-win)]",
               )}
             >
               {isEmpty ? "—" : `+${avgGain.toFixed(1)}%`}
             </p>
           </div>
-          <div className="thc-glass flex flex-1 flex-col items-center justify-center rounded-xl border border-white/5 p-3 text-center">
+          <div className="signalflow-glass flex flex-1 flex-col items-center justify-center rounded-xl border border-white/5 p-3 text-center">
             <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
               Avg Potential Risk
             </p>
             <p
               className={cn(
                 "mt-1 font-heading text-2xl font-bold",
-                isEmpty ? "text-muted-foreground" : "text-[var(--thc-loss)]",
+                isEmpty ? "text-muted-foreground" : "text-[var(--signalflow-loss)]",
               )}
             >
               {isEmpty ? "—" : `${avgLoss.toFixed(1)}%`}
             </p>
           </div>
-          <div className="thc-glass flex flex-1 flex-col items-center justify-center rounded-xl border border-white/5 p-3 text-center">
+          <div className="signalflow-glass flex flex-1 flex-col items-center justify-center rounded-xl border border-white/5 p-3 text-center">
             <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
               Open Positions
             </p>
-            <p className="mt-1 font-heading text-2xl font-bold thc-gold-text">{signals.length}</p>
+            <p className="mt-1 font-heading text-2xl font-bold signalflow-gold-text">{signals.length}</p>
           </div>
         </div>
 
@@ -196,7 +196,7 @@ export function OngoingSignals({
                   return (
                     <div
                       key={signal.id}
-                      className="thc-glass rounded-xl border border-primary/20 bg-primary/5 p-3"
+                      className="signalflow-glass rounded-xl border border-primary/20 bg-primary/5 p-3"
                     >
                       <div className="mb-2 flex items-center justify-between gap-2 border-b border-white/5 pb-1.5">
                         <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
@@ -273,8 +273,8 @@ export function OngoingSignals({
                               className={cn(
                                 "px-1.5 py-0 text-[10px] font-bold",
                                 signal.optionType === "CE"
-                                  ? "border-[var(--thc-ce)]/50 text-[var(--thc-ce)]"
-                                  : "border-[var(--thc-pe)]/50 text-[var(--thc-pe)]",
+                                  ? "border-[var(--signalflow-ce)]/50 text-[var(--signalflow-ce)]"
+                                  : "border-[var(--signalflow-pe)]/50 text-[var(--signalflow-pe)]",
                               )}
                             >
                               {signal.optionType}

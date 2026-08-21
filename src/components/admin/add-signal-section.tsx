@@ -8,7 +8,7 @@ export function AddSignalSection({ defaultOpen }: { defaultOpen: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <div className="thc-glass rounded-xl border border-white/5 p-4 sm:p-6">
+    <div className="signalflow-glass rounded-xl border border-white/5 p-4 sm:p-6">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}

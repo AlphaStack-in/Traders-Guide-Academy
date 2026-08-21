@@ -1,5 +1,5 @@
 // The marquee track duplicates its item list once, then loops the whole
-// track by exactly -50% (see .thc-marquee-track in globals.css) so the
+// track by exactly -50% (see .signalflow-marquee-track in globals.css) so the
 // second half seamlessly picks up where the first half started. That only
 // looks seamless if a single "half" is already wider than any real viewport
 // — otherwise the track runs out of content before the loop resets and

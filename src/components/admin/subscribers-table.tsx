@@ -329,7 +329,7 @@ function AddMemberFullWidthPanel({
   if (!open) return null;
 
   return (
-    <div className="thc-glass w-full flex flex-col gap-3 rounded-xl border border-white/10 p-4 transition-all">
+    <div className="signalflow-glass w-full flex flex-col gap-3 rounded-xl border border-white/10 p-4 transition-all">
       <div className="flex items-center justify-between">
         <Label className="font-heading text-sm font-semibold text-foreground">New Member Registration</Label>
         <Button
@@ -362,7 +362,7 @@ function AddMemberFullWidthPanel({
         </Button>
         <Button
           size="sm"
-          className="thc-glow thc-btn-gradient h-8 px-4"
+          className="signalflow-glow signalflow-btn-gradient h-8 px-4"
           disabled={isSaving}
           onClick={handleAdd}
         >
@@ -458,7 +458,7 @@ function SubscriberRowItem({
           <div className="flex items-center gap-1.5">
             <Button
               size="sm"
-              className="thc-glow thc-btn-gradient h-8"
+              className="signalflow-glow signalflow-btn-gradient h-8"
               disabled={isSaving}
               onClick={handleSave}
             >
@@ -502,7 +502,7 @@ function SubscriberRowItem({
         {subscriber.email ?? "—"}
       </TableCell>
       <TableCell>
-        <Badge variant="outline" className="thc-gold-border text-xs">
+        <Badge variant="outline" className="signalflow-gold-border text-xs">
           {subscriber.plan}
         </Badge>
       </TableCell>
@@ -571,7 +571,7 @@ function SubscriberRowItem({
             disabled={isDeleting}
             className={
               deleteArmed
-                ? "h-8 gap-1 px-2 border-[var(--thc-loss)]/60 text-[var(--thc-loss)]"
+                ? "h-8 gap-1 px-2 border-[var(--signalflow-loss)]/60 text-[var(--signalflow-loss)]"
                 : "h-8 w-8 p-0 text-muted-foreground"
             }
             title={deleteArmed ? "Click again to confirm delete" : "Remove member"}
@@ -775,7 +775,7 @@ export function SubscribersTable({ subscribers }: { subscribers: SubscriberRow[]
 
           <Button
             size="sm"
-            className="thc-glow thc-btn-gradient h-9 gap-1.5"
+            className="signalflow-glow signalflow-btn-gradient h-9 gap-1.5"
             onClick={() => setAddPanelOpen((prev) => !prev)}
           >
             <Plus className="h-4 w-4" />
@@ -787,7 +787,7 @@ export function SubscribersTable({ subscribers }: { subscribers: SubscriberRow[]
       <AddMemberFullWidthPanel open={addPanelOpen} onOpenChange={setAddPanelOpen} />
 
       {selectedIds.size > 0 && (
-        <div className="thc-glass flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/10 px-4 py-2.5 text-sm">
+        <div className="signalflow-glass flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/10 px-4 py-2.5 text-sm">
           <div className="flex items-center gap-2">
             <span className="font-semibold text-primary">{selectedIds.size}</span>
             <span className="text-muted-foreground">member{selectedIds.size === 1 ? "" : "s"} selected</span>
@@ -814,7 +814,7 @@ export function SubscribersTable({ subscribers }: { subscribers: SubscriberRow[]
         </div>
       )}
 
-      <div className="thc-glass overflow-hidden rounded-xl border border-white/5">
+      <div className="signalflow-glass overflow-hidden rounded-xl border border-white/5">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>

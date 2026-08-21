@@ -53,8 +53,8 @@ export function IndexTicker() {
       }}
     >
       <div
-        className="thc-marquee-track flex w-max"
-        style={{ ["--thc-marquee-duration" as string]: "80s" }}
+        className="signalflow-marquee-track flex w-max"
+        style={{ ["--signalflow-marquee-duration" as string]: "80s" }}
       >
         {items.map((q, i) => {
           const isUp = q.change >= 0;
@@ -70,7 +70,7 @@ export function IndexTicker() {
               <span
                 className={cn(
                   "font-medium",
-                  isUp ? "text-[var(--thc-win)]" : "text-[var(--thc-loss)]",
+                  isUp ? "text-[var(--signalflow-win)]" : "text-[var(--signalflow-loss)]",
                 )}
               >
                 {isUp ? "▲" : "▼"} {Math.abs(q.change).toFixed(2)} (

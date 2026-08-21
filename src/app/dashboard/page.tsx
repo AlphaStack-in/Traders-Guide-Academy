@@ -47,7 +47,7 @@ export default async function PublicDashboardPage({
         <div className="mb-8 flex items-start justify-between gap-4">
           <div>
             <h1 className="font-heading text-3xl font-bold sm:text-4xl">
-              <span className="thc-gold-text">Dashboard</span>
+              <span className="signalflow-gold-text">Dashboard</span>
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">
               Live performance analytics computed from every signal we&apos;ve published — no

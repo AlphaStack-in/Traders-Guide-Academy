@@ -21,13 +21,13 @@ export function TrustStats() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.5, delay: i * 0.08 }}
-            className="thc-glass thc-glow relative overflow-hidden rounded-xl border border-white/5 px-4 py-6 text-center"
+            className="signalflow-glass signalflow-glow relative overflow-hidden rounded-xl border border-white/5 px-4 py-6 text-center"
           >
             <span
               className="absolute inset-x-0 top-0 h-[3px]"
-              style={{ backgroundImage: "var(--thc-gold-gradient)" }}
+              style={{ backgroundImage: "var(--signalflow-gold-gradient)" }}
             />
-            <p className="font-heading text-3xl font-bold thc-gold-text sm:text-4xl">
+            <p className="font-heading text-3xl font-bold signalflow-gold-text sm:text-4xl">
               <CountUp value={stat.value} suffix={stat.suffix} />
             </p>
             <p className="mt-2 text-xs text-muted-foreground sm:text-sm">{stat.label}</p>

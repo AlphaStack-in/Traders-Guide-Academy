@@ -141,7 +141,7 @@ export function AdminReferralsTable({ members }: { members: AdminReferralMemberR
       </div>
 
       {/* Admin Table */}
-      <div className="thc-glass overflow-hidden rounded-2xl border border-white/10">
+      <div className="signalflow-glass overflow-hidden rounded-2xl border border-white/10">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
@@ -179,7 +179,7 @@ export function AdminReferralsTable({ members }: { members: AdminReferralMemberR
                     <TableCell className="text-center font-bold text-amber-400">
                       {m.pendingCount}
                     </TableCell>
-                    <TableCell className="text-right font-bold thc-gold-text">
+                    <TableCell className="text-right font-bold signalflow-gold-text">
                       ₹{m.totalRewards.toLocaleString("en-IN")}
                     </TableCell>
                     <TableCell className="text-right font-bold text-emerald-400">

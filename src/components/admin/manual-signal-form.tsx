@@ -366,7 +366,7 @@ export function ManualSignalForm({ prefilledValues, onSaved }: ManualSignalFormP
         <Button
           type="submit"
           disabled={isPending}
-          className="h-9 thc-glow thc-btn-gradient gap-2 px-6 text-xs font-semibold justify-start shrink-0"
+          className="h-9 signalflow-glow signalflow-btn-gradient gap-2 px-6 text-xs font-semibold justify-start shrink-0"
         >
           <Send className="h-4 w-4" />
           {isPending ? "Sending Signal…" : "Send Signal"}

@@ -62,9 +62,9 @@ export function ReferralForm() {
 
   return (
     <div className="mt-10 grid gap-6 lg:grid-cols-2">
-      <div className="thc-glass thc-glow rounded-2xl border border-white/5 p-6">
+      <div className="signalflow-glass signalflow-glow rounded-2xl border border-white/5 p-6">
         <h2 className="font-heading text-lg font-bold">
-          Refer a <span className="thc-gold-text">Friend</span>
+          Refer a <span className="signalflow-gold-text">Friend</span>
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Know someone who&apos;d benefit from our signals? Let us know.
@@ -113,14 +113,14 @@ export function ReferralForm() {
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="thc-glow thc-btn-gradient mt-1 w-fit"
+            className="signalflow-glow signalflow-btn-gradient mt-1 w-fit"
           >
             {isSubmitting ? "Submitting…" : "Submit Referral"}
           </Button>
         </form>
       </div>
 
-      <div className="thc-glass thc-glow rounded-2xl border border-white/5 p-6">
+      <div className="signalflow-glass signalflow-glow rounded-2xl border border-white/5 p-6">
         <h2 className="font-heading text-lg font-bold">Your Referrals</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Enter your phone number to see who you&apos;ve referred so far.
@@ -136,7 +136,7 @@ export function ReferralForm() {
               onChange={(e) => setLookupPhone(e.target.value)}
             />
           </div>
-          <Button type="submit" variant="outline" disabled={isLookingUp} className="thc-glow">
+          <Button type="submit" variant="outline" disabled={isLookingUp} className="signalflow-glow">
             {isLookingUp ? "Checking…" : "Check"}
           </Button>
         </form>

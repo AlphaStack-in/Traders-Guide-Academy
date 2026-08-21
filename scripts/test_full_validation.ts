@@ -1,5 +1,5 @@
 import { prisma } from "../src/lib/prisma";
-import { parseSignalMessage, parseGoodwillMessage, parseThcMessage, resolveCustomerParser } from "../src/lib/parser";
+import { parseSignalMessage, parseGoodwillMessage, parseSignalFlowMessage, resolveCustomerParser } from "../src/lib/parser";
 import { processSignalDraftLifecycle } from "../src/lib/parsers/lifecycle";
 
 async function retryQuery<T>(fn: () => Promise<T>, maxRetries = 5): Promise<T> {
@@ -155,27 +155,27 @@ async function runFullProductionValidation() {
   console.log(`Step 3 Result: ${step3Passed ? "PASS" : "FAIL"}\n`);
 
   // ----------------------------------------------------
-  // 4. THC Regression Validation
+  // 4. SignalFlow Regression Validation
   // ----------------------------------------------------
-  console.log("--- STEP 4: THC Regression Validation ---");
+  console.log("--- STEP 4: SignalFlow Regression Validation ---");
   let step4Passed = true;
-  const thcSample = "24500 CE Above 120 SL 90 Target 150, 180 Now 125";
-  const thcParsed = parseThcMessage(thcSample)[0];
+  const signalFlowSample = "24500 CE Above 120 SL 90 Target 150, 180 Now 125";
+  const signalFlowParsed = parseSignalFlowMessage(signalFlowSample)[0];
 
   if (
-    thcParsed.instrument !== "NIFTY" ||
-    thcParsed.strike !== 24500 ||
-    thcParsed.optionType !== "CE" ||
-    thcParsed.entryPrice !== 120 ||
-    thcParsed.stopLoss !== 90 ||
-    thcParsed.targets.length !== 2
+    signalFlowParsed.instrument !== "NIFTY" ||
+    signalFlowParsed.strike !== 24500 ||
+    signalFlowParsed.optionType !== "CE" ||
+    signalFlowParsed.entryPrice !== 120 ||
+    signalFlowParsed.stopLoss !== 90 ||
+    signalFlowParsed.targets.length !== 2
   ) {
-    console.error("FAIL: THC Parser regression detected!");
+    console.error("FAIL: SignalFlow Parser regression detected!");
     step4Passed = false;
   } else {
-    console.log("✓ Existing THC Parser behavior 100% intact.");
+    console.log("✓ Existing SignalFlow Parser behavior 100% intact.");
   }
-  results["THC Regression"] = step4Passed;
+  results["SignalFlow Regression"] = step4Passed;
   console.log(`Step 4 Result: ${step4Passed ? "PASS" : "FAIL"}\n`);
 
   // ----------------------------------------------------

@@ -92,7 +92,7 @@ function CloseTradeCell({ signal }: { signal: ManageSignalRow }) {
         className="h-8 w-24"
         inputMode="decimal"
       />
-      <Button size="sm" className="thc-glow thc-btn-gradient h-8" disabled={isPending} onClick={handleClose}>
+      <Button size="sm" className="signalflow-glow signalflow-btn-gradient h-8" disabled={isPending} onClick={handleClose}>
         {isPending ? "Closing…" : "Close"}
       </Button>
     </div>
@@ -141,9 +141,9 @@ function ManageSignalRowItem({ signal }: { signal: ManageSignalRow }) {
   const isWin = signal.pnlPercent != null && signal.pnlPercent > 0;
   const isLoss = signal.pnlPercent != null && signal.pnlPercent < 0;
   const pnlClass = isWin
-    ? "text-[var(--thc-win)]"
+    ? "text-[var(--signalflow-win)]"
     : isLoss
-      ? "text-[var(--thc-loss)]"
+      ? "text-[var(--signalflow-loss)]"
       : "text-primary";
 
   function startEdit() {
@@ -307,7 +307,7 @@ function ManageSignalRowItem({ signal }: { signal: ManageSignalRow }) {
           <div className="flex items-center gap-2">
             <Button
               size="sm"
-              className="thc-glow thc-btn-gradient h-8"
+              className="signalflow-glow signalflow-btn-gradient h-8"
               disabled={isSaving}
               onClick={handleSave}
             >
@@ -359,8 +359,8 @@ function ManageSignalRowItem({ signal }: { signal: ManageSignalRow }) {
             className={cn(
               "px-1.5 py-0 text-[10px] font-bold",
               signal.optionType === "CE"
-                ? "border-[var(--thc-ce)]/50 text-[var(--thc-ce)]"
-                : "border-[var(--thc-pe)]/50 text-[var(--thc-pe)]",
+                ? "border-[var(--signalflow-ce)]/50 text-[var(--signalflow-ce)]"
+                : "border-[var(--signalflow-pe)]/50 text-[var(--signalflow-pe)]",
             )}
           >
             {signal.optionType}
@@ -399,7 +399,7 @@ function ManageSignalRowItem({ signal }: { signal: ManageSignalRow }) {
             className={cn(
               "h-8 gap-1 px-2",
               deleteArmed
-                ? "border-[var(--thc-loss)]/60 text-[var(--thc-loss)]"
+                ? "border-[var(--signalflow-loss)]/60 text-[var(--signalflow-loss)]"
                 : "text-muted-foreground",
             )}
             title={deleteArmed ? "Click again to confirm delete" : "Delete signal"}
@@ -416,7 +416,7 @@ function ManageSignalRowItem({ signal }: { signal: ManageSignalRow }) {
 
 export function ManageSignalsTable({ signals }: { signals: ManageSignalRow[] }) {
   return (
-    <div className="thc-glass overflow-hidden rounded-xl border border-white/5">
+    <div className="signalflow-glass overflow-hidden rounded-xl border border-white/5">
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>

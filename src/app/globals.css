@@ -83,17 +83,17 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: #d4af37;
 
-  /* THC brand tokens */
-  --thc-gold-start: #d4af37;
-  --thc-gold-end: #f0c949;
-  --thc-win: #34d399;
-  --thc-loss: #f87171;
-  --thc-gold-gradient: linear-gradient(135deg, var(--thc-gold-start), var(--thc-gold-end));
+  /* SignalFlow brand tokens */
+  --signalflow-gold-start: #d4af37;
+  --signalflow-gold-end: #f0c949;
+  --signalflow-win: #34d399;
+  --signalflow-loss: #f87171;
+  --signalflow-gold-gradient: linear-gradient(135deg, var(--signalflow-gold-start), var(--signalflow-gold-end));
 
   /* Categorical: CE/PE are identity, not outcome — kept away from the
      win/loss (green/red) hue family so a chart never reads as "PE = bad". */
-  --thc-ce: #3987e5;
-  --thc-pe: #d55181;
+  --signalflow-ce: #3987e5;
+  --signalflow-pe: #d55181;
 }
 
 @layer base {
@@ -110,21 +110,21 @@
 }
 
 @layer utilities {
-  .thc-gold-text {
-    background-image: var(--thc-gold-gradient);
+  .signalflow-gold-text {
+    background-image: var(--signalflow-gold-gradient);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
   }
 
-  .thc-gold-border {
+  .signalflow-gold-border {
     border: 1px solid transparent;
     background:
       linear-gradient(var(--card), var(--card)) padding-box,
-      var(--thc-gold-gradient) border-box;
+      var(--signalflow-gold-gradient) border-box;
   }
 
-  .thc-glass {
+  .signalflow-glass {
     background:
       linear-gradient(160deg, oklch(0.75 0.13 90 / 7%), transparent 45%),
       color-mix(in oklab, var(--card) 70%, transparent);
@@ -132,21 +132,21 @@
     border: 1px solid oklch(1 0 0 / 10%);
   }
 
-  .thc-glow {
+  .signalflow-glow {
     transition: box-shadow 0.3s ease, transform 0.3s ease;
   }
-  .thc-glow:hover {
+  .signalflow-glow:hover {
     box-shadow: 0 0 0 1px oklch(0.75 0.15 90 / 40%), 0 8px 40px -8px oklch(0.75 0.15 90 / 45%);
     transform: translateY(-2px);
   }
 
   /* Gradient-filled CTA — layers over shadcn's solid bg-primary */
-  .thc-btn-gradient {
+  .signalflow-btn-gradient {
     background-image: linear-gradient(
       120deg,
-      var(--thc-gold-start),
-      var(--thc-gold-end) 55%,
-      var(--thc-gold-start)
+      var(--signalflow-gold-start),
+      var(--signalflow-gold-end) 55%,
+      var(--signalflow-gold-start)
     );
     background-size: 200% auto;
     background-position: 0% 50%;
@@ -154,60 +154,60 @@
     border: none;
     transition: background-position 0.5s ease, box-shadow 0.3s ease, transform 0.3s ease;
   }
-  .thc-btn-gradient:hover {
+  .signalflow-btn-gradient:hover {
     background-position: 100% 50%;
   }
 
-  /* Raised, skeuomorphic 3D press effect — layer on top of thc-btn-gradient */
-  .thc-btn-3d {
+  /* Raised, skeuomorphic 3D press effect — layer on top of signalflow-btn-gradient */
+  .signalflow-btn-3d {
     box-shadow:
-      0 4px 0 0 color-mix(in oklab, var(--thc-gold-start) 50%, black 50%),
+      0 4px 0 0 color-mix(in oklab, var(--signalflow-gold-start) 50%, black 50%),
       0 8px 16px -6px oklch(0.75 0.15 90 / 45%);
   }
-  .thc-btn-3d:hover {
+  .signalflow-btn-3d:hover {
     transform: translateY(-2px);
     box-shadow:
-      0 6px 0 0 color-mix(in oklab, var(--thc-gold-start) 50%, black 50%),
+      0 6px 0 0 color-mix(in oklab, var(--signalflow-gold-start) 50%, black 50%),
       0 14px 26px -6px oklch(0.75 0.18 90 / 55%);
   }
-  .thc-btn-3d:active {
+  .signalflow-btn-3d:active {
     transform: translateY(3px);
     box-shadow:
-      0 1px 0 0 color-mix(in oklab, var(--thc-gold-start) 50%, black 50%),
+      0 1px 0 0 color-mix(in oklab, var(--signalflow-gold-start) 50%, black 50%),
       0 2px 6px -2px oklch(0.75 0.15 90 / 35%);
   }
 
   /* Fixed ambient gradient mesh — sits behind all page content */
-  .thc-mesh-bg {
+  .signalflow-mesh-bg {
     position: fixed;
     inset: 0;
     z-index: -1;
     pointer-events: none;
     background-image:
-      radial-gradient(38% 32% at 12% 8%, color-mix(in oklab, var(--thc-gold-start) 20%, transparent), transparent 70%),
-      radial-gradient(32% 28% at 92% 18%, color-mix(in oklab, var(--thc-pe) 14%, transparent), transparent 70%),
-      radial-gradient(45% 38% at 50% 100%, color-mix(in oklab, var(--thc-ce) 10%, transparent), transparent 70%),
-      radial-gradient(40% 34% at 80% 88%, color-mix(in oklab, var(--thc-logo-accent, transparent) var(--thc-logo-accent-mix, 0%), transparent), transparent 70%);
+      radial-gradient(38% 32% at 12% 8%, color-mix(in oklab, var(--signalflow-gold-start) 20%, transparent), transparent 70%),
+      radial-gradient(32% 28% at 92% 18%, color-mix(in oklab, var(--signalflow-pe) 14%, transparent), transparent 70%),
+      radial-gradient(45% 38% at 50% 100%, color-mix(in oklab, var(--signalflow-ce) 10%, transparent), transparent 70%),
+      radial-gradient(40% 34% at 80% 88%, color-mix(in oklab, var(--signalflow-logo-accent, transparent) var(--signalflow-logo-accent-mix, 0%), transparent), transparent 70%);
   }
 
-  .thc-win-border {
-    border-color: color-mix(in oklab, var(--thc-win) 55%, transparent);
-    box-shadow: 0 0 24px -8px color-mix(in oklab, var(--thc-win) 45%, transparent);
+  .signalflow-win-border {
+    border-color: color-mix(in oklab, var(--signalflow-win) 55%, transparent);
+    box-shadow: 0 0 24px -8px color-mix(in oklab, var(--signalflow-win) 45%, transparent);
   }
-  .thc-loss-border {
-    border-color: color-mix(in oklab, var(--thc-loss) 55%, transparent);
-    box-shadow: 0 0 24px -8px color-mix(in oklab, var(--thc-loss) 45%, transparent);
+  .signalflow-loss-border {
+    border-color: color-mix(in oklab, var(--signalflow-loss) 55%, transparent);
+    box-shadow: 0 0 24px -8px color-mix(in oklab, var(--signalflow-loss) 45%, transparent);
   }
-  .thc-neutral-border {
-    border-color: color-mix(in oklab, var(--thc-gold-start) 45%, transparent);
-    box-shadow: 0 0 24px -10px color-mix(in oklab, var(--thc-gold-start) 35%, transparent);
-  }
-
-  .thc-reveal {
-    animation: thc-reveal-in 0.6s ease both;
+  .signalflow-neutral-border {
+    border-color: color-mix(in oklab, var(--signalflow-gold-start) 45%, transparent);
+    box-shadow: 0 0 24px -10px color-mix(in oklab, var(--signalflow-gold-start) 35%, transparent);
   }
 
-  @keyframes thc-reveal-in {
+  .signalflow-reveal {
+    animation: signalflow-reveal-in 0.6s ease both;
+  }
+
+  @keyframes signalflow-reveal-in {
     from {
       opacity: 0;
       transform: translateY(16px);
@@ -218,15 +218,15 @@
     }
   }
 
-  .thc-marquee-track {
-    animation: thc-marquee linear infinite;
-    animation-duration: var(--thc-marquee-duration, 28s);
+  .signalflow-marquee-track {
+    animation: signalflow-marquee linear infinite;
+    animation-duration: var(--signalflow-marquee-duration, 28s);
   }
-  .thc-marquee-track:hover {
+  .signalflow-marquee-track:hover {
     animation-play-state: paused;
   }
 
-  @keyframes thc-marquee {
+  @keyframes signalflow-marquee {
     from {
       transform: translateX(0);
     }

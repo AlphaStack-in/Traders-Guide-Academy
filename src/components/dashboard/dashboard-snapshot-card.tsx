@@ -45,7 +45,7 @@ export function DashboardSnapshotCard({
       <Button
         onClick={onDownload}
         disabled={isLoading || !snapshotUrl}
-        className="thc-glow thc-btn-gradient h-10 w-full gap-2 font-semibold text-sm shrink-0"
+        className="signalflow-glow signalflow-btn-gradient h-10 w-full gap-2 font-semibold text-sm shrink-0"
       >
         <Download className="h-4 w-4" />
         Download Snapshot (PNG)

@@ -13,21 +13,21 @@ export function KpiCard({
 }) {
   const valueClass =
     accent === "win"
-      ? "text-[var(--thc-win)]"
+      ? "text-[var(--signalflow-win)]"
       : accent === "loss"
-        ? "text-[var(--thc-loss)]"
-        : "thc-gold-text";
+        ? "text-[var(--signalflow-loss)]"
+        : "signalflow-gold-text";
 
   const barGradient =
     accent === "win"
-      ? "linear-gradient(90deg, color-mix(in oklab, var(--thc-win) 60%, transparent), var(--thc-win))"
+      ? "linear-gradient(90deg, color-mix(in oklab, var(--signalflow-win) 60%, transparent), var(--signalflow-win))"
       : accent === "loss"
-        ? "linear-gradient(90deg, color-mix(in oklab, var(--thc-loss) 60%, transparent), var(--thc-loss))"
-        : "var(--thc-gold-gradient)";
+        ? "linear-gradient(90deg, color-mix(in oklab, var(--signalflow-loss) 60%, transparent), var(--signalflow-loss))"
+        : "var(--signalflow-gold-gradient)";
 
   return (
     <div
-      className="thc-glass thc-glow thc-reveal relative overflow-hidden rounded-xl border border-white/5 p-4"
+      className="signalflow-glass signalflow-glow signalflow-reveal relative overflow-hidden rounded-xl border border-white/5 p-4"
       style={{ animationDelay: `${delayMs}ms` }}
     >
       <span

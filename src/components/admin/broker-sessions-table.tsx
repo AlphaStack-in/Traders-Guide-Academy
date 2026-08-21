@@ -108,7 +108,7 @@ export function BrokerSessionsTable({
       </div>
 
       {tab === "sessions" ? (
-        <div className="thc-glass thc-neutral-border overflow-x-auto rounded-xl border">
+        <div className="signalflow-glass signalflow-neutral-border overflow-x-auto rounded-xl border">
           <Table>
             <TableHeader>
               <TableRow>
@@ -163,7 +163,7 @@ export function BrokerSessionsTable({
           </Table>
         </div>
       ) : (
-        <div className="thc-glass thc-neutral-border overflow-x-auto rounded-xl border">
+        <div className="signalflow-glass signalflow-neutral-border overflow-x-auto rounded-xl border">
           <Table>
             <TableHeader>
               <TableRow>

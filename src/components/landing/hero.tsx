@@ -16,12 +16,12 @@ import {
 import { clientConfig } from "@/lib/client-config";
 
 export function Hero() {
-  const isThc = clientConfig.id === "thc";
+  const isSignalFlow = clientConfig.id === "signalflow";
   // Clients using the "Premium Community" pricing headline (Stockops,
   // Goodwill) show the bull image here instead of in the Pricing section —
   // see pricing.tsx's showBullImage.
   const showBull = clientConfig.pricingHeadline === "Premium Community";
-  const hasHeroImage = isThc || showBull;
+  const hasHeroImage = isSignalFlow || showBull;
 
   const socialLinks = [
     { href: clientConfig.whatsappUrl, Icon: WhatsAppIcon, label: "WhatsApp" },
@@ -48,7 +48,7 @@ export function Hero() {
         className="pointer-events-none absolute inset-0 -z-10"
         style={{
           background:
-            "radial-gradient(60% 50% at 50% 0%, color-mix(in oklab, var(--thc-gold-start) 22%, transparent), transparent 70%), radial-gradient(40% 35% at 85% 15%, color-mix(in oklab, var(--thc-pe) 14%, transparent), transparent 70%), radial-gradient(40% 35% at 12% 30%, color-mix(in oklab, var(--thc-ce) 12%, transparent), transparent 70%)",
+            "radial-gradient(60% 50% at 50% 0%, color-mix(in oklab, var(--signalflow-gold-start) 22%, transparent), transparent 70%), radial-gradient(40% 35% at 85% 15%, color-mix(in oklab, var(--signalflow-pe) 14%, transparent), transparent 70%), radial-gradient(40% 35% at 12% 30%, color-mix(in oklab, var(--signalflow-ce) 12%, transparent), transparent 70%)",
         }}
       />
 
@@ -65,9 +65,9 @@ export function Hero() {
               : ""
           }
         >
-          {isThc && (
+          {isSignalFlow && (
             <Image
-              src="/thc-hero-emblem.webp"
+              src="/signalflow-hero-emblem.webp"
               alt={clientConfig.siteName}
               width={1389}
               height={1965}
@@ -90,14 +90,14 @@ export function Hero() {
               {clientConfig.heroBadgeLabel ?? "Intraday Option Buying Signals"}
             </p>
             <h1 className="font-heading text-5xl font-bold leading-tight sm:text-6xl lg:text-7xl">
-              Trade with <span className="thc-gold-text">accuracy</span> and{" "}
-              <span className="thc-gold-text">consistency</span>
+              Trade with <span className="signalflow-gold-text">accuracy</span> and{" "}
+              <span className="signalflow-gold-text">consistency</span>
             </h1>
             <div
               className={hasHeroImage ? "mt-6 max-w-3xl lg:mx-0" : "mx-auto mt-6 max-w-3xl"}
             >
               <h2 className="font-heading text-2xl font-bold sm:text-3xl">
-                Precision, <span className="thc-gold-text">not luck</span>
+                Precision, <span className="signalflow-gold-text">not luck</span>
               </h2>
               <p className="mt-2 text-base text-muted-foreground sm:text-lg">
                 Every call gets a defined entry, stop loss, and target before it&apos;s posted — no
@@ -125,7 +125,7 @@ export function Hero() {
           <Button
             asChild
             size="lg"
-            className="thc-glow thc-btn-gradient h-14 gap-2.5 px-10 text-base"
+            className="signalflow-glow signalflow-btn-gradient h-14 gap-2.5 px-10 text-base"
           >
             <Link href="/register">Register Premium</Link>
           </Button>
@@ -140,12 +140,12 @@ export function Hero() {
                 asChild
                 size="lg"
                 variant="outline"
-                className="thc-glow h-32 w-28 flex-col gap-2 px-0"
+                className="signalflow-glow h-32 w-28 flex-col gap-2 px-0"
               >
                 <a href={href} target="_blank" rel="noopener noreferrer">
                   <Icon
                     className="size-12"
-                    style={{ color: clientConfig.logoAccent ?? "var(--thc-gold-start)" }}
+                    style={{ color: clientConfig.logoAccent ?? "var(--signalflow-gold-start)" }}
                   />
                   <span className="text-[10px] font-normal text-muted-foreground">{label}</span>
                 </a>
