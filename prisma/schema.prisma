@@ -69,9 +69,10 @@ model Subscriber {
   invitedAt             DateTime?
   invitedBy             String?
   invitationToken       String?                @unique
-  // Supabase Auth user id, linked the first time this subscriber completes
-  // email+OTP login (see src/lib/subscriber-auth.ts). Null until then.
-  authUserId            String?                @unique
+  // Scrypt hash of the subscriber's login password (see src/lib/password.ts
+  // and src/app/login/actions.ts). Null until an admin sets one — there is
+  // no self-service signup-with-password or password-reset-email flow yet.
+  passwordHash          String?
   brokerConnection      BrokerConnection?
   orderAuditLogs        OrderAuditLog[]
   goodwillOrderRequests GoodwillOrderRequest[]

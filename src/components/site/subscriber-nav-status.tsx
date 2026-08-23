@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Gift, LogIn, LogOut, User } from "lucide-react";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,8 +35,8 @@ export function SubscriberNavStatus({ subscriberName }: { subscriberName: string
   }
 
   async function handleLogout() {
-    const supabase = createSupabaseBrowserClient();
-    await supabase.auth.signOut();
+    await fetch("/logout", { method: "POST" });
+    router.push("/login");
     router.refresh();
   }
 

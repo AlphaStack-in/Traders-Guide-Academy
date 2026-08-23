@@ -1,6 +1,6 @@
 // Runs as a "prebuild" step (see package.json) before every `next build`.
 // Fails the build immediately, with a specific actionable message, if this
-// deployment's own configured Supabase project or database host isn't
+// deployment is missing required auth env vars or its database host isn't
 // reachable — added after the 2026-08-02 Goodwill outage where a stale
 // DATABASE_URL only surfaced as a runtime Prisma error in production.
 import { config as loadEnv } from "dotenv";
@@ -12,7 +12,6 @@ import { connect } from "node:net";
 loadEnv({ path: ".env.local" });
 loadEnv({ path: ".env" });
 
-const FETCH_TIMEOUT_MS = 5000;
 const TCP_TIMEOUT_MS = 3000;
 
 class BuildHealthCheckError extends Error {}
@@ -21,45 +20,26 @@ function fail(message: string): never {
   throw new BuildHealthCheckError(message);
 }
 
-async function checkSupabaseAuthHealth(): Promise<void> {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (!url) {
+// TGA has no external auth provider anymore (single hardcoded admin +
+// password-hashed subscribers, see src/lib/admin-rbac.ts /
+// src/lib/subscriber-auth.ts) — so there's nothing to reach over the
+// network here, just confirm the required env vars are actually set.
+function checkAdminAuthEnv(): void {
+  if (!process.env.ADMIN_EMAIL) {
+    fail("ADMIN_EMAIL is not set for this deployment — admin login will not work at runtime.");
+  }
+  if (!process.env.ADMIN_PASSWORD_HASH) {
     fail(
-      "NEXT_PUBLIC_SUPABASE_URL is not set for this deployment — Supabase Auth will not work at runtime.",
+      "ADMIN_PASSWORD_HASH is not set for this deployment — admin login will not work at runtime.",
     );
   }
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!anonKey) {
+  if (!process.env.SESSION_SECRET) {
     fail(
-      "NEXT_PUBLIC_SUPABASE_ANON_KEY is not set for this deployment — Supabase Auth will not work at runtime.",
-    );
-  }
-
-  // GoTrue's health endpoint 401s without an apikey header — it's not
-  // actually checking auth, just requires the header to be present.
-  const healthUrl = new URL("/auth/v1/health", url).toString();
-
-  let response: Response;
-  try {
-    response = await fetch(healthUrl, {
-      headers: { apikey: anonKey },
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-    });
-  } catch (error) {
-    fail(
-      `Supabase project unreachable at build time — check NEXT_PUBLIC_SUPABASE_URL for this deployment ` +
-        `(currently "${url}"). Request to ${healthUrl} failed: ${error instanceof Error ? error.message : String(error)}`,
+      "SESSION_SECRET is not set for this deployment — admin and subscriber sessions will not work at runtime.",
     );
   }
 
-  if (!response.ok) {
-    fail(
-      `Supabase project responded but is unhealthy — check NEXT_PUBLIC_SUPABASE_URL/NEXT_PUBLIC_SUPABASE_ANON_KEY ` +
-        `for this deployment (currently "${url}"). ${healthUrl} returned HTTP ${response.status}.`,
-    );
-  }
-
-  console.log(`  Supabase Auth reachable at ${url}`);
+  console.log("  Admin auth env vars present (ADMIN_EMAIL, ADMIN_PASSWORD_HASH, SESSION_SECRET).");
 }
 
 // TCP-connect only (no Prisma client, no auth, no query) — just confirms the
@@ -106,8 +86,8 @@ async function checkDatabaseHostReachable(): Promise<void> {
 }
 
 async function main() {
-  console.log("Running build-time Supabase/DB health check...");
-  await checkSupabaseAuthHealth();
+  console.log("Running build-time auth/DB health check...");
+  checkAdminAuthEnv();
   await checkDatabaseHostReachable();
   console.log("Build health check passed.\n");
 }

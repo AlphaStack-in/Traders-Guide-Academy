@@ -12,8 +12,9 @@ import { getAdminUser } from "@/lib/admin-auth";
  * This avoids relying on the proxy to redirect an already-authenticated admin
  * away from /admin/login, eliminating the previous brittle round-trip.
  *
- * Security: getAdminUser() performs the server-side ADMIN_EMAILS check.
- * Client-provided values are never trusted.
+ * Security: getAdminUser() performs the server-side admin session check
+ * (single hardcoded admin — see src/lib/admin-rbac.ts). Client-provided
+ * values are never trusted.
  */
 export async function AdminNavLink() {
   const result = await getAdminUser();

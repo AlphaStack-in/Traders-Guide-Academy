@@ -11,9 +11,11 @@ export default async function AdminProtectedLayout({
   children: React.ReactNode;
 }) {
   let isSuperAdmin = false;
+  let adminEmail: string | null = null;
   try {
     const admin = await requireAdmin();
     isSuperAdmin = admin.accessLevel === "SUPER_ADMIN";
+    adminEmail = admin.email;
   } catch {
     // Not authenticated or not an admin — send to login.
     redirect("/admin/login");
@@ -24,7 +26,7 @@ export default async function AdminProtectedLayout({
       <header className="sticky top-0 z-50 border-b border-white/5 signalflow-glass">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Logo />
-          <AdminNav isSuperAdmin={isSuperAdmin} />
+          <AdminNav isSuperAdmin={isSuperAdmin} adminEmail={adminEmail} />
         </div>
         <AdminMobileNav isSuperAdmin={isSuperAdmin} />
       </header>

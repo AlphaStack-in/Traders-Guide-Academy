@@ -20,19 +20,19 @@ async function runAudit() {
   // Group by email and normalized email
   const rawEmailGroups = new Map<string, typeof subscribers>();
   const normEmailGroups = new Map<string, typeof subscribers>();
-  const authUserIdGroups = new Map<string, typeof subscribers>();
+  const passwordHashGroups = new Map<string, typeof subscribers>();
 
   let nullAuthCount = 0;
   let linkedAuthCount = 0;
 
   for (const sub of subscribers) {
-    if (!sub.authUserId) {
+    if (!sub.passwordHash) {
       nullAuthCount++;
     } else {
       linkedAuthCount++;
-      const authList = authUserIdGroups.get(sub.authUserId) || [];
+      const authList = passwordHashGroups.get(sub.passwordHash) || [];
       authList.push(sub);
-      authUserIdGroups.set(sub.authUserId, authList);
+      passwordHashGroups.set(sub.passwordHash, authList);
     }
 
     if (sub.email) {
@@ -50,8 +50,8 @@ async function runAudit() {
     }
   }
 
-  console.log(`Subscribers with authUserId: ${linkedAuthCount}`);
-  console.log(`Subscribers with authUserId = NULL: ${nullAuthCount}`);
+  console.log(`Subscribers with passwordHash: ${linkedAuthCount}`);
+  console.log(`Subscribers with passwordHash = NULL: ${nullAuthCount}`);
 
   // Check duplicate raw emails
   const duplicateRawEmails = Array.from(rawEmailGroups.entries()).filter(
@@ -63,14 +63,14 @@ async function runAudit() {
     ([_, list]) => list.length > 1
   );
 
-  // Check duplicate authUserIds
-  const duplicateAuthUserIds = Array.from(authUserIdGroups.entries()).filter(
+  // Check duplicate passwordHashes
+  const duplicatePasswordHashes = Array.from(passwordHashGroups.entries()).filter(
     ([_, list]) => list.length > 1
   );
 
   console.log(`Unique raw emails with duplicates: ${duplicateRawEmails.length}`);
   console.log(`Unique normalized emails with duplicates: ${duplicateNormEmails.length}`);
-  console.log(`Duplicate authUserId instances: ${duplicateAuthUserIds.length}`);
+  console.log(`Duplicate passwordHash instances: ${duplicatePasswordHashes.length}`);
 
   console.log("\n--- DETAILED SUBSCRIBER LISTING ---");
   for (const s of subscribers) {
@@ -88,7 +88,7 @@ async function runAudit() {
     console.log(`ID: ${s.id}`);
     console.log(`  Name: ${s.name} | Phone: ${s.phone}`);
     console.log(`  Email: ${s.email} (Normalized: ${norm})`);
-    console.log(`  authUserId: ${s.authUserId || "NULL"}`);
+    console.log(`  passwordHash: ${s.passwordHash ? "SET" : "NULL"}`);
     console.log(`  Plan: ${s.plan} | CreatedAt: ${s.createdAt.toISOString()}`);
     console.log(`  Relations: ${relations || "None"}`);
     console.log("---------------------------------------------------");
@@ -100,10 +100,10 @@ async function runAudit() {
       console.log(`\nNormalized Email: "${normEmail}" (${list.length} records):`);
       
       // Determine canonical record recommendation
-      // Prefer record with authUserId and active relations, or earliest created
-      let recommendedCanonical = list.find((r) => r.authUserId && r.brokerConnection);
+      // Prefer record with passwordHash and active relations, or earliest created
+      let recommendedCanonical = list.find((r) => r.passwordHash && r.brokerConnection);
       if (!recommendedCanonical) {
-        recommendedCanonical = list.find((r) => r.authUserId);
+        recommendedCanonical = list.find((r) => r.passwordHash);
       }
       if (!recommendedCanonical) {
         recommendedCanonical = list.find(
@@ -129,19 +129,19 @@ async function runAudit() {
         let statusReason = "";
         if (isCanonical) {
           statusReason = "RECOMMENDED CANONICAL RECORD: ";
-          if (rec.authUserId && rec.brokerConnection) statusReason += "Has linked authUserId and active BrokerConnection.";
-          else if (rec.authUserId) statusReason += "Has linked authUserId.";
+          if (rec.passwordHash && rec.brokerConnection) statusReason += "Has passwordHash set and active BrokerConnection.";
+          else if (rec.passwordHash) statusReason += "Has passwordHash set.";
           else if (activeRelCount > 0) statusReason += "Has active database relations.";
           else statusReason += "Earliest created record.";
         } else {
           statusReason = "DUPLICATE RECORD TO ARCHIVE/CLEAN: ";
-          if (!rec.authUserId && activeRelCount === 0) statusReason += "Unlinked record with zero relations.";
+          if (!rec.passwordHash && activeRelCount === 0) statusReason += "Unlinked record with zero relations.";
           else statusReason += `Unlinked record with ${activeRelCount} relations.`;
         }
 
         console.log(`  Subscriber ID: ${rec.id}`);
         console.log(`    Email: ${rec.email}`);
-        console.log(`    authUserId: ${rec.authUserId || "NULL"}`);
+        console.log(`    passwordHash: ${rec.passwordHash ? "SET" : "NULL"}`);
         console.log(`    Plan: ${rec.plan}`);
         console.log(`    CreatedAt: ${rec.createdAt.toISOString()}`);
         console.log(`    Recommendation: ${statusReason}`);

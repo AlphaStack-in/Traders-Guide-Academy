@@ -1,59 +1,52 @@
 /**
- * Centralized server-side admin authorization — RBAC edition.
+ * Centralized server-side admin authorization.
  *
- * Authorization mechanism:
- * ---------------------------------------------------------------------------
- * Admins are identified by their Supabase Auth user.id (supabaseUserId) —
- * a stable UUID that does not change even if the user's email changes.
+ * TGA has exactly one admin account, defined entirely by environment
+ * variables (ADMIN_EMAIL, ADMIN_PASSWORD_HASH, SESSION_SECRET) — there is no
+ * database-backed multi-admin system or OAuth provider. This replaced the
+ * previous Supabase Auth (Google OAuth) + AdminUser-table RBAC when TGA
+ * moved its database off Supabase onto Neon.
  *
- * Onboarding uses email only as a temporary binding key: SUPER_ADMIN creates
- * an AdminUser with email + accessLevel and supabaseUserId = null.  On the
- * user's first successful Google login, getAdminUser() binds supabaseUserId
- * to the authenticated Auth user.id.  After binding, authorization is
- * UUID-based — email is never the permanent auth identity.
+ * Session mechanism: an HMAC-signed, httpOnly cookie (see
+ * src/lib/session-cookie.ts), verified server-side on every check — no
+ * external session store, no new npm dependencies.
  *
- * Authorization decisions are made by joining the Supabase session to the
- * AdminUser table in our Prisma database.  NEVER trust user_metadata or
- * app_metadata for security-sensitive authorization — Supabase explicitly
- * warns that user_metadata is user-editable.
- *
- * Fail-closed behavior:
- * ---------------------------------------------------------------------------
- * - No Supabase session → denied (401)
- * - Supabase session but no AdminUser row → denied (403)
- * - AdminUser.isActive === false → denied (403)
- * - Email match but supabaseUserId already bound to a different Auth id → 403
- * - Access level too low → denied (403)
- *
- * Backward compatibility:
- * ---------------------------------------------------------------------------
- * ADMIN_EMAILS is still checked as a fallback during migration.  Once all
- * admins have an AdminUser row in the database, ADMIN_EMAILS can be removed.
- * The database check always takes priority when an AdminUser row exists.
- *
- * Access level hierarchy (ascending privileges):
- *   VIEWER < SUPPORT < SIGNAL_MANAGER < ADMIN < SUPER_ADMIN
+ * `accessLevel` is always "SUPER_ADMIN" and `source` is always "env_fallback"
+ * — both fields are kept in the return shape purely so existing call sites
+ * (which check `accessLevel`, call `requireAccessLevel()`, or destructure
+ * `source`) keep working unchanged. The AdminUser/AdminUserAuditLog Prisma
+ * models are no longer read here; they're unused dead schema now (left in
+ * place rather than risking an unnecessary migration — see handoff notes).
  *
  * Usage:
  * ---------------------------------------------------------------------------
  * In Server Actions (throw on failure):
  *   const admin = await requireAdmin();
- *   const admin = await requireAccessLevel("SIGNAL_MANAGER");
+ *   const admin = await requireAccessLevel("SIGNAL_MANAGER"); // always passes
  *
  * In API Route handlers (return status code):
  *   const result = await getAdminUser();
  *   if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status });
- *
- * Check specific permission:
- *   if (!hasPermission(admin.accessLevel, "SIGNAL_MANAGER")) { ... }
  */
 
-import { prisma } from "@/lib/prisma";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { cookies } from "next/headers";
 import type { AdminAccessLevel } from "@prisma/client";
+import { createSessionToken, verifySessionToken } from "@/lib/session-cookie";
+import { verifyPassword } from "@/lib/password";
+
+export const ADMIN_SESSION_COOKIE = "admin_session";
+const ADMIN_SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7; // 7 days
+
+interface AdminSessionPayload {
+  role: "admin";
+  email: string;
+  exp: number;
+}
 
 // ---------------------------------------------------------------------------
-// Access level ordering — higher index = higher privilege
+// Access level ordering — kept for API compatibility with existing callers.
+// With a single hardcoded admin, every authenticated session is SUPER_ADMIN,
+// so hasPermission()/requireAccessLevel() always pass once authenticated.
 // ---------------------------------------------------------------------------
 
 const ACCESS_LEVEL_ORDER: AdminAccessLevel[] = [
@@ -64,34 +57,11 @@ const ACCESS_LEVEL_ORDER: AdminAccessLevel[] = [
   "SUPER_ADMIN",
 ];
 
-/**
- * Returns true iff `actual` meets or exceeds the `required` access level.
- */
 export function hasPermission(
   actual: AdminAccessLevel,
   required: AdminAccessLevel,
 ): boolean {
   return ACCESS_LEVEL_ORDER.indexOf(actual) >= ACCESS_LEVEL_ORDER.indexOf(required);
-}
-
-// ---------------------------------------------------------------------------
-// ADMIN_EMAILS fallback (migration bridge)
-// ---------------------------------------------------------------------------
-
-/**
- * Returns the normalized set of admin emails from ADMIN_EMAILS env var.
- * Used only as a fallback when no AdminUser row exists for a given user.
- * Falls closed if ADMIN_EMAILS is not set.
- */
-function getFallbackAdminEmailSet(): Set<string> {
-  const raw = process.env.ADMIN_EMAILS ?? "";
-  if (!raw.trim()) return new Set();
-  return new Set(
-    raw
-      .split(",")
-      .map((e) => e.trim().toLowerCase())
-      .filter(Boolean),
-  );
 }
 
 // ---------------------------------------------------------------------------
@@ -101,177 +71,91 @@ function getFallbackAdminEmailSet(): Set<string> {
 export type AdminCheckResult =
   | {
       ok: true;
-      userId: string; // Supabase Auth user.id
+      userId: string;
       email: string;
       accessLevel: AdminAccessLevel;
-      adminUserId: string; // AdminUser.id (DB primary key)
+      adminUserId: string;
       source: "database" | "env_fallback";
     }
   | { ok: false; error: string; status: 401 | 403 };
+
+// ---------------------------------------------------------------------------
+// Credential verification + session issuance (used by the login action)
+// ---------------------------------------------------------------------------
+
+/**
+ * Checks a submitted email/password against ADMIN_EMAIL/ADMIN_PASSWORD_HASH.
+ * Fails closed (returns false) if either env var is unset.
+ */
+export function verifyAdminCredentials(email: string, password: string): boolean {
+  const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+  const passwordHash = process.env.ADMIN_PASSWORD_HASH;
+  if (!adminEmail || !passwordHash) return false;
+  if (email.trim().toLowerCase() !== adminEmail) return false;
+  return verifyPassword(password, passwordHash);
+}
+
+export async function createAdminSession(email: string): Promise<void> {
+  const cookieStore = await cookies();
+  const token = await createSessionToken(
+    { role: "admin", email: email.trim().toLowerCase() },
+    ADMIN_SESSION_MAX_AGE_SECONDS,
+  );
+  cookieStore.set(ADMIN_SESSION_COOKIE, token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: ADMIN_SESSION_MAX_AGE_SECONDS,
+  });
+}
+
+export async function clearAdminSession(): Promise<void> {
+  const cookieStore = await cookies();
+  cookieStore.delete(ADMIN_SESSION_COOKIE);
+}
 
 // ---------------------------------------------------------------------------
 // Core: getAdminUser()
 // ---------------------------------------------------------------------------
 
 /**
- * Verifies that the current request comes from an authenticated, authorized
- * admin user.
- *
- * Resolution order:
- *  1. Get Supabase Auth user (authentication)
- *  2. Look up AdminUser by supabaseUserId (primary authorization)
- *  3. If no UUID match: look up active AdminUser by normalized email
- *     - supabaseUserId null → bind to authenticated user.id, then authorize
- *     - supabaseUserId already set to a different Auth id → deny
- *     - supabaseUserId already equals this Auth id → authorize
- *  4. If no AdminUser row: check ADMIN_EMAILS fallback for migration bridge
- *     (treated as ADMIN access level — still fail-closed if unset)
- *  5. Check isActive flag (on database rows)
+ * Verifies that the current request carries a valid admin session cookie
+ * whose email still matches the current ADMIN_EMAIL env var (so rotating
+ * ADMIN_EMAIL invalidates any old session immediately, without needing a
+ * session-store purge).
  *
  * Suitable for API Route handlers where you need the status code.
  */
 export async function getAdminUser(): Promise<AdminCheckResult> {
-  // 1. Authenticate via Supabase
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const cookieStore = await cookies();
+  const token = cookieStore.get(ADMIN_SESSION_COOKIE)?.value;
+  const session = await verifySessionToken<AdminSessionPayload>(token);
 
-  if (!user || !user.email) {
+  if (!session || session.role !== "admin") {
     return { ok: false, error: "Unauthorized", status: 401 };
   }
 
-  const normalizedEmail = user.email.trim().toLowerCase();
-
-  // 2. Primary authorization — look up AdminUser row by supabaseUserId
-  const adminUser = await prisma.adminUser.findUnique({
-    where: { supabaseUserId: user.id },
-  });
-
-  if (adminUser) {
-    if (!adminUser.isActive) {
-      return { ok: false, error: "Forbidden: account deactivated", status: 403 };
-    }
-    return {
-      ok: true,
-      userId: user.id,
-      email: adminUser.email,
-      accessLevel: adminUser.accessLevel,
-      adminUserId: adminUser.id,
-      source: "database",
-    };
+  const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+  if (!adminEmail || session.email.toLowerCase() !== adminEmail) {
+    // ADMIN_EMAIL changed since the session was issued, or a stale/forged cookie.
+    return { ok: false, error: "Forbidden", status: 403 };
   }
 
-  // 3. Email onboarding bind — pending AdminUser (supabaseUserId still null)
-  const pendingOrMismatched = await prisma.adminUser.findUnique({
-    where: { email: normalizedEmail },
-  });
-
-  if (pendingOrMismatched) {
-    if (!pendingOrMismatched.isActive) {
-      return { ok: false, error: "Forbidden: account deactivated", status: 403 };
-    }
-
-    if (pendingOrMismatched.supabaseUserId == null) {
-      // First successful login: bind permanent Auth UUID, then authorize by UUID path.
-      // updateMany + null guard so a concurrent bind cannot overwrite an existing UUID.
-      try {
-        const bindResult = await prisma.adminUser.updateMany({
-          where: {
-            id: pendingOrMismatched.id,
-            supabaseUserId: null,
-            isActive: true,
-          },
-          data: { supabaseUserId: user.id },
-        });
-
-        if (bindResult.count === 1) {
-          return {
-            ok: true,
-            userId: user.id,
-            email: pendingOrMismatched.email,
-            accessLevel: pendingOrMismatched.accessLevel,
-            adminUserId: pendingOrMismatched.id,
-            source: "database",
-          };
-        }
-
-        // Lost race — another request may have bound this row; re-check by UUID
-        const raced = await prisma.adminUser.findUnique({
-          where: { supabaseUserId: user.id },
-        });
-        if (raced && raced.isActive) {
-          return {
-            ok: true,
-            userId: user.id,
-            email: raced.email,
-            accessLevel: raced.accessLevel,
-            adminUserId: raced.id,
-            source: "database",
-          };
-        }
-        return {
-          ok: false,
-          error: "Forbidden: admin identity conflict",
-          status: 403,
-        };
-      } catch {
-        // Unique conflict on supabaseUserId (Auth id already linked elsewhere)
-        return {
-          ok: false,
-          error: "Forbidden: admin identity conflict",
-          status: 403,
-        };
-      }
-    }
-
-    // Email matches but UUID is already bound to a different Auth user
-    if (pendingOrMismatched.supabaseUserId !== user.id) {
-      return {
-        ok: false,
-        error: "Forbidden: admin identity conflict",
-        status: 403,
-      };
-    }
-
-    // Same UUID (should normally have been found in step 2)
-    return {
-      ok: true,
-      userId: user.id,
-      email: pendingOrMismatched.email,
-      accessLevel: pendingOrMismatched.accessLevel,
-      adminUserId: pendingOrMismatched.id,
-      source: "database",
-    };
-  }
-
-  // 4. Migration fallback — ADMIN_EMAILS env var
-  const fallbackEmails = getFallbackAdminEmailSet();
-  if (fallbackEmails.size > 0 && fallbackEmails.has(normalizedEmail)) {
-    // Treat env-fallback admins as ADMIN level (not SUPER_ADMIN)
-    return {
-      ok: true,
-      userId: user.id,
-      email: user.email,
-      accessLevel: "ADMIN" as AdminAccessLevel,
-      adminUserId: "", // no DB row yet
-      source: "env_fallback",
-    };
-  }
-
-  return { ok: false, error: "Forbidden", status: 403 };
+  return {
+    ok: true,
+    userId: adminEmail,
+    email: adminEmail,
+    accessLevel: "SUPER_ADMIN",
+    adminUserId: adminEmail,
+    source: "env_fallback",
+  };
 }
 
 // ---------------------------------------------------------------------------
 // requireAdmin() — throws on failure (for Server Actions + layouts)
 // ---------------------------------------------------------------------------
 
-/**
- * Throws if the current caller is not an authenticated, authorized admin.
- * Grants any access level (minimum VIEWER).
- *
- * Suitable for Server Actions and Server Component layouts/pages.
- */
 export async function requireAdmin(): Promise<{
   userId: string;
   email: string;
@@ -293,17 +177,10 @@ export async function requireAdmin(): Promise<{
 }
 
 // ---------------------------------------------------------------------------
-// requireAccessLevel() — access-level-gated version of requireAdmin()
+// requireAccessLevel() — kept for API compatibility; always passes once
+// authenticated, since the single hardcoded admin is always SUPER_ADMIN.
 // ---------------------------------------------------------------------------
 
-/**
- * Throws if the caller is not authenticated, authorized, and at or above
- * the required access level.
- *
- * Usage:
- *   await requireAccessLevel("SIGNAL_MANAGER"); // SIGNAL_MANAGER, ADMIN, SUPER_ADMIN pass
- *   await requireAccessLevel("SUPER_ADMIN");    // only SUPER_ADMIN passes
- */
 export async function requireAccessLevel(
   required: AdminAccessLevel,
 ): Promise<{

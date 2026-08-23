@@ -11,6 +11,6 @@ export const prisma =
 // Cache on globalThis in every environment, not just dev — on Vercel a warm
 // serverless instance re-evaluates this module across invocations, and
 // without reusing the same client each one opened a fresh connection pool
-// against Supabase's pooler, exhausting its pool_size: 15 limit under any
-// real concurrent load ("max clients reached in session mode").
+// against the database's pooler (Neon's, formerly Supabase's), exhausting
+// its connection limit under any real concurrent load.
 globalForPrisma.prisma = prisma;

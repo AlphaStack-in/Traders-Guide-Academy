@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -21,7 +20,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { clientConfig } from "@/lib/client-config";
 import { IstClock } from "@/components/site/ist-clock";
 
@@ -39,39 +37,33 @@ const membersLinks = [
     : []),
 ];
 
-function getAdminGroupLinks(isSuperAdmin: boolean) {
+// isSuperAdmin no longer changes this list — TGA has a single hardcoded
+// admin account now, so there's no "Admin Users" management page to link to.
+// The param is kept (always true) so the protected layout doesn't need to
+// change how it calls this.
+function getAdminGroupLinks(_isSuperAdmin: boolean) {
   return [
     { href: "/admin/changelog", label: "Changelog" },
     ...(clientConfig.goodwillBrokerEnabled
       ? [{ href: "/admin/goodwill-orders", label: "Order Requests" }]
       : []),
-    ...(isSuperAdmin ? [{ href: "/admin/admin-users", label: "Admin Users" }] : []),
   ];
 }
 
-function useUsername() {
-  const [username, setUsername] = useState<string | null>(null);
-
-  useEffect(() => {
-    const supabase = createSupabaseBrowserClient();
-    supabase.auth.getUser().then(({ data }) => {
-      const email = data.user?.email;
-      setUsername(email ? email.split("@")[0] : null);
-    });
-  }, []);
-
-  return username;
-}
-
-export function AdminNav({ isSuperAdmin = false }: { isSuperAdmin?: boolean }) {
+export function AdminNav({
+  isSuperAdmin = false,
+  adminEmail = null,
+}: {
+  isSuperAdmin?: boolean;
+  adminEmail?: string | null;
+}) {
   const pathname = usePathname();
   const router = useRouter();
-  const username = useUsername();
+  const username = adminEmail ? adminEmail.split("@")[0] : null;
   const adminGroupLinks = getAdminGroupLinks(isSuperAdmin);
 
   async function handleLogout() {
-    const supabase = createSupabaseBrowserClient();
-    await supabase.auth.signOut();
+    await fetch("/admin/logout", { method: "POST" });
     router.push("/admin/login");
     router.refresh();
   }

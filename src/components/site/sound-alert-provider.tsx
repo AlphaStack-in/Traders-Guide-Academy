@@ -11,7 +11,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getRecentSignalAlerts, type SignalAlertRow } from "@/lib/signal-alerts";
 import { inferHitTargetLabel } from "@/lib/signal-metrics";
 import { INSTRUMENT_LABEL, type InstrumentLiteral } from "@/lib/instruments";
 import {
@@ -25,6 +25,9 @@ const STORAGE_KEY = "signalflow-sound-alerts-enabled";
 // as "just closed" rather than a later edit to an already-closed trade —
 // same window convention as the existing silentUpdateAt check below.
 const RECENT_CLOSE_WINDOW_MS = 10_000;
+// Was an instant Supabase Realtime push; now a periodic poll against
+// getRecentSignalAlerts(), diffed client-side against the last poll.
+const POLL_INTERVAL_MS = 20_000;
 
 function playAlertTone(ctx: AudioContext) {
   const now = ctx.currentTime;
@@ -180,102 +183,111 @@ export function SoundAlertProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // Always subscribed, independent of the sound toggle — refreshes whatever
-  // page is currently open so new/updated signals show up live, with sound
-  // as an opt-in layer on top rather than a requirement for live content.
+  // Always polling, independent of the sound toggle — refreshes whatever
+  // page is currently open so new/updated signals show up, with sound as an
+  // opt-in layer on top rather than a requirement for live content.
+  //
+  // Was an instant Supabase Realtime push ("postgres_changes" on Signal);
+  // now a periodic poll against getRecentSignalAlerts(), diffed against
+  // seenRef (this component's memory of what it saw last poll) to infer
+  // the same INSERT-vs-UPDATE distinction Realtime used to hand us directly.
+  // null seenRef means "haven't polled yet" — the first poll seeds it
+  // silently so pre-existing signals don't all fire alerts on page load.
+  const seenRef = useRef<Map<string, { status: string; updatedAt: string }> | null>(null);
+
   useEffect(() => {
-    const supabase = createSupabaseBrowserClient();
-    const channel = supabase
-      .channel("signal-alerts")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "Signal" },
-        (payload) => {
-          router.refresh();
+    let cancelled = false;
 
-          // A plain edit from the Manage Signals table sets silentUpdateAt
-          // right before this fires — skip the sound (but still refresh)
-          // so correcting a field doesn't buzz every subscriber's device.
-          const silentUpdateAt = (payload.new as { silentUpdateAt?: string } | null)
-            ?.silentUpdateAt;
-          const isSilentEdit =
-            payload.eventType === "UPDATE" &&
-            !!silentUpdateAt &&
-            Date.now() - new Date(silentUpdateAt).getTime() < 10_000;
+    async function poll() {
+      const rows = await getRecentSignalAlerts();
+      if (cancelled) return;
 
-          if (isSilentEdit) return;
+      if (seenRef.current === null) {
+        seenRef.current = new Map(rows.map((r) => [r.id, { status: r.status, updatedAt: r.updatedAt }]));
+        return;
+      }
 
-          const newRow =
-            payload.eventType === "UPDATE"
-              ? (payload.new as {
-                  status?: string;
-                  closedTime?: string | null;
-                  sellPrice?: number | null;
-                  pnlPercent?: number | null;
-                  targets?: number[];
-                  strike?: number;
-                  optionType?: string;
-                  instrument?: InstrumentLiteral | null;
-                })
-              : null;
+      let changed = false;
 
-          const closedRecently =
-            !!newRow?.closedTime &&
-            Date.now() - new Date(newRow.closedTime).getTime() < RECENT_CLOSE_WINDOW_MS;
+      for (const row of rows) {
+        const prev = seenRef.current.get(row.id);
+        seenRef.current.set(row.id, { status: row.status, updatedAt: row.updatedAt });
 
-          if (closedRecently && newRow?.status === "TARGET_HIT" && newRow.sellPrice != null) {
-            const signalLabel = signalLabelOf(newRow);
-            const targetLabel = inferHitTargetLabel(newRow.targets ?? [], newRow.sellPrice);
-            const pnlPercent = newRow.pnlPercent ?? 0;
-            const pnlText = `${pnlPercent > 0 ? "+" : ""}${pnlPercent.toFixed(1)}%`;
-
-            setCelebration({
-              key: `${payload.commit_timestamp}`,
-              signalLabel,
-              targetLabel,
-              pnlPercent,
-            });
-            setTimeout(() => setCelebration(null), 3000);
-
-            toast.success(
-              `Target Hit${targetLabel ? ` (${targetLabel})` : ""}! ${pnlText} gain on ${signalLabel}`,
-            );
-
-            if (enabledRef.current && audioCtxRef.current) {
-              playCelebrationTone(audioCtxRef.current);
-            }
-            return;
-          }
-
-          if (closedRecently && newRow?.status === "SL_HIT" && newRow.sellPrice != null) {
-            const signalLabel = signalLabelOf(newRow);
-
-            setSlHitAlert({ key: `${payload.commit_timestamp}`, signalLabel, sellPrice: newRow.sellPrice });
-            setTimeout(() => setSlHitAlert(null), 2500);
-
-            toast.warning(`Stop Loss Hit — ${signalLabel} closed at ${newRow.sellPrice}`);
-
-            if (enabledRef.current && audioCtxRef.current) {
-              playSlHitTone(audioCtxRef.current);
-            }
-            return;
-          }
-
+        if (!prev) {
+          // Wasn't in our last poll at all — a brand-new signal (INSERT).
+          changed = true;
           if (enabledRef.current && audioCtxRef.current) {
-            if (payload.eventType === "INSERT") {
-              playNewSignalTone(audioCtxRef.current);
-            } else {
-              playAlertTone(audioCtxRef.current);
-            }
+            playNewSignalTone(audioCtxRef.current);
             setJustAlerted(true);
             setTimeout(() => setJustAlerted(false), 1500);
           }
-        },
-      )
-      .subscribe();
+          continue;
+        }
 
+        if (prev.updatedAt === row.updatedAt) continue; // unchanged since last poll
+
+        changed = true;
+
+        // A plain edit from the Manage Signals table sets silentUpdateAt
+        // right before this fires — skip the sound (but still refresh) so
+        // correcting a field doesn't buzz every subscriber's device.
+        const isSilentEdit =
+          !!row.silentUpdateAt && Date.now() - new Date(row.silentUpdateAt).getTime() < 10_000;
+        if (isSilentEdit) continue;
+
+        const closedRecently =
+          !!row.closedTime && Date.now() - new Date(row.closedTime).getTime() < RECENT_CLOSE_WINDOW_MS;
+
+        if (closedRecently && row.status === "TARGET_HIT" && row.sellPrice != null) {
+          const signalLabel = signalLabelOf(row);
+          const targetLabel = inferHitTargetLabel(row.targets ?? [], row.sellPrice);
+          const pnlPercent = row.pnlPercent ?? 0;
+          const pnlText = `${pnlPercent > 0 ? "+" : ""}${pnlPercent.toFixed(1)}%`;
+
+          setCelebration({ key: row.updatedAt, signalLabel, targetLabel, pnlPercent });
+          setTimeout(() => setCelebration(null), 3000);
+
+          toast.success(
+            `Target Hit${targetLabel ? ` (${targetLabel})` : ""}! ${pnlText} gain on ${signalLabel}`,
+          );
+
+          if (enabledRef.current && audioCtxRef.current) {
+            playCelebrationTone(audioCtxRef.current);
+          }
+          continue;
+        }
+
+        if (closedRecently && row.status === "SL_HIT" && row.sellPrice != null) {
+          const signalLabel = signalLabelOf(row);
+
+          setSlHitAlert({ key: row.updatedAt, signalLabel, sellPrice: row.sellPrice });
+          setTimeout(() => setSlHitAlert(null), 2500);
+
+          toast.warning(`Stop Loss Hit — ${signalLabel} closed at ${row.sellPrice}`);
+
+          if (enabledRef.current && audioCtxRef.current) {
+            playSlHitTone(audioCtxRef.current);
+          }
+          continue;
+        }
+
+        if (enabledRef.current && audioCtxRef.current) {
+          playAlertTone(audioCtxRef.current);
+          setJustAlerted(true);
+          setTimeout(() => setJustAlerted(false), 1500);
+        }
+      }
+
+      if (changed) {
+        router.refresh();
+      }
+    }
+
+    poll();
+    const interval = setInterval(poll, POLL_INTERVAL_MS);
     return () => {
-      supabase.removeChannel(channel);
+      cancelled = true;
+      clearInterval(interval);
     };
   }, [router]);
 
@@ -295,17 +307,17 @@ export function SoundAlertProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  // Callable from anywhere (e.g. the notification bell's own AdminUpdate
-  // realtime listener) so admin-note updates get sound without opening a
-  // second Supabase channel just to play a tone. Fails silently if sound is
-  // off or the AudioContext hasn't been created/resumed yet.
+  // Callable from anywhere (e.g. NotificationBell's own AdminUpdate poll)
+  // so admin-note updates get sound without this component running its own
+  // separate poll just to play a tone. Fails silently if sound is off or the
+  // AudioContext hasn't been created/resumed yet.
   //
   // Wrapped in useCallback with no deps — it only ever reads from refs, so
-  // it must stay referentially stable. A caller (NotificationBell) depends
-  // on this identity in a realtime-subscription effect; letting it change
-  // on every render (e.g. every time justAlerted flips) was tearing down
-  // and re-subscribing that Supabase channel on every single alert, which
-  // is what caused the panel's message list to lag behind the sound.
+  // it must stay referentially stable. NotificationBell depends on this
+  // identity inside its own poll effect; letting it change on every render
+  // (e.g. every time justAlerted flips) would re-run that effect's setup on
+  // every single alert and could cause the panel's message list to lag
+  // behind the sound.
   const playUpdateAlert = useCallback(() => {
     if (!enabledRef.current || !audioCtxRef.current) return;
     if (audioCtxRef.current.state === "suspended") return;

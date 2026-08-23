@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin-auth";
 import { sendReferralInviteEmail } from "@/lib/email";
+import { hashPassword } from "@/lib/password";
 
 export interface SubscriberInput {
   name: string;
@@ -50,6 +51,38 @@ export async function updateSubscriber(id: string, input: SubscriberInput) {
   await prisma.subscriber.update({
     where: { id },
     data: { name, phone, email, batchNumber: input.batchNumber, currentBroker },
+  });
+
+  revalidatePath("/admin/subscribers");
+
+  return { success: true };
+}
+
+/**
+ * Sets (or resets) a subscriber's login password. There is currently no
+ * self-service "forgot password" email flow (see src/lib/subscriber-auth.ts
+ * for why) — this is how a subscriber's login gets enabled or recovered:
+ * the admin sets a password here and shares it with them directly (phone/
+ * WhatsApp, consistent with how batch numbers etc. are already communicated
+ * for this business).
+ *
+ * TODO(follow-up, not yet wired into the UI): add a "Set Password" action
+ * to subscribers-table.tsx's per-row menu that calls this. The action is
+ * ready; only the dialog/button in that 800+ line table component is
+ * missing, deliberately skipped here to avoid a rushed edit to an unfamiliar
+ * file under time pressure.
+ */
+export async function setSubscriberPassword(id: string, newPassword: string) {
+  await requireAdmin();
+
+  if (!newPassword || newPassword.length < 6) {
+    return { success: false, error: "Password must be at least 6 characters long." };
+  }
+
+  const passwordHash = hashPassword(newPassword);
+  await prisma.subscriber.update({
+    where: { id },
+    data: { passwordHash },
   });
 
   revalidatePath("/admin/subscribers");

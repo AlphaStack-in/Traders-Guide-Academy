@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Bell, ChevronDown } from "lucide-react";
 import { getRecentAdminUpdates } from "@/app/admin/(protected)/signals/actions";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useSoundAlert } from "@/components/site/sound-alert-provider";
 import { INSTRUMENT_LABEL, type InstrumentLiteral } from "@/lib/instruments";
 import { cn, formatUpdateTime } from "@/lib/utils";
@@ -17,6 +16,9 @@ const CLEARED_AT_KEY = "signalflow-notifications-cleared-at";
 const READ_IDS_KEY = "signalflow-notifications-read-ids";
 const READ_IDS_CAP = 500;
 const MARK_READ_DELAY_MS = 1500;
+// Was an instant Supabase Realtime push; now a periodic poll (see
+// sound-alert-provider.tsx for the matching Signal-table poll).
+const POLL_INTERVAL_MS = 20_000;
 
 interface UpdateItem {
   id: string;
@@ -110,17 +112,37 @@ export function NotificationBell() {
   const [clearedAt, setClearedAt] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const openRef = useRef(open);
+  // null until the first poll completes — used to tell "first load" (seed
+  // silently, no sound) apart from "actually new since last poll".
+  const seenIdsRef = useRef<Set<string> | null>(null);
 
   useEffect(() => {
     openRef.current = open;
   }, [open]);
 
-  // Stable (empty deps) so the realtime effect below doesn't need to
-  // resubscribe every time this identity would otherwise change.
+  // Stable (empty deps besides playUpdateAlert, itself stable) so the poll
+  // effect below doesn't need to re-run every time this identity would
+  // otherwise change.
   const load = useCallback(async () => {
     const data = await getRecentAdminUpdates();
     setUpdates(data);
-  }, []);
+
+    if (seenIdsRef.current === null) {
+      // First load — seed silently. Nothing here is actually "new".
+      seenIdsRef.current = new Set(data.map((u) => u.id));
+      return;
+    }
+
+    const hasNew = data.some((u) => !seenIdsRef.current!.has(u.id));
+    data.forEach((u) => seenIdsRef.current!.add(u.id));
+
+    if (hasNew) {
+      playUpdateAlert();
+      if (!openRef.current) {
+        setOpen(true);
+      }
+    }
+  }, [playUpdateAlert]);
 
   useEffect(() => {
     setClearedAt(localStorage.getItem(CLEARED_AT_KEY));
@@ -128,44 +150,13 @@ export function NotificationBell() {
     load();
   }, [load]);
 
+  // Was an instant Supabase Realtime push (INSERT/DELETE on AdminUpdate);
+  // now a periodic poll. load() itself diffs against what it saw last time
+  // to decide whether to play a sound / auto-open the panel.
   useEffect(() => {
-    const supabase = createSupabaseBrowserClient();
-    const channel = supabase
-      .channel("admin-update-alerts")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "AdminUpdate" },
-        () => {
-          // Re-fetch from the server rather than splicing the payload into
-          // local state — updateAdminNote() also writes Signal.adminNote,
-          // which fires sound-alert-provider's separate Signal-table
-          // listener and triggers router.refresh(). That refresh re-renders
-          // the async Navbar this component lives under, which can reset
-          // local state out from under a manually-spliced update. A fresh
-          // fetch is correct regardless of what else remounts around it.
-          load();
-          playUpdateAlert();
-          if (!openRef.current) {
-            setOpen(true);
-          }
-        },
-      )
-      .on(
-        "postgres_changes",
-        { event: "DELETE", schema: "public", table: "AdminUpdate" },
-        () => {
-          // Fires when a signal is deleted from Manage Signals (its
-          // AdminUpdate rows get deleted alongside it) — no sound/auto-open,
-          // just drop the removed entries from the panel.
-          load();
-        },
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [playUpdateAlert, load]);
+    const interval = setInterval(load, POLL_INTERVAL_MS);
+    return () => clearInterval(interval);
+  }, [load]);
 
   // Whatever's loaded while the panel is open fades from unread to read
   // shortly after — long enough to actually notice the highlight first.
