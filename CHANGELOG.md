@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Horizontal logo (TGA-HORIOZONTAL-LOGO) in navbar for better visual balance; NavbarLogo component dedicated to navbar display
 
 ### Fixed
+- Removed placeholder "Support Team" section from contact page with TODO manager values
 - Replaced transparent logo (RGBA) with white-background version (RGB) across navbar and all components for consistent branding
 - Updated site logo to proper branded TGA-LOGO asset; replaced placeholder Photoroom versions with final TGA-LOGO-favicon.png
 
