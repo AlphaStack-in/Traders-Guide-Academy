@@ -54,7 +54,7 @@ export default function ContactPage() {
         </div>
 
         <div className="grid gap-6">
-          <
+          <a
             href={clientConfig.instagramUrl}
             target="_blank"
             rel="noopener noreferrer"
