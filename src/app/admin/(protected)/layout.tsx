@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { Logo } from "@/components/site/logo";
+import { NavbarLogo } from "@/components/site/navbar-logo";
 import { AdminNav, AdminMobileNav } from "@/components/admin/admin-nav";
 import { BuildVersionIndicator } from "@/components/site/build-version-indicator";
 import { requireAdmin } from "@/lib/admin-auth";
@@ -25,7 +25,7 @@ export default async function AdminProtectedLayout({
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-50 border-b border-white/5 signalflow-glass">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Logo />
+          <NavbarLogo />
           <AdminNav isSuperAdmin={isSuperAdmin} adminEmail={adminEmail} />
         </div>
         <AdminMobileNav isSuperAdmin={isSuperAdmin} />
