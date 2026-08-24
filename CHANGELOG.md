@@ -7,7 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Fixed
-- Updated site logo to proper branded TGA-LOGO asset across navbar and all components; replaced placeholder Photoroom versions with final TGA-LOGO-favicon.png
+- Replaced transparent logo (RGBA) with white-background version (RGB) across navbar and all components for consistent branding
+- Updated site logo to proper branded TGA-LOGO asset; replaced placeholder Photoroom versions with final TGA-LOGO-favicon.png
 
 ### Added
 - Weekly performance email digest sent to PREMIUM subscribers every Sunday at 9:30 AM IST, summarising the week's closed signals with win rate, P&L in points and rupees, best/worst trade, and a per-signal table (performance-email-digest)
