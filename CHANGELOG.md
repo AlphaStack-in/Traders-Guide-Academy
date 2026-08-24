@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Updated site logo to proper branded TGA-LOGO asset; replaced placeholder Photoroom versions with final TGA-LOGO-favicon.png
 
 ### Changed
+- Navbar logo now displays with white padding, rounded corners, and subtle blue glow on hover
+- Footer logo (favicon) styled with white padding, rounded corners, and subtle blue glow on hover
 - Weekly performance email digest sent to PREMIUM subscribers every Sunday at 9:30 AM IST, summarising the week's closed signals with win rate, P&L in points and rupees, best/worst trade, and a per-signal table (performance-email-digest)
 - `EXPIRED` status added to the `SignalStatus` enum for contracts that lapsed without hitting target or stop-loss (performance-email-digest)
 - `DigestSendLog` Prisma model records each digest send per subscriber per week, preventing duplicate sends on cron retries (performance-email-digest)
