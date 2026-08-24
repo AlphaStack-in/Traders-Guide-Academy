@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Logo } from "@/components/site/logo";
+import { FooterLogo } from "@/components/site/footer-logo";
 import {
   FacebookIcon,
   InstagramIcon,
@@ -26,7 +26,7 @@ export function Footer() {
     <footer className="border-t border-white/5 bg-card/40">
       <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-12 sm:px-6 lg:px-8">
         <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
-          <Logo />
+          <FooterLogo />
           <div className="flex items-center gap-4">
             {socialLinks.map(({ href, Icon, label }) => (
               <a
