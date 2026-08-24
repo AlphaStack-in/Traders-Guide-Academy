@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Navbar } from "@/components/site/navbar";
 import { Footer } from "@/components/site/footer";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,39 @@ export default function ContactPage() {
     <div className="flex min-h-screen flex-col">
       <Navbar />
       <main className="mx-auto flex-1 w-full max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <div className="mb-12 grid gap-8 sm:grid-cols-2 items-start signalflow-glass signalflow-glow rounded-2xl border border-white/5 p-8">
+          <div>
+            <h2 className="font-heading text-2xl font-bold">
+              About <span className="signalflow-gold-text">Traders Guide Academy</span>
+            </h2>
+            <div className="mt-4 space-y-4 text-sm text-muted-foreground leading-relaxed">
+              <p>
+                <strong className="text-foreground">Traders Guide Academy (TGA)</strong> is a trading education and market-learning platform founded by <strong className="text-foreground">Satish Rathod, a NISM-certified market professional</strong>. TGA focuses on practical trading education, technical analysis, options strategies, market behaviour and disciplined risk management.
+              </p>
+              <p>
+                With a strong emphasis on structured learning, strategy development and data-driven decision-making, TGA aims to help traders become more disciplined and independent in their market journey.
+              </p>
+              <p>
+                With SignalFlow, TGA is bringing its market insights and trading frameworks into a technology-driven platform, making structured market intelligence and trading signals easier to access, monitor and act upon.
+              </p>
+              <p>
+                Satish Rathod combines his market knowledge and NISM certification with a practical, hands-on approach to trading education and strategy development, with a focus on simplifying complex market concepts into practical frameworks for traders. Our approach is aimed at helping traders make more informed and disciplined decisions.
+              </p>
+            </div>
+          </div>
+          <div className="flex justify-center sm:justify-start">
+            <div className="relative">
+              <Image
+                src="/satish-rathod.png"
+                alt="Satish Rathod, Founder of Traders Guide Academy"
+                width={280}
+                height={350}
+                className="rounded-xl shadow-lg"
+              />
+            </div>
+          </div>
+        </div>
+
         <div className="mb-8">
           <h1 className="font-heading text-3xl font-bold sm:text-4xl">
             Get in <span className="signalflow-gold-text">Touch</span>

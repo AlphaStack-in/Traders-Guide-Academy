@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- About section on contact page featuring Satish Rathod (NISM-certified founder) with biography and profile image; explains TGA's trading education focus and integration with SignalFlow
 - Scrolling testimonials from 6 verified premium subscribers in "What our subscribers say" section; continuous horizontal marquee animation with avatars, ratings, and dates
 - Horizontal logo (TGA-HORIOZONTAL-LOGO) in navbar for better visual balance; NavbarLogo component dedicated to navbar display
 
