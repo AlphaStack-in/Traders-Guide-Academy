@@ -10,8 +10,19 @@ export default function ContactPage() {
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
-      <main className="mx-auto flex-1 w-full max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="mb-12 grid gap-8 sm:grid-cols-2 items-start signalflow-glass signalflow-glow rounded-2xl border border-white/5 p-8">
+      <main className="mx-auto flex-1 w-full px-4 py-10 sm:px-6 lg:px-8">
+        <div className="mb-12 grid gap-8 sm:grid-cols-2 items-center signalflow-glass signalflow-glow rounded-2xl border border-white/5 p-8">
+          <div className="flex justify-center">
+            <div className="relative">
+              <Image
+                src="/satish-rathod.png"
+                alt="Satish Rathod, Founder of Traders Guide Academy"
+                width={300}
+                height={400}
+                className="rounded-xl shadow-lg h-full"
+              />
+            </div>
+          </div>
           <div>
             <h2 className="font-heading text-2xl font-bold">
               About <span className="signalflow-gold-text">Traders Guide Academy</span>
@@ -29,17 +40,6 @@ export default function ContactPage() {
               <p>
                 Satish Rathod combines his market knowledge and NISM certification with a practical, hands-on approach to trading education and strategy development, with a focus on simplifying complex market concepts into practical frameworks for traders. Our approach is aimed at helping traders make more informed and disciplined decisions.
               </p>
-            </div>
-          </div>
-          <div className="flex justify-center sm:justify-start">
-            <div className="relative">
-              <Image
-                src="/satish-rathod.png"
-                alt="Satish Rathod, Founder of Traders Guide Academy"
-                width={280}
-                height={350}
-                className="rounded-xl shadow-lg"
-              />
             </div>
           </div>
         </div>
