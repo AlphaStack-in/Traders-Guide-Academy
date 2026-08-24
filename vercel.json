@@ -1,4 +1,5 @@
 {
+  "name": "traders-guide-academy",
   "crons": [
     {
       "path": "/api/cron/weekly-digest",
