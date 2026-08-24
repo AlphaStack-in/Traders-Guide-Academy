@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { Navbar } from "@/components/site/navbar";
 import { Footer } from "@/components/site/footer";
-import { InstagramIcon } from "@/components/site/icons";
+import { WhatsAppIcon, InstagramIcon } from "@/components/site/icons";
 import { ReferralForm } from "@/components/contact/referral-form";
 import { ContactForm } from "@/components/contact/contact-form";
 import { clientConfig } from "@/lib/client-config";
