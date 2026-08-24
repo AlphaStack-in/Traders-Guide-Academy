@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { Navbar } from "@/components/site/navbar";
 import { Footer } from "@/components/site/footer";
-import { WhatsAppIcon, InstagramIcon } from "@/components/site/icons";
+import { InstagramIcon } from "@/components/site/icons";
 import { ReferralForm } from "@/components/contact/referral-form";
 import { ContactForm } from "@/components/contact/contact-form";
 import { clientConfig } from "@/lib/client-config";
@@ -53,25 +53,8 @@ export default function ContactPage() {
           </p>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2">
-          <a
-            href={clientConfig.whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="signalflow-glass signalflow-glow group relative overflow-hidden rounded-2xl border border-white/5 p-6 transition-colors hover:border-primary/40"
-          >
-            <span
-              className="absolute inset-x-0 top-0 h-[3px]"
-              style={{ backgroundImage: "var(--signalflow-gold-gradient)" }}
-            />
-            <WhatsAppIcon className="h-8 w-8 text-primary" />
-            <p className="mt-4 font-heading text-lg font-bold">WhatsApp Group</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Join the group for live signals during market hours.
-            </p>
-          </a>
-
-          <a
+        <div className="grid gap-6">
+          <
             href={clientConfig.instagramUrl}
             target="_blank"
             rel="noopener noreferrer"
