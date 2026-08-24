@@ -43,7 +43,7 @@ export interface ManageSignalRow {
   targets: number[];
   sellPrice: number | null;
   pnlPercent: number | null;
-  status: "OPEN" | "TARGET_HIT" | "SL_HIT" | "CLOSED_MANUAL";
+  status: "OPEN" | "TARGET_HIT" | "SL_HIT" | "CLOSED_MANUAL" | "EXPIRED";
   signalTime: string;
   adminNote: string | null;
   adminNoteAt: string | null;
@@ -61,6 +61,7 @@ const STATUS_LABEL: Record<ManageSignalRow["status"], string> = {
   TARGET_HIT: "Target Hit",
   SL_HIT: "SL Hit",
   CLOSED_MANUAL: "Closed",
+  EXPIRED: "Expired",
 };
 
 function CloseTradeCell({ signal }: { signal: ManageSignalRow }) {

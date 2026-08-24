@@ -40,6 +40,11 @@ model Signal {
   // skip the sound alert for it (still refreshes page content either way).
   silentUpdateAt DateTime?
 
+  // Snapshotted lot size from DhanInstrument at signal creation time --
+  // used by the weekly digest to compute rupee P&L without needing the
+  // ephemeral DhanInstrument cache (which purges expired contracts daily).
+  lotSize        Int?
+
   // Platform enhancement fields
   chartImageUrl  String?
   entryLow       Float?
@@ -73,11 +78,16 @@ model Subscriber {
   // and src/app/login/actions.ts). Null until an admin sets one — there is
   // no self-service signup-with-password or password-reset-email flow yet.
   passwordHash          String?
+  // Whether the subscriber has opted out of the weekly performance digest
+  // email. Defaults to false (opted in). Set to true via the HMAC-signed
+  // unsubscribe link in the digest email footer.
+  emailDigestOptOut     Boolean                @default(false)
   brokerConnection      BrokerConnection?
   orderAuditLogs        OrderAuditLog[]
   goodwillOrderRequests GoodwillOrderRequest[]
   rewardTransactions    RewardTransaction[]
   socialPromotionEvents SocialPromotionEvent[]
+  digestSendLogs        DigestSendLog[]
 }
 
 enum ReferralStatus {
@@ -288,6 +298,7 @@ enum SignalStatus {
   TARGET_HIT
   SL_HIT
   CLOSED_MANUAL
+  EXPIRED
 }
 
 enum SubscriberPlan {
@@ -343,6 +354,25 @@ model SocialPromotionEvent {
 
   @@unique([subscriberId, shareDate])
   @@index([subscriberId])
+}
+
+// Dedup + audit log for weekly performance digest emails. One row per
+// subscriber per week -- the unique constraint on (subscriberId, weekStartDate)
+// prevents duplicate sends if the cron is retried or double-invoked.
+model DigestSendLog {
+  id              String     @id @default(uuid())
+  subscriberId    String
+  subscriber      Subscriber @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+  subscriberEmail String
+  weekStartDate   DateTime
+  sentAt          DateTime   @default(now())
+  signalCount     Int
+  winRate         Float
+  totalPnlPoints  Float
+  totalPnlRupees  Float?
+
+  @@unique([subscriberId, weekStartDate])
+  @@index([weekStartDate])
 }
 
 model NewsAlert {

@@ -88,6 +88,9 @@ export interface ClientConfig {
   // now this only logs an order *request* for the team to process manually.
   // Goodwill-only; must never be true alongside dhanConnectEnabled.
   goodwillBrokerEnabled: boolean;
+  // Gates the weekly performance digest email cron. Set to true once the
+  // Resend domain is verified and the digest is ready for production.
+  digestEnabled: boolean;
   batchInfo: BatchInfo;
   paymentInfo: PaymentInfo;
   testimonials: Testimonial[];
@@ -130,6 +133,7 @@ const CLIENTS: Record<ClientId, ClientConfig> = {
     dhanOfferEnabled: false,
     dhanConnectEnabled: false,
     goodwillBrokerEnabled: false,
+    digestEnabled: false,
     batchInfo: {
       batchNumber: 1,
       priceInr: 0,

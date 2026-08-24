@@ -75,9 +75,45 @@ After the first deploy, verify: landing page loads with real stats, `/signals` r
 seeded data, `/admin/login` authenticates against Supabase, and the dashboard charts
 render with real numbers.
 
+## 5. Environment variables
+
+Core variables (Supabase, auth) are covered in step 2. The additional variables below
+are required for email features:
+
+| Variable | Description | Required |
+|---|---|---|
+| `RESEND_API_KEY` | Resend API key for sending emails. Without it the app falls back to console-logging email content (dev simulation). | Production |
+| `EMAIL_FROM_ADDRESS` | Sending address shown in emails, e.g. `noreply@yourdomain.com`. Must be on a Resend-verified domain. | Production |
+| `DIGEST_UNSUBSCRIBE_SECRET` | Secret used to sign HMAC unsubscribe tokens. Generate with `openssl rand -hex 32`. Must remain stable — rotating it invalidates outstanding unsubscribe links. | Production |
+| `NEXT_PUBLIC_BASE_URL` | Canonical base URL of the deployment, e.g. `https://tradersguideacademy.com`. Used to build unsubscribe links in digest emails. Defaults to `http://localhost:3000` if unset. | Production |
+| `CRON_SECRET` | Bearer token that Vercel sends with cron requests. Set the same value in the Vercel project environment and in `vercel.json`'s cron headers. | Production |
+
+See `.env.example` for the full list with generation instructions.
+
+## 6. Cron jobs
+
+Cron schedules are defined in `vercel.json` and run automatically on Vercel.
+All cron routes require the `Authorization: Bearer $CRON_SECRET` header.
+
+| Route | Schedule | What it does |
+|---|---|---|
+| `/api/cron/weekly-digest` | `0 4 * * 0` (Sunday 04:00 UTC = 9:30 AM IST) | Sends the weekly performance email digest to PREMIUM subscribers. Gated by `digestEnabled` in `src/lib/client-config.ts` — flip to `true` once the Resend sending domain is verified. |
+| `/api/cron/sync-dhan-instruments` | See `vercel.json` | Refreshes the DhanInstrument lot-size cache from the Dhan API. |
+| `/api/cron/renew-broker-tokens` | See `vercel.json` | Renews Dhan broker access tokens before they expire. |
+
+To invoke a cron route manually in development:
+
+```bash
+curl -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/cron/weekly-digest
+```
+
+The digest cron returns a JSON summary: `{ success, weekStart, recipientCount, sent, skippedAlreadySent, skippedNoEmail, errors }`.
+
 ## Notes
 
-- All monetary figures are option premium **points**, not rupee P&L amounts.
+- The weekly digest reports P&L in both **points** (premium points) and **rupees** (using
+  the lot size snapshotted at signal creation). Signals created before the
+  `performance-email-digest` rollout may show "N/A" for rupee P&L.
 - `pnlPercent` and signal `status` are always computed server-side
   (`src/lib/signal-metrics.ts`) — never entered manually.
 - The "Register Premium" flow only stores leads in `Subscriber` for now — see the

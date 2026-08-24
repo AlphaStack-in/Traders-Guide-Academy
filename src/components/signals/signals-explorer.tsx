@@ -44,7 +44,7 @@ export interface SignalRow {
   targets: number[];
   sellPrice: number | null;
   pnlPercent: number | null;
-  status: "OPEN" | "TARGET_HIT" | "SL_HIT" | "CLOSED_MANUAL";
+  status: "OPEN" | "TARGET_HIT" | "SL_HIT" | "CLOSED_MANUAL" | "EXPIRED";
   signalTime: string;
   adminNote: string | null;
   adminNoteAt: string | null;
@@ -62,6 +62,7 @@ const STATUS_LABEL: Record<SignalRow["status"], string> = {
   TARGET_HIT: "Target Hit",
   SL_HIT: "SL Hit",
   CLOSED_MANUAL: "Closed",
+  EXPIRED: "Expired",
 };
 
 type OptionFilter = "ALL" | "CE" | "PE";

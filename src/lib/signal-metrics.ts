@@ -5,6 +5,10 @@ export function calcPnlPercent(entryPrice: number, sellPrice: number): number {
   return ((sellPrice - entryPrice) / entryPrice) * 100;
 }
 
+export function calcPnlPoints(entryPrice: number, sellPrice: number): number {
+  return sellPrice - entryPrice;
+}
+
 export function deriveStatus(input: {
   entryPrice: number;
   stopLoss: number;

@@ -16,7 +16,7 @@ export interface RecentSignalItem {
   optionType: "CE" | "PE";
   instrument: InstrumentLiteral | null;
   pnlPercent: number | null;
-  status: "OPEN" | "TARGET_HIT" | "SL_HIT" | "CLOSED_MANUAL";
+  status: "OPEN" | "TARGET_HIT" | "SL_HIT" | "CLOSED_MANUAL" | "EXPIRED";
   signalTime: string | Date;
 }
 
@@ -25,6 +25,7 @@ const STATUS_LABEL: Record<RecentSignalItem["status"], string> = {
   TARGET_HIT: "Target Hit",
   SL_HIT: "SL Hit",
   CLOSED_MANUAL: "Closed",
+  EXPIRED: "Expired",
 };
 
 export function RecentSignalsList({ signals }: { signals: RecentSignalItem[] }) {

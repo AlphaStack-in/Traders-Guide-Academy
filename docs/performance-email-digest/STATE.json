@@ -1,0 +1,26 @@
+{
+  "schema_version": "2.0.0",
+  "issue_name": "performance-email-digest",
+  "current_phase": "complete",
+  "phase_status": "complete",
+  "review_iteration": 1,
+  "failing_experts": [],
+  "created_at": "2026-08-23T10:00:00Z",
+  "updated_at": "2026-08-24T09:00:00Z",
+  "artifacts": {
+    "RESEARCH.md": "complete",
+    "ADR.md": "complete",
+    "PLAN.md": "complete",
+    "IMPLEMENTATION.md": "complete",
+    "SECURITY.md": "complete",
+    "QA.md": "complete",
+    "SRE.md": "complete",
+    "REVIEW.md": "complete",
+    "PRODUCTION_READINESS.md": "complete",
+    "STATUS.md": "complete"
+  },
+  "metadata": {
+    "description": "Build signal outcome tracking and a weekly performance email digest for signal subscribers.",
+    "risk_level": "Medium"
+  }
+}

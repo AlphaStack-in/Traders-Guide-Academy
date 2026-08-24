@@ -1,6 +1,22 @@
 import { Resend } from "resend";
 import { clientConfig } from "@/lib/client-config";
 
+// Shared Resend client -- returns null when RESEND_API_KEY is unset,
+// triggering dev-simulation (console logging) in callers.
+export function getResendClient(): Resend | null {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) return null;
+  return new Resend(apiKey);
+}
+
+// Shared from-address used by all outgoing emails.
+export function getFromAddress(): string {
+  return (
+    process.env.EMAIL_FROM_ADDRESS ||
+    `${clientConfig.siteName} <noreply@tga-placeholder.app>`
+  );
+}
+
 export interface SendReferralInviteParams {
   toEmail: string;
   memberName: string;
@@ -12,19 +28,16 @@ export async function sendReferralInviteEmail({
   memberName,
   inviteUrl,
 }: SendReferralInviteParams): Promise<{ success: boolean; error?: string }> {
-  const apiKey = process.env.RESEND_API_KEY;
+  const resend = getResendClient();
 
-  if (!apiKey) {
+  if (!resend) {
     console.log(`[Dev Email Simulation] Referral invitation sent to ${toEmail} for ${memberName}`);
     console.log(`[Dev Email Simulation] Invite URL: ${inviteUrl}`);
     return { success: true };
   }
 
   try {
-    const resend = new Resend(apiKey);
-    // TODO: swap the placeholder domain below once TGA's real domain is purchased —
-    // set EMAIL_FROM_ADDRESS in the env instead of editing this fallback.
-    const fromAddress = process.env.EMAIL_FROM_ADDRESS || `${clientConfig.siteName} <noreply@tga-placeholder.app>`;
+    const fromAddress = getFromAddress();
 
     const { error } = await resend.emails.send({
       from: fromAddress,

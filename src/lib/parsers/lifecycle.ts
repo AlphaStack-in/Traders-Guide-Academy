@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import type { CanonicalSignalDraft } from "./types";
 import { calcPnlPercent, deriveStatus } from "@/lib/signal-metrics";
 import { sendTelegramMessage, formatSignalUpdateMessage } from "@/lib/telegram";
+import { resolveDhanContract } from "@/lib/broker/dhan-contract-resolver";
+import type { InstrumentLiteral } from "@/lib/instruments";
 
 export interface LifecycleProcessResult {
   actionTaken: "CREATED" | "UPDATED" | "SKIPPED_DUPLICATE";
@@ -156,6 +158,21 @@ export async function processSignalDraftLifecycle(
     sellPrice: draft.sellPrice,
   });
 
+  // Snapshot lot size from DhanInstrument cache (best-effort -- null if
+  // contract is not in today's cache or Dhan connect is not enabled).
+  let lotSize: number | null = null;
+  try {
+    const contract = await resolveDhanContract({
+      instrument: instrument as InstrumentLiteral,
+      strike,
+      optionType,
+      expiry,
+    });
+    if (contract) lotSize = contract.lotSize;
+  } catch {
+    // Non-critical -- lot size is optional, digest shows "N/A" for rupee P&L
+  }
+
   const created = await prisma.signal.create({
     data: {
       strike,
@@ -170,6 +187,7 @@ export async function processSignalDraftLifecycle(
       status,
       pnlPercent: draft.sellPrice != null ? calcPnlPercent(entryPrice, draft.sellPrice) : null,
       expiry,
+      lotSize,
       entryLow: draft.entryLow,
       entryHigh: draft.entryHigh,
       target1: draft.target1 ?? targets[0],

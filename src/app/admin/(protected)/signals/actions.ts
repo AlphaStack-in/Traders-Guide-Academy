@@ -10,6 +10,7 @@ import {
   sendTelegramMessage,
 } from "@/lib/telegram";
 import type { InstrumentLiteral } from "@/lib/instruments";
+import { resolveDhanContract } from "@/lib/broker/dhan-contract-resolver";
 
 export interface SignalInput {
   strike: number;
@@ -81,7 +82,23 @@ export async function createSignals(inputs: SignalInput[]) {
   // Created one at a time (not createMany) so each new signal's id is known
   // immediately — needed to post its "new signal" AdminUpdate row.
   for (const input of inputs) {
-    const signal = await prisma.signal.create({ data: toSignalCreateData(input) });
+    // Snapshot lot size from DhanInstrument cache (best-effort).
+    let lotSize: number | null = null;
+    try {
+      const contract = await resolveDhanContract({
+        instrument: input.instrument as InstrumentLiteral,
+        strike: input.strike,
+        optionType: input.optionType,
+        expiry: new Date(input.expiry),
+      });
+      if (contract) lotSize = contract.lotSize;
+    } catch {
+      // Non-critical -- lot size is optional
+    }
+
+    const signal = await prisma.signal.create({
+      data: { ...toSignalCreateData(input), lotSize },
+    });
 
     if (input.sellPrice != null) {
       const pnlPercent = calcPnlPercent(input.entryPrice, input.sellPrice);
