@@ -29,10 +29,7 @@ export default function ContactPage() {
             </h2>
             <div className="mt-4 space-y-4 text-sm text-muted-foreground leading-relaxed">
               <p>
-                <strong className="text-foreground">Traders Guide Academy (TGA)</strong> is a trading education and market-learning platform founded by <strong className="text-foreground">Satish Rathod, a NISM-certified market professional</strong>. TGA focuses on practical trading education, technical analysis, options strategies, market behaviour and disciplined risk management.
-              </p>
-              <p>
-                With a strong emphasis on structured learning, strategy development and data-driven decision-making, TGA aims to help traders become more disciplined and independent in their market journey.
+                <strong className="text-foreground">Traders Guide Academy (TGA)</strong> is a trading education and market-learning platform founded by <strong className="text-foreground">Satish Rathod, a NISM-certified market professional with 25 years of market experience</strong>. With a strong emphasis on structured learning, strategy development and data-driven decision-making, TGA aims to help traders become more disciplined and independent in their market journey.
               </p>
               <p>
                 With SignalFlow, TGA is bringing its market insights and trading frameworks into a technology-driven platform, making structured market intelligence and trading signals easier to access, monitor and act upon.
