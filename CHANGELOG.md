@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Updated site logo to proper branded TGA-LOGO asset; replaced placeholder Photoroom versions with final TGA-LOGO-favicon.png
 
 ### Changed
+- Navbar horizontal logo updated with latest TGA branding
 - Contact page "About Traders Guide Academy" section redesigned with full-width layout: founder photo on left, biography text on right, vertically centered and equally sized
 - Removed WhatsApp contact option from contact page; Instagram remains primary social channel
 - Navbar logo now displays with white padding, rounded corners, and subtle blue glow on hover
