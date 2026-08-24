@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Logo } from "@/components/site/logo";
+import { NavbarLogo } from "@/components/site/navbar-logo";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/site/notification-bell";
 import { IndexTicker } from "@/components/site/index-ticker";
@@ -15,7 +15,7 @@ export async function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-white/5 signalflow-glass">
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Logo />
+        <NavbarLogo />
         <DesktopNavigation />
         <div className="flex items-center gap-2.5 sm:gap-3">
           <IstClock />
