@@ -119,13 +119,12 @@ const CLIENTS: Record<ClientId, ClientConfig> = {
     goldStart: "#d4af37",
     goldEnd: "#f0c949",
     instrumentDonutColors: ["#f5d576", "#d4af37", "#a8842a", "#7a5f1c"],
-    // TODO: real social links — "#" / "" render as hidden/no-op for now.
-    instagramUrl: "",
+    instagramUrl: "https://www.instagram.com/traders_guide_academy/",
     whatsappUrl: "#",
-    telegramUrl: "#",
+    telegramUrl: "https://t.me/tradersguideacademy01",
     facebookUrl: "",
     twitterUrl: "",
-    youtubeUrl: "",
+    youtubeUrl: "https://www.youtube.com/@tradersguideacademy",
     linkedinUrl: "",
     // Business-model decisions already made for TGA (see onboarding runbook):
     // same signal-subscription + batch pricing model, broker-connect off,
