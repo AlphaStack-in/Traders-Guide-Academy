@@ -1,15 +1,10 @@
 import Image from "next/image";
 import { Navbar } from "@/components/site/navbar";
 import { Footer } from "@/components/site/footer";
-import { Button } from "@/components/ui/button";
-import { WhatsAppIcon, InstagramIcon } from "@/components/site/icons";
+import { InstagramIcon } from "@/components/site/icons";
 import { ReferralForm } from "@/components/contact/referral-form";
 import { ContactForm } from "@/components/contact/contact-form";
 import { clientConfig } from "@/lib/client-config";
-
-function toWhatsAppLink(phone: string) {
-  return `https://wa.me/${phone.replace(/\D/g, "")}`;
-}
 
 export default function ContactPage() {
   return (
@@ -92,38 +87,6 @@ export default function ContactPage() {
               Follow for trade breakdowns and highlights.
             </p>
           </a>
-        </div>
-
-        <div className="mt-10">
-          <h2 className="font-heading text-sm font-semibold text-muted-foreground">
-            Support Team
-          </h2>
-          <div className="mt-3 grid gap-4 sm:grid-cols-2">
-            {clientConfig.paymentInfo.managers.map((manager) => (
-              <div
-                key={manager.phone}
-                className="signalflow-glass rounded-xl border border-white/5 p-5"
-              >
-                <p className="font-heading text-base font-bold">{manager.name}</p>
-                <p className="mt-1 text-sm text-muted-foreground">{manager.phone}</p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <Button asChild size="sm" variant="outline" className="signalflow-glow">
-                    <a href={`tel:${manager.phone}`}>Call</a>
-                  </Button>
-                  <Button asChild size="sm" className="signalflow-glow signalflow-btn-gradient">
-                    <a
-                      href={toWhatsAppLink(manager.phone)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <WhatsAppIcon className="h-4 w-4" />
-                      Message
-                    </a>
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
 
         <ContactForm />
