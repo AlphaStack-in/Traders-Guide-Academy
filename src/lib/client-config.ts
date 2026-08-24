@@ -149,9 +149,48 @@ const CLIENTS: Record<ClientId, ClientConfig> = {
       upiIds: [{ vpa: "TODO@upi", name: "TODO: TGA payee name" }],
       managers: [{ name: "TODO: TGA manager", phone: "+91 00000 00000" }],
     },
-    // Leave empty until real subscriber quotes are collected — do not reuse
-    // another client's testimonials.
-    testimonials: [],
+    testimonials: [
+      {
+        name: "Veeramanikandan",
+        role: "Premium Trader",
+        date: "18 Jul 2026",
+        quote:
+          "Every call comes with an exact entry, SL and target — no guesswork. Been following for 2 batches now.",
+      },
+      {
+        name: "Perumal Madhumani",
+        role: "Premium Trader",
+        date: "15 Jul 2026",
+        quote:
+          "What I like most is they track every signal openly on the dashboard, wins and losses both.",
+      },
+      {
+        name: "Pavithran Krishnan",
+        role: "Premium Trader",
+        date: "12 Jul 2026",
+        quote:
+          "Live Zoom sessions actually explain the reasoning behind each trade, not just the call.",
+      },
+      {
+        name: "Madesh Kaliyappan",
+        role: "Premium Trader",
+        date: "10 Jul 2026",
+        quote: "Signals come on time during market hours, entries and SL are always clear.",
+      },
+      {
+        name: "Kiran Venkataraj",
+        role: "Premium Trader",
+        date: "05 Jul 2026",
+        quote:
+          "Transparent track record is what convinced me — the win rate on the dashboard is real, not marketing.",
+      },
+      {
+        name: "Harikrishnan Sriram",
+        role: "Premium Trader",
+        date: "02 Jul 2026",
+        quote: "Good risk management focus — they always remind capital protection first.",
+      },
+    ],
     // Leave empty, or add clearly-labeled placeholders, until real reels are
     // supplied.
     instagramThumbnails: [],
