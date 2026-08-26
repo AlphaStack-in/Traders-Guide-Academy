@@ -58,17 +58,6 @@ export default function ContactPage() {
               <p>
                 Satish Rathod combines his market knowledge and NISM certification with a practical, hands-on approach to trading education and strategy development, with a focus on simplifying complex market concepts into practical frameworks for traders. Our approach is aimed at helping traders make more informed and disciplined decisions.
               </p>
-              <p className="pt-2">
-                <strong>Join our community:</strong>{" "}
-                <a
-                  href={clientConfig.telegramUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline"
-                >
-                  Free Telegram community
-                </a>
-              </p>
             </div>
           </div>
         </div>

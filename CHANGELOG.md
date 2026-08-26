@@ -8,6 +8,11 @@ Versioning continues the semantic patch series from the SignalFlow template (`1.
 
 ## [Unreleased]
 
+## [1.0.15] - 2026-08-26
+
+### Removed
+- Redundant "Join our community: Free Telegram community" line from the contact page founder bio (Telegram remains in the social cards below)
+
 ## [1.0.14] - 2026-08-26
 
 ### Added

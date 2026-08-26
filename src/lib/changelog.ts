@@ -26,6 +26,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.15",
+    date: "26 Aug 2026",
+    title: "Contact Bio Cleanup",
+    highlights: [
+      "Removed redundant Telegram community link from the founder bio on the contact page",
+    ],
+  },
+  {
     version: "1.0.14",
     date: "26 Aug 2026",
     title: "Contact Page Social Channels",
