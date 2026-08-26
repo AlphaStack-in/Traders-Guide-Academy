@@ -16,7 +16,7 @@ When making any commit that changes user-facing behavior, admin UI, client confi
 
 1. Make the code/config change.
 2. Update `CHANGELOG.md` (required for every product commit).
-3. Update `src/lib/changelog.ts` + `package.json` version when the release should appear in the admin changelog UI.
+3. Update `src/lib/changelog.ts` + bump `package.json` patch version (continue the `1.0.x` series from the latest entry — e.g. after `1.0.12` comes `1.0.13`). The footer reads version from `package.json` via `NEXT_APP_VERSION`.
 4. Commit everything together — do **not** leave changelog updates for a follow-up commit.
 
 ## What to write

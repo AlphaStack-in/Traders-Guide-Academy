@@ -26,15 +26,66 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
-    version: "0.1.1",
+    version: "1.0.12",
     date: "26 Aug 2026",
-    title: "TGA Pricing Card, AliceBlue Offer & News Panel Updates",
+    title: "Premium Pricing, AliceBlue Partner & News Panel",
     highlights: [
-      "Premium community pricing card live with ₹4,999, benefits, timings, and refund policy",
+      "Premium community pricing card live at ₹4,999 with benefits, timings, and refund policy",
       "AliceBlue demat offer card with official logo and 20% brokerage discount",
-      "TGA brand assets added to assets/ for design reference",
+      "TGA brand asset library added under assets/ for design reference",
       "News & Market Alerts hidden via newsAlertsEnabled until admin UI is built",
       "Removed SignalFlow branding from News & Market Alerts panel title",
+      "Changelog backfilled from Git history; commit-time changelog rule added",
+    ],
+  },
+  {
+    version: "1.0.11",
+    date: "25 Aug 2026",
+    title: "Navbar Logo & Dropdown Menu Polish",
+    highlights: [
+      "Updated navbar with latest TGA horizontal logo branding",
+      "Replaced white logo background with subtle border in navbar",
+      "Removed logo glow effect; kept subtle scale hover animation",
+      "Dropdown menus simplified with sharp edges (no rounded item borders)",
+    ],
+  },
+  {
+    version: "1.0.10",
+    date: "24 Aug 2026",
+    title: "Contact Page, Social Links & Testimonials",
+    highlights: [
+      "Founder bio section on contact page featuring Satish Rathod (NISM-certified, 25 years experience)",
+      "Full-width contact layout with photo left and biography right",
+      "Removed placeholder Support Team section from contact page",
+      "Removed WhatsApp contact option; Instagram remains primary channel",
+      "Telegram community link added to founder bio",
+      "Real Instagram, YouTube, and Telegram URLs in client config",
+      "Scrolling subscriber testimonials marquee on landing page",
+      "Admin navbar updated to horizontal TGA logo",
+    ],
+  },
+  {
+    version: "1.0.9",
+    date: "24 Aug 2026",
+    title: "TGA Logo Assets & Navbar Branding",
+    highlights: [
+      "Updated site logo and favicon to proper TGA branded assets",
+      "Replaced transparent logo with white-background version for consistent display",
+      "Horizontal logo (NavbarLogo) added to public navbar",
+      "Navbar and footer logos styled with padding, rounded corners, and hover glow",
+      "Footer logo cropped tighter to reduce excess white padding",
+    ],
+  },
+  {
+    version: "1.0.8",
+    date: "21 Aug 2026",
+    title: "TGA Fork, Auth Simplification & Email Digest",
+    highlights: [
+      "Scaffolded Traders Guide Academy as a single-tenant client fork",
+      "Replaced Supabase Auth with env-var admin login and password-based subscriber login",
+      "Polling-based signal alerts replace Supabase Realtime",
+      "Weekly performance email digest for premium subscribers (digestEnabled: false for TGA until Resend domain verified)",
+      "EXPIRED signal status, DigestSendLog model, and lotSize snapshot for rupee P&L",
     ],
   },
   {

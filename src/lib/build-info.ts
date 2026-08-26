@@ -29,7 +29,7 @@ export function getBuildInfo(): BuildInfo {
     // which Next.js makes available as process.env.npm_package_version during
     // the build. We also fall back to the literal injected by env: in
     // next.config.ts (no-op on Vercel since npm_package_version is set).
-    version: process.env.npm_package_version ?? "0.0.0",
+    version: process.env.NEXT_APP_VERSION ?? process.env.npm_package_version ?? "0.0.0",
     gitSha: process.env.NEXT_GIT_SHA_SHORT ?? "unknown",
     fullSha: process.env.NEXT_GIT_SHA_FULL ?? "unknown",
     buildTime: process.env.NEXT_BUILD_TIME ?? new Date().toISOString(),

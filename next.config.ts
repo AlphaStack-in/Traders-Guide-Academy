@@ -1,5 +1,11 @@
 import type { NextConfig } from "next";
 import { execSync } from "child_process";
+import { readFileSync } from "fs";
+import { join } from "path";
+
+const packageJson = JSON.parse(
+  readFileSync(join(__dirname, "package.json"), "utf8"),
+) as { version: string };
 
 /**
  * Resolve the Git commit SHA at build time.
@@ -49,6 +55,7 @@ const nextConfig: NextConfig = {
    * Consumers: src/lib/build-info.ts → getBuildInfo()
    */
   env: {
+    NEXT_APP_VERSION: packageJson.version,
     NEXT_BUILD_TIME: buildTime,
     NEXT_BUILD_TIME_FORMATTED: formattedBuildTime,
     NEXT_GIT_SHA_SHORT: shortSha,

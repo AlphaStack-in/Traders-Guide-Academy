@@ -4,18 +4,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+Versioning continues the semantic patch series from the SignalFlow template (`1.0.7` → `1.0.8` …). The footer and Admin Changelog page read the current version from `package.json` (now **1.0.12**).
+
 ## [Unreleased]
+
+## [1.0.12] - 2026-08-26
 
 ### Added
 - TGA brand asset library in `assets/` (logos, favicons, horizontal variants, founder image)
 - `brokerOffer` config for client-specific demat partner cards (TGA uses AliceBlue with 20% brokerage discount)
 - `newsAlertsEnabled` feature flag to gate the home-page News & Market Alerts panel
 - Official AliceBlue partner logo on the pricing offer card (`public/aliceblue-logo.png`)
-- Real social media links now active: Instagram, YouTube, and Telegram
-- Telegram community link in About section: https://t.me/tradersguideacademy01 for free community access
-- About section on contact page featuring Satish Rathod (NISM-certified founder with 25 years of market experience) with biography and profile image; explains TGA's trading education focus and integration with SignalFlow
-- Scrolling testimonials from 6 verified premium subscribers in "What our subscribers say" section; continuous horizontal marquee animation with avatars, ratings, and dates
-- Horizontal logo (TGA-HORIOZONTAL-LOGO) in navbar for better visual balance; NavbarLogo component dedicated to navbar display
+- Cursor rule requiring changelog updates on every product commit
 
 ### Fixed
 - Premium community pricing card now shows ₹4,999 with real benefits, WhatsApp/Zoom timings, and refund policy
@@ -23,31 +23,101 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Batch pricing headline ordinals (`1st Batch` instead of `1th Batch`) for clients without a custom headline
 - Empty benefit bullets no longer render as blank list items on the pricing card
 - Removed SignalFlow brand leak from News & Market Alerts panel title
-- Removed placeholder "Support Team" section from contact page with TODO manager values
-- Replaced transparent logo (RGBA) with white-background version (RGB) across navbar and all components for consistent branding
-- Updated site logo to proper branded TGA-LOGO asset; replaced placeholder Photoroom versions with final TGA-LOGO-favicon.png
 
 ### Changed
 - Pricing section headline set to "Premium community" with updated subheadline and "Register Premium" CTA
 - FAQ and Terms referral sections now reference AliceBlue instead of Dhan when the broker offer is enabled
 - News & Market Alerts section hidden on the home page (`newsAlertsEnabled: false`) until admin tooling is ready
+- Backfilled admin changelog (`src/lib/changelog.ts`) from Git history for TGA releases 1.0.8–1.0.12
+
+## [1.0.11] - 2026-08-25
+
+### Changed
 - Dropdown menu styling simplified: removed rounded borders from menu items, content, and sub-content for sharp edges
 - Logo hover effects simplified: removed blue glow shadow, kept subtle scale animation for clean appearance
-- Navbar horizontal logo updated with latest TGA branding
-- Contact page "About Traders Guide Academy" section redesigned with full-width layout: founder photo on left, biography text on right, vertically centered and equally sized
+- Navbar horizontal logo updated with latest TGA branding; subtle border replaces white background block
+
+## [1.0.10] - 2026-08-24
+
+### Added
+- Real social media links: Instagram, YouTube, and Telegram
+- Telegram community link in About section: https://t.me/tradersguideacademy01
+- About section on contact page featuring Satish Rathod (NISM-certified founder, 25 years market experience)
+- Scrolling testimonials from premium subscribers in "What our subscribers say" section
+- Horizontal logo (`TGA-HORIOZONTAL-LOGO`) in navbar via `NavbarLogo` component
+
+### Fixed
+- Removed placeholder "Support Team" section from contact page with TODO manager values
+- Corrected Instagram link tag syntax on contact page
+
+### Changed
+- Contact page founder bio redesigned: photo left, full-width biography right
 - Removed WhatsApp contact option from contact page; Instagram remains primary social channel
-- Navbar logo now displays with white padding, rounded corners, and subtle blue glow on hover
-- Admin dashboard navbar updated to use horizontal logo (NavbarLogo) instead of square placeholder, matching public site branding
-- Footer logo (favicon) styled with white padding, rounded corners, and subtle blue glow on hover
-- Weekly performance email digest sent to PREMIUM subscribers every Sunday at 9:30 AM IST, summarising the week's closed signals with win rate, P&L in points and rupees, best/worst trade, and a per-signal table (performance-email-digest)
-- `EXPIRED` status added to the `SignalStatus` enum for contracts that lapsed without hitting target or stop-loss (performance-email-digest)
-- `DigestSendLog` Prisma model records each digest send per subscriber per week, preventing duplicate sends on cron retries (performance-email-digest)
-- `emailDigestOptOut` field on `Subscriber`; clicking the HMAC-signed unsubscribe link in any digest email sets this flag and opts the subscriber out of future digests (performance-email-digest)
-- `lotSize` field on `Signal`, snapshotted at signal creation from the DhanInstrument cache, enabling rupee P&L computation in the digest (performance-email-digest)
-- `digestEnabled` feature flag on `ClientConfig`; set to `false` for TGA until the Resend sending domain is verified (performance-email-digest)
-- Shared `getResendClient()` and `getFromAddress()` helpers extracted from `email.ts`; all email sending (referral invites and digest) now goes through these (performance-email-digest)
-- One-time backfill script `scripts/backfill-lot-sizes.ts` to populate `lotSize` on existing signals from the last 7 days at rollout (performance-email-digest)
-- Cron route `/api/cron/weekly-digest` following the established `isAuthorizedCronRequest` + `CRON_SECRET` pattern, scheduled via `vercel.json` at `0 4 * * 0` (Sunday 04:00 UTC) (performance-email-digest)
-- Unsubscribe route `GET /api/unsubscribe` validates an HMAC-signed token and sets `emailDigestOptOut = true` on the subscriber (performance-email-digest)
-- Unit test suite (vitest) with 22 tests covering week-boundary computation, digest metrics, and HMAC token round-trips (performance-email-digest)
-- New required environment variables: `RESEND_API_KEY`, `EMAIL_FROM_ADDRESS`, `DIGEST_UNSUBSCRIBE_SECRET`, `NEXT_PUBLIC_BASE_URL` (see `.env.example`) (performance-email-digest)
+- Admin dashboard navbar updated to use horizontal logo, matching public site branding
+- Founder bio copy simplified; Telegram community CTA added
+
+## [1.0.9] - 2026-08-24
+
+### Fixed
+- Replaced transparent logo (RGBA) with white-background version (RGB) across navbar and components
+- Updated site logo to proper branded TGA assets; replaced placeholder Photoroom favicon versions
+
+### Changed
+- Navbar uses horizontal TGA logo instead of square mark
+- Navbar and footer logos styled with white padding, rounded corners, and subtle blue hover glow
+- Footer logo cropped closer to reduce excess white padding
+
+## [1.0.8] - 2026-08-21
+
+### Added
+- Traders Guide Academy scaffolded as single-tenant client fork from SignalFlow template
+- Env-var admin login and password-based subscriber login (replaces Supabase Auth)
+- Polling-based signal alerts (replaces Supabase Realtime)
+- Weekly performance email digest infrastructure (`/api/cron/weekly-digest`, `DigestSendLog`, `emailDigestOptOut`, `lotSize` on signals)
+- `digestEnabled` feature flag on `ClientConfig` (false for TGA until Resend domain verified)
+
+### Changed
+- `EXPIRED` status added to `SignalStatus` enum for lapsed contracts
+
+## [1.0.7] - 2026-08-12
+
+### Changed
+- Parse signal textarea placeholder shows example-only text (no "Paste raw signal…" prefix)
+
+## [1.0.6] - 2026-08-12
+
+### Changed
+- Insert Sample Signal link moved left above Parse textarea
+- Send Signal button aligned with Parse Signal (height, icon, padding)
+
+## [1.0.5] - 2026-08-12
+
+### Changed
+- Manual Signal Entry uniform 3-column grid; Parse Signal cleanup
+
+## [1.0.4] - 2026-08-12
+
+### Added
+- Official NSE/BSE expiry specifications and exchange holiday engine
+
+## [1.0.3] - 2026-08-12
+
+### Added
+- Dynamic instrument expiry engine; stock derivative support
+
+## [1.0.2] - 2026-08-11
+
+### Fixed
+- NIFTY/SENSEX instrument detection; compact manual signal grid
+
+## [1.0.1] - 2026-08-11
+
+### Changed
+- Automatic customer parser resolution; semantic versioning in footer (`v1.0.1 · <SHA>`)
+
+## [1.0.0] - 2026-08-11
+
+### Added
+- Build version indicator in footer with deployment popover
+- Admin Changelog timeline UI
+- SignalFlow lifecycle engine, Goodwill parser, News & Market Alerts section
