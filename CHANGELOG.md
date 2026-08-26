@@ -4,11 +4,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-Versioning continues the semantic patch series from the SignalFlow template (`1.0.7` → `1.0.8` …). The footer and Admin Changelog page read the current version from `package.json` (now **1.0.17**).
+Versioning continues the semantic patch series from the SignalFlow template (`1.0.7` → `1.0.8` …). The footer and Admin Changelog page read the current version from `package.json` (now **1.0.18**).
 
 Each release header now includes a build timestamp (24-hour IST, matching `build-info.ts`'s `formattedBuildTime`), not just a date — this reflects the actual commit that shipped the version. While adding timestamps, two pre-existing dates were corrected to match their real shipping commit: `1.0.8` (was dated by the TGA fork commit, 3 days before the digest-email feature in that release actually shipped) and `1.0.2` (was off by one day around a just-after-midnight IST commit).
 
 ## [Unreleased]
+
+## [1.0.18] - 2026-08-26 22:38 IST
+
+### Added
+- Editable subscriber profile on `/account/profile` — Name, Phone, Email, and Current Broker with view/edit toggle
+- Shared `BROKER_OPTIONS` constant used by registration and profile edit forms
+
+### Changed
+- Admin nav: Logout moved under the profile icon dropdown (matches subscriber account menu pattern)
+
+### Fixed
+- Profile email updates reject an email already used by another account
 
 ## [1.0.17] - 2026-08-26 22:11 IST
 

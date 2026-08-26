@@ -157,18 +157,37 @@ export function AdminNav({
           </DropdownMenuContent>
         </DropdownMenu>
       </nav>
-      {username && (
-        <div className="flex items-center gap-2">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-primary/40 bg-primary/10 text-primary">
-            <UserRound className="h-4 w-4" />
-          </span>
-          <span className="hidden text-xs font-semibold capitalize sm:inline">{username}</span>
-        </div>
+      {username ? (
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            aria-label={`${username}'s account menu`}
+            className="flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-2.5 text-xs font-semibold text-primary outline-none transition-colors hover:border-primary/70"
+          >
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-primary">
+              <UserRound className="h-3.5 w-3.5" />
+            </span>
+            <span className="hidden max-w-[120px] truncate capitalize sm:inline">{username}</span>
+            <ChevronDown className="h-3.5 w-3.5" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-44">
+            <DropdownMenuItem
+              onClick={handleLogout}
+              className="cursor-pointer gap-2 text-xs font-medium text-destructive focus:text-destructive"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+              <span>Logout</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ) : (
+        // Defensive fallback only — the protected admin layout redirects to
+        // /admin/login before AdminNav ever renders without an adminEmail,
+        // so this shouldn't be reachable in practice.
+        <Button variant="outline" size="sm" onClick={handleLogout} className="gap-1.5 text-xs font-medium">
+          <LogOut className="h-3.5 w-3.5 text-muted-foreground" />
+          <span>Logout</span>
+        </Button>
       )}
-      <Button variant="outline" size="sm" onClick={handleLogout} className="gap-1.5 text-xs font-medium">
-        <LogOut className="h-3.5 w-3.5 text-muted-foreground" />
-        <span>Logout</span>
-      </Button>
     </div>
   );
 }

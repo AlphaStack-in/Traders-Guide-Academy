@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { WhatsAppIcon } from "@/components/site/icons";
 import { PaymentDetailsCard } from "@/components/account/payment-details-card";
+import { BROKER_OPTIONS } from "@/lib/brokers";
 import { clientConfig } from "@/lib/client-config";
 import { registerSubscriber } from "@/app/register/actions";
 
@@ -170,20 +171,11 @@ export function RegisterForm() {
           onChange={(e) => setCurrentBroker(e.target.value)}
           className="flex h-10 w-full rounded-md border border-white/10 bg-black/40 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
         >
-          <option value="Dhan" className="bg-neutral-900 text-foreground">Dhan</option>
-          <option value="Zerodha" className="bg-neutral-900 text-foreground">Zerodha</option>
-          <option value="Angel One" className="bg-neutral-900 text-foreground">Angel One</option>
-          <option value="Upstox" className="bg-neutral-900 text-foreground">Upstox</option>
-          <option value="Groww" className="bg-neutral-900 text-foreground">Groww</option>
-          <option value="Goodwill" className="bg-neutral-900 text-foreground">Goodwill</option>
-          <option value="ICICI Direct" className="bg-neutral-900 text-foreground">ICICI Direct</option>
-          <option value="Kotak Securities" className="bg-neutral-900 text-foreground">Kotak Securities</option>
-          <option value="HDFC Securities" className="bg-neutral-900 text-foreground">HDFC Securities</option>
-          <option value="Motilal Oswal" className="bg-neutral-900 text-foreground">Motilal Oswal</option>
-          <option value="Sharekhan" className="bg-neutral-900 text-foreground">Sharekhan</option>
-          <option value="Fyers" className="bg-neutral-900 text-foreground">Fyers</option>
-          <option value="5paisa" className="bg-neutral-900 text-foreground">5paisa</option>
-          <option value="Other" className="bg-neutral-900 text-foreground">Other Broker</option>
+          {BROKER_OPTIONS.map((broker) => (
+            <option key={broker} value={broker} className="bg-neutral-900 text-foreground">
+              {broker === "Other" ? "Other Broker" : broker}
+            </option>
+          ))}
         </select>
       </div>
 

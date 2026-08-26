@@ -3,6 +3,7 @@ import { Navbar } from "@/components/site/navbar";
 import { Footer } from "@/components/site/footer";
 import { BrokerConnectPanel } from "@/components/account/broker-connect-panel";
 import { PaymentDetailsCard } from "@/components/account/payment-details-card";
+import { ProfileEditForm } from "@/components/account/profile-edit-form";
 import { getCurrentSubscriber } from "@/lib/subscriber-auth";
 import { prisma } from "@/lib/prisma";
 import { clientConfig } from "@/lib/client-config";
@@ -29,32 +30,14 @@ export default async function ProfilePage() {
           Your <span className="signalflow-gold-text">Profile</span>
         </h1>
 
-        <div className="signalflow-glass signalflow-neutral-border flex flex-col gap-3 rounded-2xl border p-5">
-          <div>
-            <p className="text-xs text-muted-foreground">Name</p>
-            <p className="font-heading font-semibold">{subscriber.name}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Phone</p>
-            <p className="font-heading font-semibold">{subscriber.phone}</p>
-          </div>
-          {subscriber.email && (
-            <div>
-              <p className="text-xs text-muted-foreground">Email</p>
-              <p className="font-heading font-semibold">{subscriber.email}</p>
-            </div>
-          )}
-          <div>
-            <p className="text-xs text-muted-foreground">Batch</p>
-            <p className="font-heading font-semibold">
-              {subscriber.batchNumber != null ? `Batch ${subscriber.batchNumber}` : "—"}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Joined</p>
-            <p className="font-heading font-semibold">{formatSignalDate(subscriber.createdAt)}</p>
-          </div>
-        </div>
+        <ProfileEditForm
+          initialName={subscriber.name}
+          initialPhone={subscriber.phone}
+          initialEmail={subscriber.email ?? ""}
+          initialCurrentBroker={subscriber.currentBroker}
+          batchLabel={subscriber.batchNumber != null ? `Batch ${subscriber.batchNumber}` : "—"}
+          joinedLabel={formatSignalDate(subscriber.createdAt)}
+        />
 
         <div className="signalflow-glass signalflow-gold-border flex flex-col gap-3 rounded-2xl border p-5">
           <div>

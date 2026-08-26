@@ -31,6 +31,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.18",
+    date: "26 Aug 2026, 22:38 IST",
+    title: "Editable Subscriber Profile & Admin Logout Under Profile Icon",
+    highlights: [
+      "Subscribers can edit Name, Phone, Email, and Current Broker from the account dashboard",
+      "Profile edits reject an email already used by another account, same guard as registration",
+      "Admin nav: Logout moved under the admin's profile icon dropdown instead of a standalone button",
+      "Broker selector options shared between registration and profile edit forms",
+    ],
+  },
+  {
     version: "1.0.17",
     date: "26 Aug 2026, 22:11 IST",
     title: "Self-Service Password Registration & Payment Dashboard",
