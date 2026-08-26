@@ -35,6 +35,13 @@ export interface InstagramThumbnail {
   label: string;
 }
 
+export interface BrokerOfferConfig {
+  brandName: string;
+  logoSrc: string;
+  logoAlt: string;
+  brokerageDiscountPercent: number;
+}
+
 export interface ClientConfig {
   id: ClientId;
   // Gate on /admin/* login + auth-checked server actions. This is a real
@@ -75,6 +82,11 @@ export interface ClientConfig {
   // Overrides the default "{batchNumber}th Batch" pricing headline when a
   // client doesn't use this batch model.
   pricingHeadline?: string;
+  pricingSubheadline?: string;
+  pricingRegisterLabel?: string;
+  // Shown when dhanOfferEnabled is true — TGA uses AliceBlue, other clients
+  // may still use Dhan (see pricing.tsx fallback).
+  brokerOffer?: BrokerOfferConfig;
   // Where instagramThumbnails' videos actually come from — defaults to
   // "Instagram". Set to e.g. "YouTube" when a client's reels come from a
   // different platform (thumbnails/links still use the same shape).
@@ -126,23 +138,35 @@ const CLIENTS: Record<ClientId, ClientConfig> = {
     twitterUrl: "",
     youtubeUrl: "https://www.youtube.com/@tradersguideacademy",
     linkedinUrl: "",
+    pricingHeadline: "Premium community",
+    pricingSubheadline: "All signals, Live sessions reach you on time — one flat price.",
+    pricingRegisterLabel: "Register Premium",
     // Business-model decisions already made for TGA (see onboarding runbook):
     // same signal-subscription + batch pricing model, broker-connect off,
     // manual UPI + WhatsApp payment confirmation.
-    dhanOfferEnabled: false,
+    dhanOfferEnabled: true,
+    brokerOffer: {
+      brandName: "AliceBlue",
+      logoSrc: "/aliceblue-logo.svg",
+      logoAlt: "AliceBlue",
+      brokerageDiscountPercent: 20,
+    },
     dhanConnectEnabled: false,
     goodwillBrokerEnabled: false,
     digestEnabled: false,
     batchInfo: {
       batchNumber: 1,
-      priceInr: 0,
-      existingMemberPriceInr: 0,
+      priceInr: 4999,
+      existingMemberPriceInr: 3999,
       startDate: "2026-01-01",
       endDate: "2026-01-31",
-      zoomTimings: ["TODO: set live/Zoom session timings"],
-      whatsappTimings: "TODO: set WhatsApp signal hours",
-      benefits: ["TODO: list TGA membership benefits"],
-      refundPolicy: "TODO: set refund policy.",
+      zoomTimings: ["9:00 AM - 11:30 AM", "2:00 PM - 3:30 PM"],
+      whatsappTimings: "9:15 AM - 3:30 PM",
+      benefits: [
+        "Unlimited intraday CE/PE calls during market hours",
+        "Live Zoom sessions — trades explained and copy-traded live",
+      ],
+      refundPolicy: "Refund not applicable once a batch has started.",
     },
     paymentInfo: {
       upiIds: [{ vpa: "TODO@upi", name: "TODO: TGA payee name" }],

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" role="img" aria-label="AliceBlue">
+  <circle cx="40" cy="40" r="38" fill="#1e4fd9"/>
+  <text
+    x="40"
+    y="47"
+    text-anchor="middle"
+    fill="#ffffff"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="18"
+    font-weight="700"
+  >
+    AB
+  </text>
+</svg>

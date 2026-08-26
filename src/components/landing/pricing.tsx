@@ -120,7 +120,28 @@ function ContinuePremiumPanel({
   );
 }
 
-function DhanOfferCard() {
+function formatBatchHeadline(batchNumber: number): string {
+  const mod100 = batchNumber % 100;
+  const mod10 = batchNumber % 10;
+  const suffix =
+    mod10 === 1 && mod100 !== 11
+      ? "st"
+      : mod10 === 2 && mod100 !== 12
+        ? "nd"
+        : mod10 === 3 && mod100 !== 13
+          ? "rd"
+          : "th";
+  return `${batchNumber}${suffix} Batch`;
+}
+
+function BrokerOfferCard() {
+  const offer = clientConfig.brokerOffer ?? {
+    brandName: "Dhan",
+    logoSrc: "/dhan-logo.jpg",
+    logoAlt: "Dhan",
+    brokerageDiscountPercent: 15,
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -134,14 +155,14 @@ function DhanOfferCard() {
         style={{ backgroundImage: "var(--signalflow-gold-gradient)" }}
       />
       <Image
-        src="/dhan-logo.jpg"
-        alt="Dhan"
+        src={offer.logoSrc}
+        alt={offer.logoAlt}
         width={40}
         height={40}
         className="mx-auto rounded-xl"
       />
       <p className="mt-3 font-heading text-lg font-bold">
-        Free Demat account with <span className="signalflow-gold-text">Dhan</span> 🔥
+        Free Demat account with <span className="signalflow-gold-text">{offer.brandName}</span> 🔥
       </p>
       <p className="mt-2 text-sm text-muted-foreground">
         Don&apos;t miss it — pick either offer:
@@ -154,13 +175,17 @@ function DhanOfferCard() {
         </div>
         <p className="text-center text-xs text-muted-foreground">— or —</p>
         <div className="rounded-lg border border-[var(--signalflow-win)]/40 bg-[var(--signalflow-win)]/10 px-3 py-2">
-          <span className="font-semibold text-[var(--signalflow-win)]">15% off</span>{" "}
+          <span className="font-semibold text-[var(--signalflow-win)]">
+            {offer.brokerageDiscountPercent}% off
+          </span>{" "}
           <span className="text-foreground/90">your brokerage</span>
         </div>
       </div>
 
       <div className="mt-5 border-t border-white/5 pt-4">
-        <p className="text-sm font-medium text-foreground">Already have a Dhan account?</p>
+        <p className="text-sm font-medium text-foreground">
+          Already have {offer.brandName.startsWith("A") ? "an" : "a"} {offer.brandName} account?
+        </p>
         <p className="mt-1 text-sm text-muted-foreground">
           Refer friends &amp; family and{" "}
           <span className="font-semibold text-primary">Win Free premium group access*</span>
@@ -186,10 +211,18 @@ function DhanOfferCard() {
 
 export function Pricing() {
   const { batchInfo } = clientConfig;
-  const headline = clientConfig.pricingHeadline ?? `${batchInfo.batchNumber}th Batch`;
-  // Clients using the "Premium Community" headline now show the bull image in
-  // the Hero section instead, to the left of the hero text.
+  const headline =
+    clientConfig.pricingHeadline ?? formatBatchHeadline(batchInfo.batchNumber);
+  const subheadline =
+    clientConfig.pricingSubheadline ??
+    "Every call, live Zoom session, and WhatsApp signal — one flat price.";
+  const registerLabel = clientConfig.pricingRegisterLabel ?? "Register for this Batch";
+  const benefits = batchInfo.benefits.filter((benefit) => benefit.trim().length > 0);
+  // Clients using the "Premium Community" pricing headline (Stockops,
+  // Goodwill) show the bull image in the Hero section instead, to the left
+  // of the hero text — see hero.tsx's showBull.
   const showBullImage = headline !== "Premium Community";
+  const showBatchDates = !clientConfig.pricingHeadline;
   const dateRange = `${new Date(batchInfo.startDate).toLocaleDateString("en-IN", {
     day: "numeric",
     month: "short",
@@ -202,9 +235,7 @@ export function Pricing() {
           <h2 className="font-heading text-2xl font-bold sm:text-3xl">
             Join the <span className="signalflow-gold-text">{headline}</span>
           </h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Every call, live Zoom session, and WhatsApp signal — one flat price.
-          </p>
+          <p className="mt-2 text-sm text-muted-foreground">{subheadline}</p>
         </div>
 
         <div className="mt-10 flex flex-col gap-6 lg:flex-row lg:items-stretch lg:justify-center lg:gap-2">
@@ -219,13 +250,15 @@ export function Pricing() {
             <p className="font-heading text-4xl font-bold signalflow-gold-text">
               ₹{batchInfo.priceInr.toLocaleString("en-IN")}
             </p>
-            <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-muted-foreground">
-              Batch runs {dateRange}
-            </span>
+            {showBatchDates && (
+              <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-muted-foreground">
+                Batch runs {dateRange}
+              </span>
+            )}
           </div>
 
           <ul className="mt-6 flex flex-col gap-2.5 text-sm">
-            {batchInfo.benefits.map((benefit) => (
+            {benefits.map((benefit) => (
               <li key={benefit} className="flex items-start gap-2.5">
                 <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
                 <span className="text-foreground/90">{benefit}</span>
@@ -256,7 +289,7 @@ export function Pricing() {
           </p>
 
           <Button asChild size="lg" className="signalflow-glow signalflow-btn-gradient mt-6 w-full">
-            <Link href="/register">Register for this Batch</Link>
+            <Link href="/register">{registerLabel}</Link>
           </Button>
 
           <ContinuePremiumPanel existingMemberPriceInr={batchInfo.existingMemberPriceInr} />
@@ -280,7 +313,7 @@ export function Pricing() {
             </motion.div>
           )}
 
-          {clientConfig.dhanOfferEnabled && <DhanOfferCard />}
+          {clientConfig.dhanOfferEnabled && <BrokerOfferCard />}
         </div>
       </div>
     </section>

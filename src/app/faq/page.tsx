@@ -6,6 +6,7 @@ import { clientConfig } from "@/lib/client-config";
 
 export default function FaqPage() {
   const { batchInfo, siteName, siteNameShort, dhanOfferEnabled } = clientConfig;
+  const brokerOfferBrand = clientConfig.brokerOffer?.brandName ?? "Dhan";
 
   const SECTIONS: TocEntry[] = [
     { id: "what-is-thc", label: `What is ${siteName}?` },
@@ -20,7 +21,7 @@ export default function FaqPage() {
     { id: "sebi", label: `Is ${siteNameShort} SEBI-registered?` },
     { id: "who-can-join", label: "Who can join?" },
     ...(dhanOfferEnabled
-      ? [{ id: "dhan-referral", label: "What is the Dhan referral offer?" }]
+      ? [{ id: "dhan-referral", label: `What is the ${brokerOfferBrand} referral offer?` }]
       : []),
   ];
 
@@ -165,9 +166,9 @@ export default function FaqPage() {
             </Section>
 
             {dhanOfferEnabled && (
-              <Section id="dhan-referral" title="What is the Dhan referral offer?">
+              <Section id="dhan-referral" title={`What is the ${brokerOfferBrand} referral offer?`}>
                 <p>
-                  Existing Dhan account holders can win free premium group access for the next
+                  Existing {brokerOfferBrand} account holders can win free premium group access for the next
                   batch by referring friends and family — subject to a minimum of 10 referrals and
                   50 trades in 1 account. Full details are in our{" "}
                   <a

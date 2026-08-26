@@ -6,6 +6,7 @@ import { clientConfig } from "@/lib/client-config";
 
 export default function TermsPage() {
   const { siteName, siteNameShort, dhanOfferEnabled } = clientConfig;
+  const brokerOfferBrand = clientConfig.brokerOffer?.brandName ?? "Dhan";
 
   const SECTIONS: TocEntry[] = [
     { id: "disclaimer", label: "Disclaimer" },
@@ -14,7 +15,7 @@ export default function TermsPage() {
     { id: "beginner-guidance", label: "Beginner Guidance" },
     { id: "risk-management", label: "Risk Management Rules" },
     { id: "risk-disclosure", label: "Risk Disclosure" },
-    ...(dhanOfferEnabled ? [{ id: "dhan-referral", label: "Dhan Referral Offer" }] : []),
+    ...(dhanOfferEnabled ? [{ id: "dhan-referral", label: `${brokerOfferBrand} Referral Offer` }] : []),
     { id: "group-rules", label: "Group Rules" },
     { id: "payment-acceptance", label: "Acceptance of Terms" },
   ];
@@ -132,9 +133,9 @@ export default function TermsPage() {
             </Section>
 
             {dhanOfferEnabled && (
-              <Section id="dhan-referral" title="Dhan Referral Offer">
+              <Section id="dhan-referral" title={`${brokerOfferBrand} Referral Offer`}>
                 <p>
-                  Existing Dhan account holders can win free premium group access for the next
+                  Existing {brokerOfferBrand} account holders can win free premium group access for the next
                   batch by referring friends and family, subject to:
                 </p>
                 <ul className="flex flex-col gap-1.5 [&>li]:pl-4 [&>li]:-indent-4">
