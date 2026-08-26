@@ -74,9 +74,11 @@ model Subscriber {
   invitedAt             DateTime?
   invitedBy             String?
   invitationToken       String?                @unique
-  // Scrypt hash of the subscriber's login password (see src/lib/password.ts
-  // and src/app/login/actions.ts). Null until an admin sets one — there is
-  // no self-service signup-with-password or password-reset-email flow yet.
+  // Scrypt hash of the subscriber's login password (see src/lib/password.ts).
+  // Set at self-service registration (src/app/register/actions.ts), which
+  // also logs the subscriber in immediately. An admin can still set/reset it
+  // directly from the admin panel (e.g. for a subscriber who forgets theirs)
+  // — there is still no self-service password-reset-by-email flow.
   passwordHash          String?
   // Whether the subscriber has opted out of the weekly performance digest
   // email. Defaults to false (opted in). Set to true via the HMAC-signed

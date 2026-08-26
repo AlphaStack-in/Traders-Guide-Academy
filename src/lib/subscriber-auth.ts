@@ -6,10 +6,13 @@
  * password checked against Subscriber.passwordHash (see src/lib/password.ts
  * and src/app/login/actions.ts) instead of a Supabase-issued session.
  *
- * There is currently no self-service password-reset-by-email flow — an
- * admin sets/resets a subscriber's password directly (see the admin
- * subscribers panel). That's a deliberate, scoped-down decision, not an
- * oversight; a follow-up task can add reset emails via Resend later.
+ * Subscribers set their own password at self-service registration (see
+ * src/app/register/actions.ts), which also creates their session
+ * immediately. There is still no self-service password-reset-by-email
+ * flow — an admin can set/reset a subscriber's password directly from the
+ * admin subscribers panel as a fallback. That's a deliberate, scoped-down
+ * decision, not an oversight; a follow-up task can add reset emails via
+ * Resend later.
  */
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";

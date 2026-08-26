@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { Navbar } from "@/components/site/navbar";
 import { Footer } from "@/components/site/footer";
 import { BrokerConnectPanel } from "@/components/account/broker-connect-panel";
+import { PaymentDetailsCard } from "@/components/account/payment-details-card";
 import { getCurrentSubscriber } from "@/lib/subscriber-auth";
 import { prisma } from "@/lib/prisma";
 import { clientConfig } from "@/lib/client-config";
@@ -53,6 +54,18 @@ export default async function ProfilePage() {
             <p className="text-xs text-muted-foreground">Joined</p>
             <p className="font-heading font-semibold">{formatSignalDate(subscriber.createdAt)}</p>
           </div>
+        </div>
+
+        <div className="signalflow-glass signalflow-gold-border flex flex-col gap-3 rounded-2xl border p-5">
+          <div>
+            <h3 className="font-heading font-bold text-base">
+              Payment <span className="signalflow-gold-text">Details</span>
+            </h3>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Batch {subscriber.batchNumber ?? clientConfig.batchInfo.batchNumber} — keep this handy until your payment is confirmed.
+            </p>
+          </div>
+          <PaymentDetailsCard />
         </div>
 
         <div className="signalflow-glass signalflow-gold-border flex flex-col gap-3 rounded-2xl border p-5">

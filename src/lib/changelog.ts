@@ -16,7 +16,12 @@
 export interface ChangelogEntry {
   /** Semantic version this entry describes, e.g. "1.0.7". */
   version: string;
-  /** Human-readable release date, e.g. "12 Aug 2026". */
+  /**
+   * Human-readable release build timestamp, e.g. "12 Aug 2026, 08:12 IST".
+   * Matches the shipping commit for this version (24-hour IST, same
+   * convention as build-info.ts's formattedBuildTime) so the changelog
+   * shows exactly when each build went out, not just the date.
+   */
   date: string;
   /** Short title summarising the release. */
   title: string;
@@ -26,8 +31,21 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.17",
+    date: "26 Aug 2026, 22:11 IST",
+    title: "Self-Service Password Registration & Payment Dashboard",
+    highlights: [
+      "Subscribers set their own password at registration and are logged in immediately",
+      "Registration now requires a real email — login is email + password based",
+      "Duplicate-email registrations are now rejected (Subscriber.email has no DB-level unique constraint)",
+      "Persistent Payment Details card added to the account dashboard, not just a one-time post-registration screen",
+      "Admin nav: Messages moved into the Members dropdown",
+      "Every changelog entry now shows a full build timestamp, not just a date",
+    ],
+  },
+  {
     version: "1.0.16",
-    date: "26 Aug 2026",
+    date: "26 Aug 2026, 21:55 IST",
     title: "Navbar Register vs Login Mutual Exclusion",
     highlights: [
       "Set tga_registered browser cookie after successful registration",
@@ -37,7 +55,7 @@ export const CHANGELOG: ChangelogEntry[] = [
   },
   {
     version: "1.0.15",
-    date: "26 Aug 2026",
+    date: "26 Aug 2026, 20:03 IST",
     title: "Contact Bio Cleanup",
     highlights: [
       "Removed redundant Telegram community link from the founder bio on the contact page",
@@ -45,7 +63,7 @@ export const CHANGELOG: ChangelogEntry[] = [
   },
   {
     version: "1.0.14",
-    date: "26 Aug 2026",
+    date: "26 Aug 2026, 19:59 IST",
     title: "Contact Page Social Channels",
     highlights: [
       "Contact page now shows Instagram, Telegram, and YouTube cards from client config",
@@ -54,7 +72,7 @@ export const CHANGELOG: ChangelogEntry[] = [
   },
   {
     version: "1.0.13",
-    date: "26 Aug 2026",
+    date: "26 Aug 2026, 19:54 IST",
     title: "Navbar Link Styling & Contact Page Width",
     highlights: [
       "Removed rounded bordered boxes from active public navbar menu items",
@@ -63,7 +81,7 @@ export const CHANGELOG: ChangelogEntry[] = [
   },
   {
     version: "1.0.12",
-    date: "26 Aug 2026",
+    date: "26 Aug 2026, 19:24 IST",
     title: "Premium Pricing, AliceBlue Partner & News Panel",
     highlights: [
       "Premium community pricing card live at ₹4,999 with benefits, timings, and refund policy",
@@ -76,7 +94,7 @@ export const CHANGELOG: ChangelogEntry[] = [
   },
   {
     version: "1.0.11",
-    date: "25 Aug 2026",
+    date: "25 Aug 2026, 09:09 IST",
     title: "Navbar Logo & Dropdown Menu Polish",
     highlights: [
       "Updated navbar with latest TGA horizontal logo branding",
@@ -87,7 +105,7 @@ export const CHANGELOG: ChangelogEntry[] = [
   },
   {
     version: "1.0.10",
-    date: "24 Aug 2026",
+    date: "24 Aug 2026, 19:53 IST",
     title: "Contact Page, Social Links & Testimonials",
     highlights: [
       "Founder bio section on contact page featuring Satish Rathod (NISM-certified, 25 years experience)",
@@ -102,7 +120,7 @@ export const CHANGELOG: ChangelogEntry[] = [
   },
   {
     version: "1.0.9",
-    date: "24 Aug 2026",
+    date: "24 Aug 2026, 19:11 IST",
     title: "TGA Logo Assets & Navbar Branding",
     highlights: [
       "Updated site logo and favicon to proper TGA branded assets",
@@ -114,7 +132,10 @@ export const CHANGELOG: ChangelogEntry[] = [
   },
   {
     version: "1.0.8",
-    date: "21 Aug 2026",
+    // Corrected from "21 Aug 2026" (when the fork was scaffolded) to the
+    // actual shipping commit's timestamp — the digest-email feature in
+    // this bundle landed 3 days after the fork itself.
+    date: "24 Aug 2026, 11:55 IST",
     title: "TGA Fork, Auth Simplification & Email Digest",
     highlights: [
       "Scaffolded Traders Guide Academy as a single-tenant client fork",
@@ -126,7 +147,7 @@ export const CHANGELOG: ChangelogEntry[] = [
   },
   {
     version: "1.0.7",
-    date: "12 Aug 2026",
+    date: "12 Aug 2026, 08:12 IST",
     title: "Parse Signal Textarea Placeholder Example Only Refinement",
     highlights: [
       "Removed 'Paste raw signal message...' from Parse text input placeholder",
@@ -135,7 +156,7 @@ export const CHANGELOG: ChangelogEntry[] = [
   },
   {
     version: "1.0.6",
-    date: "12 Aug 2026",
+    date: "12 Aug 2026, 08:06 IST",
     title: "Parse Signal Left Link Repositioning & Send Signal Icon Alignment",
     highlights: [
       "Moved Insert Sample Signal link to the left side above Parse textarea",
@@ -146,7 +167,7 @@ export const CHANGELOG: ChangelogEntry[] = [
   },
   {
     version: "1.0.5",
-    date: "12 Aug 2026",
+    date: "12 Aug 2026, 07:59 IST",
     title: "Parse Signal Cleanup & Uniform 3-Column Manual Signal Grid",
     highlights: [
       "Moved Insert Sample Signal link above Parse textarea on the right side",
@@ -158,7 +179,7 @@ export const CHANGELOG: ChangelogEntry[] = [
   },
   {
     version: "1.0.4",
-    date: "12 Aug 2026",
+    date: "12 Aug 2026, 07:41 IST",
     title: "Official Exchange Contract Expiry Specifications & Holiday Engine",
     highlights: [
       "Updated NSE Nifty 50 weekly options to official Tuesday expiry schedule",
@@ -170,7 +191,7 @@ export const CHANGELOG: ChangelogEntry[] = [
   },
   {
     version: "1.0.3",
-    date: "12 Aug 2026",
+    date: "12 Aug 2026, 07:35 IST",
     title: "Dynamic Instrument Expiry Engine & Compact Keyboard-First Admin UI",
     highlights: [
       "Added dynamic getNextExpiry service for Nifty, Sensex, Bank Nifty, Midcap Nifty, and Stock derivatives",
@@ -182,7 +203,7 @@ export const CHANGELOG: ChangelogEntry[] = [
   },
   {
     version: "1.0.2",
-    date: "12 Aug 2026",
+    date: "12 Aug 2026, 07:13 IST",
     title: "Instrument Detection Fix & Compact Left-Aligned Signal Entry UI",
     highlights: [
       "Fixed NIFTY/SENSEX explicit instrument detection & eliminated false instrument warnings",
@@ -194,7 +215,7 @@ export const CHANGELOG: ChangelogEntry[] = [
   },
   {
     version: "1.0.1",
-    date: "11 Aug 2026",
+    date: "11 Aug 2026, 23:06 IST",
     title: "Enforce 100% Automatic Customer Parser Resolution",
     highlights: [
       "Removed Customer Parser dropdown UI completely",
@@ -204,7 +225,7 @@ export const CHANGELOG: ChangelogEntry[] = [
   },
   {
     version: "1.0.1",
-    date: "11 Aug 2026",
+    date: "11 Aug 2026, 22:50 IST",
     title: "Semantic Patch Versioning & Footer Build Alignment",
     highlights: [
       "Replaced sequential build counter with semantic patch versioning (v1.0.1)",
@@ -215,7 +236,7 @@ export const CHANGELOG: ChangelogEntry[] = [
   },
   {
     version: "1.0.0",
-    date: "11 Aug 2026",
+    date: "11 Aug 2026, 22:39 IST",
     title: "Build Indicator & Admin Navigation Placement",
     highlights: [
       "Moved build indicator strictly to left side of user and admin footers",
@@ -225,7 +246,7 @@ export const CHANGELOG: ChangelogEntry[] = [
   },
   {
     version: "1.0.0",
-    date: "11 Aug 2026",
+    date: "11 Aug 2026, 21:59 IST",
     title: "Build Version Indicator & Admin Changelog",
     highlights: [
       "Added subtle build version indicator with detailed popover modal",
@@ -235,7 +256,7 @@ export const CHANGELOG: ChangelogEntry[] = [
   },
   {
     version: "1.0.0",
-    date: "11 Aug 2026",
+    date: "11 Aug 2026, 21:34 IST",
     title: "SignalFlow Lifecycle Engine & Validation Suite",
     highlights: [
       "Added lifecycle trade matching & update association engine",
@@ -245,7 +266,7 @@ export const CHANGELOG: ChangelogEntry[] = [
   },
   {
     version: "1.0.0",
-    date: "11 Aug 2026",
+    date: "11 Aug 2026, 20:38 IST",
     title: "Goodwill Signal Parser + Platform Enhancements",
     highlights: [
       "Added customer-specific Goodwill signal parser",

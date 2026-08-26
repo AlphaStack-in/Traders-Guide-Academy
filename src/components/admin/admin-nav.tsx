@@ -6,7 +6,6 @@ import {
   BarChart3,
   ChevronDown,
   LogOut,
-  MessageSquare,
   Shield,
   UserRound,
   Users,
@@ -26,11 +25,11 @@ import { IstClock } from "@/components/site/ist-clock";
 const links = [
   { href: "/admin/dashboard", label: "Dashboard", icon: BarChart3 },
   { href: "/admin/signals", label: "Manage Signals", icon: Zap },
-  { href: "/admin/messages", label: "Messages", icon: MessageSquare },
 ];
 
 const membersLinks = [
   { href: "/admin/subscribers", label: "View Members" },
+  { href: "/admin/messages", label: "Messages" },
   { href: "/admin/referrals", label: "Referrals" },
   ...(clientConfig.dhanConnectEnabled
     ? [{ href: "/admin/broker-sessions", label: "Broker Sessions" }]

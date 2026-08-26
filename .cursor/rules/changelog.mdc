@@ -9,8 +9,8 @@ When making any commit that changes user-facing behavior, admin UI, client confi
 
 ## Files to update
 
-1. **`CHANGELOG.md`** — add bullets under `## [Unreleased]` in the correct section (`Added`, `Changed`, `Fixed`, `Removed`). Match the existing Keep a Changelog style.
-2. **`src/lib/changelog.ts`** — add a new entry at the **top** of the `CHANGELOG` array when the change is worth showing on the Admin → Changelog page. Bump `package.json` version (patch) so the deployed build matches the newest entry.
+1. **`CHANGELOG.md`** — add bullets under `## [Unreleased]` in the correct section (`Added`, `Changed`, `Fixed`, `Removed`). Match the existing Keep a Changelog style. When a version is cut, its header must be a full build timestamp, not just a date — `## [x.y.z] - YYYY-MM-DD HH:MM IST` (24-hour, IST, matching the commit that actually ships it).
+2. **`src/lib/changelog.ts`** — add a new entry at the **top** of the `CHANGELOG` array when the change is worth showing on the Admin → Changelog page. Its `date` field must also be a full build timestamp in the same format as `build-info.ts`'s `formattedBuildTime`, e.g. `"26 Aug 2026, 21:55 IST"` — not a bare date. Bump `package.json` version (patch) so the deployed build matches the newest entry.
 
 ## Commit workflow
 

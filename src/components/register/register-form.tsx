@@ -1,22 +1,29 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useSearchParams } from "next/navigation";
-import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { WhatsAppIcon } from "@/components/site/icons";
+import { PaymentDetailsCard } from "@/components/account/payment-details-card";
 import { clientConfig } from "@/lib/client-config";
 import { registerSubscriber } from "@/app/register/actions";
 
+const MIN_PASSWORD_LENGTH = 6;
+
 export function RegisterForm() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const invitationToken = searchParams.get("ref") || searchParams.get("token") || null;
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -27,17 +34,30 @@ export function RegisterForm() {
     e.preventDefault();
     setError(null);
 
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("Passwords don't match.");
+      return;
+    }
+
     startTransition(async () => {
       const result = await registerSubscriber({
         name,
         phone,
-        email: email || null,
+        email,
+        password,
         currentBroker,
         batchNumber: clientConfig.batchInfo.batchNumber,
         invitationToken,
       });
       if (result.success) {
         setSubmitted(true);
+        // Registration also logs the subscriber in — refresh so the navbar
+        // (a server component reading the session cookie) picks it up.
+        router.refresh();
       } else {
         setError(result.error ?? "Something went wrong. Please try again.");
       }
@@ -49,38 +69,10 @@ export function RegisterForm() {
       <div className="flex flex-col items-center gap-5 py-6 text-center">
         <h2 className="font-heading text-2xl font-bold signalflow-gold-text">You&apos;re in!</h2>
         <p className="text-sm text-muted-foreground">
-          {`Thanks, ${name.split(" ")[0]} — we've saved your details. Complete payment below, then join WhatsApp so we can add you to the group.`}
+          {`Thanks, ${name.split(" ")[0]} — you're logged in. Complete payment below, then join WhatsApp so we can add you to the group.`}
         </p>
 
-        <div className="w-full rounded-xl border border-white/10 bg-black/20 p-4 text-left text-sm">
-          <p className="font-heading font-semibold">
-            Pay ₹{clientConfig.batchInfo.priceInr.toLocaleString("en-IN")} via UPI
-          </p>
-          <ul className="mt-2 flex flex-col gap-1 text-muted-foreground">
-            {clientConfig.paymentInfo.upiIds.map((upi) => (
-              <li key={upi.vpa}>
-                <span className="font-medium text-foreground">{upi.vpa}</span> ({upi.name})
-              </li>
-            ))}
-          </ul>
-          <p className="mt-3 font-heading font-semibold">Questions? Contact</p>
-          <ul className="mt-1 flex flex-col gap-1 text-muted-foreground">
-            {clientConfig.paymentInfo.managers.map((manager) => (
-              <li key={manager.phone}>
-                {manager.name} —{" "}
-                <a href={`tel:${manager.phone}`} className="text-primary">
-                  {manager.phone}
-                </a>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-3 text-xs text-muted-foreground/70">
-            {clientConfig.batchInfo.refundPolicy}{" "}
-            <Link href="/terms" className="text-primary underline underline-offset-2">
-              T &amp; C
-            </Link>
-          </p>
-        </div>
+        <PaymentDetailsCard className="w-full text-left" />
 
         <Button asChild className="signalflow-glow signalflow-btn-gradient w-full">
           <a href={clientConfig.whatsappUrl} target="_blank" rel="noopener noreferrer">
@@ -119,12 +111,54 @@ export function RegisterForm() {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="email">Email (optional)</Label>
+        <Label htmlFor="email">Email</Label>
         <Input
           id="email"
           type="email"
+          required
+          autoComplete="email"
+          placeholder="you@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+        />
+        <p className="text-xs text-muted-foreground/70">
+          You&apos;ll use this to log in later, so make sure it&apos;s correct.
+        </p>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="password">Password</Label>
+        <div className="relative">
+          <Input
+            id="password"
+            type={showPassword ? "text" : "password"}
+            required
+            autoComplete="new-password"
+            placeholder={`At least ${MIN_PASSWORD_LENGTH} characters`}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="pr-10"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            aria-label={showPassword ? "Hide password" : "Show password"}
+          >
+            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="confirmPassword">Confirm Password</Label>
+        <Input
+          id="confirmPassword"
+          type={showPassword ? "text" : "password"}
+          required
+          autoComplete="new-password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
         />
       </div>
 
