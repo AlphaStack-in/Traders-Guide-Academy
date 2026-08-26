@@ -22,6 +22,15 @@ export default async function ProfilePage() {
       })
     : null;
 
+  // Subscribers created before billingCycle existed have none on record —
+  // show all tiers in that case rather than assuming one (see
+  // PaymentDetailsCard's `plan` prop doc comment).
+  const subscriberPlan = subscriber.billingCycle
+    ? clientConfig.pricingPlans.find(
+        (p) => p.id === subscriber.billingCycle!.toLowerCase(),
+      )
+    : null;
+
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
@@ -35,6 +44,7 @@ export default async function ProfilePage() {
           initialPhone={subscriber.phone}
           initialEmail={subscriber.email ?? ""}
           initialCurrentBroker={subscriber.currentBroker}
+          planLabel={subscriberPlan ? subscriberPlan.label : "—"}
           batchLabel={subscriber.batchNumber != null ? `Batch ${subscriber.batchNumber}` : "—"}
           joinedLabel={formatSignalDate(subscriber.createdAt)}
         />
@@ -45,10 +55,10 @@ export default async function ProfilePage() {
               Payment <span className="signalflow-gold-text">Details</span>
             </h3>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              Batch {subscriber.batchNumber ?? clientConfig.batchInfo.batchNumber} — keep this handy until your payment is confirmed.
+              Keep this handy until your payment is confirmed.
             </p>
           </div>
-          <PaymentDetailsCard />
+          <PaymentDetailsCard plan={subscriberPlan} />
         </div>
 
         <div className="signalflow-glass signalflow-gold-border flex flex-col gap-3 rounded-2xl border p-5">

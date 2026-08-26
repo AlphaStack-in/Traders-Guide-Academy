@@ -7,22 +7,24 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { WhatsAppIcon } from "@/components/site/icons";
-import { clientConfig } from "@/lib/client-config";
+import { clientConfig, type PricingPlan } from "@/lib/client-config";
 import { checkExistingMember } from "@/app/register/actions";
+import { cn } from "@/lib/utils";
 
 function toWhatsAppLink(phone: string, text: string) {
   return `https://wa.me/${phone.replace(/\D/g, "")}?text=${encodeURIComponent(text)}`;
 }
 
-function ContinuePremiumPanel({
-  existingMemberPriceInr,
-}: {
-  existingMemberPriceInr: number;
-}) {
+function ContinuePremiumPanel({ plans }: { plans: PricingPlan[] }) {
   const [open, setOpen] = useState(false);
+  const [selectedPlanId, setSelectedPlanId] = useState(
+    plans.find((p) => p.highlight)?.id ?? plans[0]?.id,
+  );
   const [phone, setPhone] = useState("");
   const [result, setResult] = useState<{ found: boolean; name: string | null } | null>(null);
   const [isChecking, startChecking] = useTransition();
+
+  const selectedPlan = plans.find((p) => p.id === selectedPlanId) ?? plans[0];
 
   function handleCheck() {
     if (phone.replace(/\D/g, "").length < 8) return;
@@ -54,7 +56,26 @@ function ContinuePremiumPanel({
 
   return (
     <div className="signalflow-glass mt-3 rounded-xl border border-white/5 p-4">
-      <p className="text-sm font-medium text-foreground">
+      <p className="text-sm font-medium text-foreground">Which plan are you continuing on?</p>
+      <div className="mt-2 flex flex-wrap gap-1.5">
+        {plans.map((p) => (
+          <button
+            key={p.id}
+            type="button"
+            onClick={() => setSelectedPlanId(p.id)}
+            className={cn(
+              "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+              p.id === selectedPlanId
+                ? "border-primary/50 bg-primary/15 text-primary"
+                : "border-white/10 text-muted-foreground hover:border-white/20",
+            )}
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
+
+      <p className="mt-3 text-sm font-medium text-foreground">
         Enter your registered phone number to confirm your membership.
       </p>
       <div className="mt-3 flex flex-col gap-2 sm:flex-row">
@@ -77,15 +98,15 @@ function ContinuePremiumPanel({
         </Button>
       </div>
 
-      {result && (
+      {result && selectedPlan && (
         <div className="mt-3">
           {result.found ? (
             <div className="rounded-lg border border-[var(--signalflow-win)]/40 bg-[var(--signalflow-win)]/10 p-3 text-sm">
               <p className="text-foreground/90">
                 {result.name ? `Welcome back, ${result.name}!` : "Membership confirmed!"}{" "}
-                Continue at{" "}
+                Continue on the {selectedPlan.label} plan at{" "}
                 <span className="font-semibold text-[var(--signalflow-win)]">
-                  ₹{existingMemberPriceInr.toLocaleString("en-IN")}
+                  ₹{selectedPlan.existingMemberPriceInr.toLocaleString("en-IN")}
                 </span>
                 .
               </p>
@@ -94,7 +115,7 @@ function ContinuePremiumPanel({
                   <a
                     href={toWhatsAppLink(
                       manager.phone,
-                      `Hi, I'd like to continue my premium membership at the existing-member price of ₹${existingMemberPriceInr}.`,
+                      `Hi, I'd like to continue my premium membership on the ${selectedPlan.label} plan at the existing-member price of ₹${selectedPlan.existingMemberPriceInr}.`,
                     )}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -118,20 +139,6 @@ function ContinuePremiumPanel({
       )}
     </div>
   );
-}
-
-function formatBatchHeadline(batchNumber: number): string {
-  const mod100 = batchNumber % 100;
-  const mod10 = batchNumber % 10;
-  const suffix =
-    mod10 === 1 && mod100 !== 11
-      ? "st"
-      : mod10 === 2 && mod100 !== 12
-        ? "nd"
-        : mod10 === 3 && mod100 !== 13
-          ? "rd"
-          : "th";
-  return `${batchNumber}${suffix} Batch`;
 }
 
 function BrokerOfferCard() {
@@ -214,27 +221,24 @@ function BrokerOfferCard() {
 }
 
 export function Pricing() {
-  const { batchInfo } = clientConfig;
-  const headline =
-    clientConfig.pricingHeadline ?? formatBatchHeadline(batchInfo.batchNumber);
+  const { batchInfo, pricingPlans } = clientConfig;
+  const headline = clientConfig.pricingHeadline ?? "Premium Community";
   const subheadline =
     clientConfig.pricingSubheadline ??
-    "Every call, live Zoom session, and WhatsApp signal — one flat price.";
-  const registerLabel = clientConfig.pricingRegisterLabel ?? "Register for this Batch";
+    "Every call, live Zoom session, and WhatsApp signal — pick the plan that fits you.";
+  const registerLabel = clientConfig.pricingRegisterLabel ?? "Register Premium";
   const benefits = batchInfo.benefits.filter((benefit) => benefit.trim().length > 0);
   // Clients using the "Premium Community" pricing headline (Stockops,
   // Goodwill) show the bull image in the Hero section instead, to the left
-  // of the hero text — see hero.tsx's showBull.
+  // of the hero text — see hero.tsx's showBull. (Note: TGA's own headline is
+  // "Premium community", lower-case c, so this comparison intentionally
+  // doesn't match it — pre-existing behavior, unrelated to the pricing-tier
+  // change here, left as-is.)
   const showBullImage = headline !== "Premium Community";
-  const showBatchDates = !clientConfig.pricingHeadline;
-  const dateRange = `${new Date(batchInfo.startDate).toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "short",
-  })} – ${new Date(batchInfo.endDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}`;
 
   return (
-    <section className="px-4 py-16 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-5xl">
+    <section id="pricing" className="px-4 py-16 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl">
         <div className="text-center">
           <h2 className="font-heading text-2xl font-bold sm:text-3xl">
             Join the <span className="signalflow-gold-text">{headline}</span>
@@ -242,26 +246,58 @@ export function Pricing() {
           <p className="mt-2 text-sm text-muted-foreground">{subheadline}</p>
         </div>
 
-        <div className="mt-10 flex flex-col gap-6 lg:flex-row lg:items-stretch lg:justify-center lg:gap-2">
+        <div className="mt-10 grid gap-5 sm:grid-cols-3">
+          {pricingPlans.map((plan, i) => (
+            <motion.div
+              key={plan.id}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 0.5, delay: i * 0.08 }}
+              className={cn(
+                "signalflow-glass relative flex flex-col rounded-2xl border p-6",
+                plan.highlight
+                  ? "signalflow-gold-border signalflow-glow border-2"
+                  : "border-white/5",
+              )}
+            >
+              {plan.highlight && (
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-black">
+                  Most Popular
+                </span>
+              )}
+              <p className="font-heading text-sm font-semibold text-muted-foreground">
+                {plan.label}
+              </p>
+              <div className="mt-2 flex items-baseline gap-1">
+                <span className="font-heading text-3xl font-bold signalflow-gold-text">
+                  ₹{plan.priceInr.toLocaleString("en-IN")}
+                </span>
+                <span className="text-xs text-muted-foreground">{plan.periodLabel}</span>
+              </div>
+              {plan.savingsLabel && (
+                <span className="mt-1.5 inline-flex w-fit rounded-full border border-[var(--signalflow-win)]/40 bg-[var(--signalflow-win)]/10 px-2 py-0.5 text-[10px] font-semibold text-[var(--signalflow-win)]">
+                  {plan.savingsLabel}
+                </span>
+              )}
+              <Button asChild size="lg" className="signalflow-glow signalflow-btn-gradient mt-5 w-full">
+                <Link href={`/register?plan=${plan.id}`}>{registerLabel}</Link>
+              </Button>
+            </motion.div>
+          ))}
+        </div>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.5 }}
-          className="signalflow-glass signalflow-gold-border signalflow-glow rounded-2xl p-8 lg:max-w-xl lg:flex-1"
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="signalflow-glass signalflow-neutral-border mt-6 rounded-2xl border p-6"
         >
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <p className="font-heading text-4xl font-bold signalflow-gold-text">
-              ₹{batchInfo.priceInr.toLocaleString("en-IN")}
-            </p>
-            {showBatchDates && (
-              <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-muted-foreground">
-                Batch runs {dateRange}
-              </span>
-            )}
-          </div>
-
-          <ul className="mt-6 flex flex-col gap-2.5 text-sm">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Every plan includes
+          </p>
+          <ul className="mt-3 flex flex-col gap-2.5 text-sm sm:grid sm:grid-cols-2 sm:gap-x-6">
             {benefits.map((benefit) => (
               <li key={benefit} className="flex items-start gap-2.5">
                 <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
@@ -292,33 +328,32 @@ export function Pricing() {
             </Link>
           </p>
 
-          <Button asChild size="lg" className="signalflow-glow signalflow-btn-gradient mt-6 w-full">
-            <Link href="/register">{registerLabel}</Link>
-          </Button>
-
-          <ContinuePremiumPanel existingMemberPriceInr={batchInfo.existingMemberPriceInr} />
+          <ContinuePremiumPanel plans={pricingPlans} />
         </motion.div>
 
-          {showBullImage && (
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.5 }}
-              className="relative z-10 mx-auto shrink-0 self-center lg:-mx-8"
-            >
-              <Image
-                src="/bull-3d.png"
-                alt="Bull market"
-                width={736}
-                height={734}
-                className="h-40 w-40 object-contain drop-shadow-[0_0_30px_rgba(212,175,55,0.35)] sm:h-56 sm:w-56 lg:h-64 lg:w-64"
-              />
-            </motion.div>
-          )}
+        {(showBullImage || clientConfig.dhanOfferEnabled) && (
+          <div className="mt-6 flex flex-col items-center gap-6 lg:flex-row lg:justify-center">
+            {showBullImage && (
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.5 }}
+                className="relative z-10 mx-auto shrink-0 self-center"
+              >
+                <Image
+                  src="/bull-3d.png"
+                  alt="Bull market"
+                  width={736}
+                  height={734}
+                  className="h-40 w-40 object-contain drop-shadow-[0_0_30px_rgba(212,175,55,0.35)] sm:h-56 sm:w-56 lg:h-64 lg:w-64"
+                />
+              </motion.div>
+            )}
 
-          {clientConfig.dhanOfferEnabled && <BrokerOfferCard />}
-        </div>
+            {clientConfig.dhanOfferEnabled && <BrokerOfferCard />}
+          </div>
+        )}
       </div>
     </section>
   );

@@ -31,6 +31,23 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.19",
+    date: "26 Aug 2026, 23:05 IST",
+    title: "Monthly / Quarterly / Yearly Pricing Tiers",
+    highlights: [
+      "Replaced the single dated-batch price with 3 recurring billing-cycle tiers: Monthly, Quarterly, Yearly",
+      "Pricing shown is starter placeholder data — replace with real numbers in client-config.ts before launch",
+      "Register form shows a 3-tier plan picker; the chosen plan carries through to payment instructions",
+      "Home page pricing section rebuilt as a 3-card tier grid, Quarterly marked Most Popular",
+      "Continue Premium renewal flow lets an existing member pick which plan they're renewing",
+      "Account dashboard Payment Details card shows the subscriber's actual plan price",
+      "FAQ pricing and timings sections rewritten for the 3-tier model",
+      "Added Subscriber.billingCycle field — run npx prisma migrate dev --name add_billing_cycle",
+      "Profile page now shows which plan a subscriber is on, alongside the existing Batch field",
+      "Fixed a dangling /#pricing anchor link — the pricing section was missing its id",
+    ],
+  },
+  {
     version: "1.0.18",
     date: "26 Aug 2026, 22:38 IST",
     title: "Editable Subscriber Profile & Admin Logout Under Profile Icon",

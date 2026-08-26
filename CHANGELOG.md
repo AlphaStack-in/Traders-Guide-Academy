@@ -4,11 +4,28 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-Versioning continues the semantic patch series from the SignalFlow template (`1.0.7` → `1.0.8` …). The footer and Admin Changelog page read the current version from `package.json` (now **1.0.18**).
+Versioning continues the semantic patch series from the SignalFlow template (`1.0.7` → `1.0.8` …). The footer and Admin Changelog page read the current version from `package.json` (now **1.0.19**).
 
 Each release header now includes a build timestamp (24-hour IST, matching `build-info.ts`'s `formattedBuildTime`), not just a date — this reflects the actual commit that shipped the version. While adding timestamps, two pre-existing dates were corrected to match their real shipping commit: `1.0.8` (was dated by the TGA fork commit, 3 days before the digest-email feature in that release actually shipped) and `1.0.2` (was off by one day around a just-after-midnight IST commit).
 
 ## [Unreleased]
+
+## [1.0.19] - 2026-08-26 23:05 IST
+
+### Changed
+- Replaced the single dated-batch pricing model (one fixed price, one start/end date) with 3 recurring billing-cycle tiers — Monthly, Quarterly, Yearly — each with its own price. **Pricing shown is starter placeholder data (derived from the previous ₹4,999 price) — replace with real numbers in `client-config.ts` before this goes live.**
+- Register form now shows a 3-tier plan picker instead of a fixed "Joining Batch" indicator; the chosen plan is preselected from a `?plan=` link (e.g. from a specific pricing card) and carries through to payment instructions
+- Home page pricing section rebuilt as a 3-card tier grid (Quarterly marked "Most Popular") with a shared benefits/timings panel below
+- "Continue Premium" renewal flow now lets an existing member pick which plan they're renewing before showing that plan's price
+- Account dashboard Payment Details card shows the subscriber's actual plan price; falls back to listing all 3 tiers for subscribers with no plan on record (pre-dates this change)
+- FAQ pricing/timings sections rewritten for the 3-tier model, dropping the old fixed batch-date-range framing
+
+### Added
+- `Subscriber.billingCycle` (Monthly/Quarterly/Yearly, nullable) — requires `npx prisma migrate dev --name add_billing_cycle`
+- Profile page now shows which plan a subscriber is on (read-only) alongside the existing Batch field — kept separate, since Batch is still used for internal/admin cohort tracking
+
+### Fixed
+- `/#pricing` anchor link (already referenced from the FAQ page) now actually resolves — the pricing section was missing its `id="pricing"`
 
 ## [1.0.18] - 2026-08-26 22:38 IST
 

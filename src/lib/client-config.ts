@@ -6,15 +6,31 @@
 export type ClientId = "tga";
 
 export interface BatchInfo {
+  // Cohort number for admin/referral tracking — independent of pricing now
+  // (see PricingPlan below). Not shown as a "batch" concept to visitors.
   batchNumber: number;
-  priceInr: number;
-  existingMemberPriceInr: number;
-  startDate: string;
-  endDate: string;
   zoomTimings: string[];
   whatsappTimings: string;
   benefits: string[];
   refundPolicy: string;
+}
+
+// One of the 3 recurring-duration pricing tiers (replaces the old single
+// dated-batch price). All tiers share the same BatchInfo.benefits — this
+// models "cheaper per-period the longer you commit," not different feature
+// sets per tier. See pricing.tsx and register-form.tsx.
+export interface PricingPlan {
+  id: "monthly" | "quarterly" | "yearly";
+  label: string;
+  priceInr: number;
+  periodLabel: string;
+  existingMemberPriceInr: number;
+  // e.g. "Save 13%" vs. paying monthly for the same duration. Omit for the
+  // baseline (monthly) tier.
+  savingsLabel?: string;
+  // Visually highlighted as the recommended tier. At most one plan should
+  // set this.
+  highlight?: boolean;
 }
 
 export interface PaymentInfo {
@@ -108,6 +124,7 @@ export interface ClientConfig {
   // Gates the home-page News & Market Alerts panel.
   newsAlertsEnabled: boolean;
   batchInfo: BatchInfo;
+  pricingPlans: PricingPlan[];
   paymentInfo: PaymentInfo;
   testimonials: Testimonial[];
   instagramThumbnails: InstagramThumbnail[];
@@ -163,18 +180,45 @@ const CLIENTS: Record<ClientId, ClientConfig> = {
     newsAlertsEnabled: false,
     batchInfo: {
       batchNumber: 1,
-      priceInr: 4999,
-      existingMemberPriceInr: 3999,
-      startDate: "2026-01-01",
-      endDate: "2026-01-31",
       zoomTimings: ["9:00 AM - 11:30 AM", "2:00 PM - 3:30 PM"],
       whatsappTimings: "9:15 AM - 3:30 PM",
       benefits: [
         "Unlimited intraday CE/PE calls during market hours",
         "Live Zoom sessions — trades explained and copy-traded live",
       ],
-      refundPolicy: "Refund not applicable once a batch has started.",
+      refundPolicy: "Refund not applicable once the current billing period has started.",
     },
+    // TODO: starter placeholder pricing — derived from the previous single
+    // ₹4,999/batch price (Monthly = same, Quarterly/Yearly discounted for
+    // longer commitment). Replace with real numbers before this goes live;
+    // same "TODO, not fabricated-looking real data" convention as
+    // paymentInfo below.
+    pricingPlans: [
+      {
+        id: "monthly",
+        label: "Monthly",
+        priceInr: 4999,
+        periodLabel: "/month",
+        existingMemberPriceInr: 3999,
+      },
+      {
+        id: "quarterly",
+        label: "Quarterly",
+        priceInr: 12999,
+        periodLabel: "/quarter",
+        existingMemberPriceInr: 10499,
+        savingsLabel: "Save 13%",
+        highlight: true,
+      },
+      {
+        id: "yearly",
+        label: "Yearly",
+        priceInr: 44999,
+        periodLabel: "/year",
+        existingMemberPriceInr: 35999,
+        savingsLabel: "Save 25%",
+      },
+    ],
     paymentInfo: {
       upiIds: [{ vpa: "TODO@upi", name: "TODO: TGA payee name" }],
       managers: [{ name: "TODO: TGA manager", phone: "+91 00000 00000" }],

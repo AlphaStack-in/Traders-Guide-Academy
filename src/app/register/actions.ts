@@ -4,8 +4,10 @@ import { prisma } from "@/lib/prisma";
 import { clientConfig } from "@/lib/client-config";
 import { createSubscriberSession, setRegisteredBrowserCookie } from "@/lib/subscriber-auth";
 import { hashPassword } from "@/lib/password";
+import type { BillingCycle } from "@prisma/client";
 
 const MIN_PASSWORD_LENGTH = 6;
+const VALID_BILLING_CYCLES: BillingCycle[] = ["MONTHLY", "QUARTERLY", "YEARLY"];
 
 export interface RegisterInput {
   name: string;
@@ -13,6 +15,10 @@ export interface RegisterInput {
   email: string;
   password: string;
   currentBroker?: string | null;
+  // Which pricing tier the visitor picked on the register form (see
+  // clientConfig.pricingPlans). Optional so existing callers/tests that
+  // predate this field don't break — falls back to MONTHLY.
+  billingCycle?: BillingCycle | null;
   batchNumber?: number | null;
   invitationToken?: string | null;
 }
@@ -37,6 +43,9 @@ export async function registerSubscriber(input: RegisterInput) {
   const email = input.email?.trim() || "";
   const password = input.password ?? "";
   const currentBroker = input.currentBroker?.trim() || null;
+  const billingCycle: BillingCycle = VALID_BILLING_CYCLES.includes(input.billingCycle as BillingCycle)
+    ? (input.billingCycle as BillingCycle)
+    : "MONTHLY";
   const batchNumber = input.batchNumber ?? clientConfig.batchInfo.batchNumber;
   const token = input.invitationToken?.trim() || null;
 
@@ -85,6 +94,7 @@ export async function registerSubscriber(input: RegisterInput) {
           email: email || invitedSubscriber.email,
           passwordHash,
           currentBroker: currentBroker || invitedSubscriber.currentBroker,
+          billingCycle,
           batchNumber: batchNumber || invitedSubscriber.batchNumber,
           referralStatus: "JOINED",
           invitationToken: null,
@@ -111,6 +121,7 @@ export async function registerSubscriber(input: RegisterInput) {
       email,
       passwordHash,
       currentBroker,
+      billingCycle,
       batchNumber,
       referralStatus: "NOT_JOINED",
     },

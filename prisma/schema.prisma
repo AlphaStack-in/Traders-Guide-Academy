@@ -67,6 +67,12 @@ model Subscriber {
   email                 String?
   plan                  SubscriberPlan         @default(PREMIUM)
   createdAt             DateTime               @default(now())
+  // Which pricing tier the subscriber registered under (Monthly/Quarterly/
+  // Yearly — see clientConfig.pricingPlans for current prices). Nullable
+  // because subscribers created before this field existed have no value —
+  // don't assume MONTHLY for them, show a generic view instead (see
+  // payment-details-card.tsx).
+  billingCycle          BillingCycle?
   batchNumber           Int?
   couponCode            String?
   currentBroker         String?
@@ -305,6 +311,15 @@ enum SignalStatus {
 
 enum SubscriberPlan {
   PREMIUM
+}
+
+// Billing duration a subscriber picked at registration — replaces the old
+// single dated-batch pricing model (one fixed price, one start/end date)
+// with 3 recurring-duration tiers. See clientConfig.pricingPlans.
+enum BillingCycle {
+  MONTHLY
+  QUARTERLY
+  YEARLY
 }
 
 enum ContactMessageStatus {

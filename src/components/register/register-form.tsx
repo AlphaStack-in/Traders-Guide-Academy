@@ -9,15 +9,23 @@ import { Label } from "@/components/ui/label";
 import { WhatsAppIcon } from "@/components/site/icons";
 import { PaymentDetailsCard } from "@/components/account/payment-details-card";
 import { BROKER_OPTIONS } from "@/lib/brokers";
-import { clientConfig } from "@/lib/client-config";
+import { clientConfig, type PricingPlan } from "@/lib/client-config";
 import { registerSubscriber } from "@/app/register/actions";
+import { cn } from "@/lib/utils";
 
 const MIN_PASSWORD_LENGTH = 6;
+
+function resolveInitialPlanId(requested: string | null, plans: PricingPlan[]): PricingPlan["id"] {
+  const match = plans.find((p) => p.id === requested);
+  if (match) return match.id;
+  return plans.find((p) => p.highlight)?.id ?? plans[0].id;
+}
 
 export function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const invitationToken = searchParams.get("ref") || searchParams.get("token") || null;
+  const plans = clientConfig.pricingPlans;
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -28,8 +36,13 @@ export function RegisterForm() {
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [planId, setPlanId] = useState<PricingPlan["id"]>(() =>
+    resolveInitialPlanId(searchParams.get("plan"), plans),
+  );
 
   const [currentBroker, setCurrentBroker] = useState("Dhan");
+
+  const selectedPlan = plans.find((p) => p.id === planId) ?? plans[0];
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -51,6 +64,7 @@ export function RegisterForm() {
         email,
         password,
         currentBroker,
+        billingCycle: planId.toUpperCase() as "MONTHLY" | "QUARTERLY" | "YEARLY",
         batchNumber: clientConfig.batchInfo.batchNumber,
         invitationToken,
       });
@@ -73,7 +87,14 @@ export function RegisterForm() {
           {`Thanks, ${name.split(" ")[0]} — you're logged in. Complete payment below, then join WhatsApp so we can add you to the group.`}
         </p>
 
-        <PaymentDetailsCard className="w-full text-left" />
+        <PaymentDetailsCard
+          className="w-full text-left"
+          plan={{
+            label: selectedPlan.label,
+            priceInr: selectedPlan.priceInr,
+            periodLabel: selectedPlan.periodLabel,
+          }}
+        />
 
         <Button asChild className="signalflow-glow signalflow-btn-gradient w-full">
           <a href={clientConfig.whatsappUrl} target="_blank" rel="noopener noreferrer">
@@ -87,12 +108,34 @@ export function RegisterForm() {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      {/* Current Running Batch Indicator */}
-      <div className="rounded-lg border border-primary/30 bg-primary/10 p-3">
-        <p className="text-xs text-muted-foreground">Joining Batch</p>
-        <p className="font-heading text-sm font-semibold signalflow-gold-text">
-          Batch {clientConfig.batchInfo.batchNumber} ({clientConfig.batchInfo.startDate})
-        </p>
+      <div className="flex flex-col gap-1.5">
+        <Label>Choose Your Plan</Label>
+        <div className="grid grid-cols-3 gap-2">
+          {plans.map((plan) => (
+            <button
+              key={plan.id}
+              type="button"
+              onClick={() => setPlanId(plan.id)}
+              className={cn(
+                "relative flex flex-col items-center gap-0.5 rounded-lg border px-2 py-2.5 text-center transition-colors",
+                plan.id === planId
+                  ? "border-primary/50 bg-primary/10 signalflow-glow"
+                  : "border-white/10 hover:border-white/20",
+              )}
+            >
+              {plan.highlight && (
+                <span className="absolute -top-2 left-1/2 -translate-x-1/2 rounded-full bg-primary px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide text-black">
+                  Popular
+                </span>
+              )}
+              <span className="text-xs font-semibold text-foreground">{plan.label}</span>
+              <span className="font-heading text-sm font-bold signalflow-gold-text">
+                ₹{plan.priceInr.toLocaleString("en-IN")}
+              </span>
+              <span className="text-[10px] text-muted-foreground">{plan.periodLabel}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="flex flex-col gap-1.5">

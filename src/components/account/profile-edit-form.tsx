@@ -14,6 +14,8 @@ interface ProfileEditFormProps {
   initialPhone: string;
   initialEmail: string;
   initialCurrentBroker: string | null;
+  /** Pre-formatted, read-only — which pricing tier they registered under. */
+  planLabel: string;
   /** Pre-formatted, read-only — batch assignment isn't user-editable. */
   batchLabel: string;
   /** Pre-formatted, read-only. */
@@ -22,14 +24,15 @@ interface ProfileEditFormProps {
 
 /**
  * Lets a subscriber view and edit their own Name/Phone/Email/Current Broker
- * on the account dashboard (src/app/account/profile/page.tsx). Batch and
- * Joined date stay read-only — those aren't self-service fields.
+ * on the account dashboard (src/app/account/profile/page.tsx). Plan, Batch,
+ * and Joined date stay read-only — those aren't self-service fields.
  */
 export function ProfileEditForm({
   initialName,
   initialPhone,
   initialEmail,
   initialCurrentBroker,
+  planLabel,
   batchLabel,
   joinedLabel,
 }: ProfileEditFormProps) {
@@ -103,6 +106,10 @@ export function ProfileEditForm({
             <p className="font-heading font-semibold">{initialCurrentBroker}</p>
           </div>
         )}
+        <div>
+          <p className="text-xs text-muted-foreground">Plan</p>
+          <p className="font-heading font-semibold">{planLabel}</p>
+        </div>
         <div>
           <p className="text-xs text-muted-foreground">Batch</p>
           <p className="font-heading font-semibold">{batchLabel}</p>

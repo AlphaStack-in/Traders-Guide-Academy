@@ -5,14 +5,14 @@ import { LegalSection as Section } from "@/components/site/legal-section";
 import { clientConfig } from "@/lib/client-config";
 
 export default function FaqPage() {
-  const { batchInfo, siteName, siteNameShort, dhanOfferEnabled } = clientConfig;
+  const { batchInfo, pricingPlans, siteName, siteNameShort, dhanOfferEnabled } = clientConfig;
   const brokerOfferBrand = clientConfig.brokerOffer?.brandName ?? "Dhan";
 
   const SECTIONS: TocEntry[] = [
     { id: "what-is-thc", label: `What is ${siteName}?` },
     { id: "membership-benefits", label: "What do I get as a member?" },
     { id: "pricing", label: "How much does it cost?" },
-    { id: "timings", label: "What are the batch timings?" },
+    { id: "timings", label: "When are signals and live sessions sent?" },
     { id: "how-to-join", label: "How do I join / pay?" },
     { id: "refund-policy", label: "What is the refund policy?" },
     { id: "guaranteed-profit", label: "Are signals guaranteed to profit?" },
@@ -25,14 +25,6 @@ export default function FaqPage() {
       : []),
   ];
 
-  const dateRange = `${new Date(batchInfo.startDate).toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "short",
-  })} – ${new Date(batchInfo.endDate).toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "short",
-  })}`;
-
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
@@ -42,7 +34,7 @@ export default function FaqPage() {
             Frequently Asked <span className="signalflow-gold-text">Questions</span>
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Everything you need to know before joining a {siteName} batch.
+            Everything you need to know before joining {siteName}.
           </p>
         </div>
 
@@ -70,24 +62,32 @@ export default function FaqPage() {
 
             <Section id="pricing" title="How much does it cost?">
               <p>
-                The {batchInfo.batchNumber}th batch is priced at{" "}
-                <span className="font-semibold text-foreground">
-                  ₹{batchInfo.priceInr.toLocaleString("en-IN")}
-                </span>
-                . Existing members get a discounted renewal price of{" "}
-                <span className="font-semibold text-foreground">
-                  ₹{batchInfo.existingMemberPriceInr.toLocaleString("en-IN")}
-                </span>
-                . See the{" "}
+                We offer three plans — pick whichever billing period suits you, all with the same
+                benefits:
+              </p>
+              <ul className="mt-2 flex flex-col gap-1 [&>li]:pl-4 [&>li]:-indent-4">
+                {pricingPlans.map((plan) => (
+                  <li key={plan.id}>
+                    •{" "}
+                    <span className="font-semibold text-foreground">
+                      {plan.label}: ₹{plan.priceInr.toLocaleString("en-IN")}
+                      {plan.periodLabel}
+                    </span>{" "}
+                    (₹{plan.existingMemberPriceInr.toLocaleString("en-IN")} renewal price for
+                    existing members{plan.savingsLabel ? ` — ${plan.savingsLabel}` : ""})
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-2">
+                See the{" "}
                 <a href="/#pricing" className="text-primary underline underline-offset-2">
                   pricing section
                 </a>{" "}
-                on the home page for the current batch.
+                on the home page for full details.
               </p>
             </Section>
 
-            <Section id="timings" title="What are the batch timings?">
-              <p>This batch runs from {dateRange}.</p>
+            <Section id="timings" title="When are signals and live sessions sent?">
               <p>
                 <span className="font-semibold text-foreground">Live Zoom sessions:</span>{" "}
                 {batchInfo.zoomTimings.join(" · ")}
@@ -106,7 +106,7 @@ export default function FaqPage() {
                 </a>{" "}
                 page, then complete payment via the UPI ID or manager contact shown there. Once
                 payment is confirmed, you&apos;ll be added to the WhatsApp group and live Zoom
-                sessions for the current batch.
+                sessions for your plan&apos;s billing period.
               </p>
             </Section>
 
