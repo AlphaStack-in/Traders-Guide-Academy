@@ -26,6 +26,18 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "0.1.1",
+    date: "26 Aug 2026",
+    title: "TGA Pricing Card, AliceBlue Offer & News Panel Updates",
+    highlights: [
+      "Premium community pricing card live with ₹4,999, benefits, timings, and refund policy",
+      "AliceBlue demat offer card with official logo and 20% brokerage discount",
+      "TGA brand assets added to assets/ for design reference",
+      "News & Market Alerts hidden via newsAlertsEnabled until admin UI is built",
+      "Removed SignalFlow branding from News & Market Alerts panel title",
+    ],
+  },
+  {
     version: "1.0.7",
     date: "12 Aug 2026",
     title: "Parse Signal Textarea Placeholder Example Only Refinement",

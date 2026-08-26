@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- TGA brand asset library in `assets/` (logos, favicons, horizontal variants, founder image)
+- `brokerOffer` config for client-specific demat partner cards (TGA uses AliceBlue with 20% brokerage discount)
+- `newsAlertsEnabled` feature flag to gate the home-page News & Market Alerts panel
+- Official AliceBlue partner logo on the pricing offer card (`public/aliceblue-logo.png`)
 - Real social media links now active: Instagram, YouTube, and Telegram
 - Telegram community link in About section: https://t.me/tradersguideacademy01 for free community access
 - About section on contact page featuring Satish Rathod (NISM-certified founder with 25 years of market experience) with biography and profile image; explains TGA's trading education focus and integration with SignalFlow
@@ -14,11 +18,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Horizontal logo (TGA-HORIOZONTAL-LOGO) in navbar for better visual balance; NavbarLogo component dedicated to navbar display
 
 ### Fixed
+- Premium community pricing card now shows ₹4,999 with real benefits, WhatsApp/Zoom timings, and refund policy
+- Broker offer card no longer shows Dhan branding when TGA is partnered with AliceBlue
+- Batch pricing headline ordinals (`1st Batch` instead of `1th Batch`) for clients without a custom headline
+- Empty benefit bullets no longer render as blank list items on the pricing card
+- Removed SignalFlow brand leak from News & Market Alerts panel title
 - Removed placeholder "Support Team" section from contact page with TODO manager values
 - Replaced transparent logo (RGBA) with white-background version (RGB) across navbar and all components for consistent branding
 - Updated site logo to proper branded TGA-LOGO asset; replaced placeholder Photoroom versions with final TGA-LOGO-favicon.png
 
 ### Changed
+- Pricing section headline set to "Premium community" with updated subheadline and "Register Premium" CTA
+- FAQ and Terms referral sections now reference AliceBlue instead of Dhan when the broker offer is enabled
+- News & Market Alerts section hidden on the home page (`newsAlertsEnabled: false`) until admin tooling is ready
 - Dropdown menu styling simplified: removed rounded borders from menu items, content, and sub-content for sharp edges
 - Logo hover effects simplified: removed blue glow shadow, kept subtle scale animation for clean appearance
 - Navbar horizontal logo updated with latest TGA branding

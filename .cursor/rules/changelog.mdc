@@ -1,0 +1,29 @@
+---
+description: Require changelog updates on every commit that changes product behavior, UI, config, or assets
+alwaysApply: true
+---
+
+# Changelog on Every Commit
+
+When making any commit that changes user-facing behavior, admin UI, client config, styling, assets, or API behavior, **always update the changelog in the same commit** before pushing.
+
+## Files to update
+
+1. **`CHANGELOG.md`** — add bullets under `## [Unreleased]` in the correct section (`Added`, `Changed`, `Fixed`, `Removed`). Match the existing Keep a Changelog style.
+2. **`src/lib/changelog.ts`** — add a new entry at the **top** of the `CHANGELOG` array when the change is worth showing on the Admin → Changelog page. Bump `package.json` version (patch) so the deployed build matches the newest entry.
+
+## Commit workflow
+
+1. Make the code/config change.
+2. Update `CHANGELOG.md` (required for every product commit).
+3. Update `src/lib/changelog.ts` + `package.json` version when the release should appear in the admin changelog UI.
+4. Commit everything together — do **not** leave changelog updates for a follow-up commit.
+
+## What to write
+
+- One bullet per meaningful change; plain English; India/TGA context where relevant.
+- No SignalFlow branding in TGA user-facing changelog text unless the change is internal/template-only.
+
+## Skip only when
+
+- Pure tooling/docs with zero product impact (e.g. `.gitignore`, CI-only), or the user explicitly says not to changelog.
