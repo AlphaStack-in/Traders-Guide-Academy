@@ -8,6 +8,14 @@ Versioning continues the semantic patch series from the SignalFlow template (`1.
 
 ## [Unreleased]
 
+## [1.0.14] - 2026-08-26
+
+### Added
+- Instagram, Telegram, and YouTube contact cards on the contact page (sourced from `client-config.ts`)
+
+### Changed
+- Founder bio Telegram link now uses `clientConfig.telegramUrl` instead of a hardcoded URL
+
 ## [1.0.13] - 2026-08-26
 
 ### Changed

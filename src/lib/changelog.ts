@@ -26,6 +26,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.14",
+    date: "26 Aug 2026",
+    title: "Contact Page Social Channels",
+    highlights: [
+      "Contact page now shows Instagram, Telegram, and YouTube cards from client config",
+      "Founder bio Telegram link reads from clientConfig.telegramUrl instead of a hardcoded URL",
+    ],
+  },
+  {
     version: "1.0.13",
     date: "26 Aug 2026",
     title: "Navbar Link Styling & Contact Page Width",
