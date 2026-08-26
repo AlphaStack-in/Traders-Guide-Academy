@@ -26,6 +26,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.13",
+    date: "26 Aug 2026",
+    title: "Navbar Link Styling & Contact Page Width",
+    highlights: [
+      "Removed rounded bordered boxes from active public navbar menu items",
+      "Contact page section cards now align to the same max-w-7xl width as the navbar",
+    ],
+  },
+  {
     version: "1.0.12",
     date: "26 Aug 2026",
     title: "Premium Pricing, AliceBlue Partner & News Panel",

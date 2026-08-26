@@ -33,10 +33,10 @@ export function DesktopNavigation() {
             href={link.href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-all",
+              "flex items-center gap-2 px-3 py-1.5 text-sm font-medium transition-colors",
               active
-                ? "border border-primary/40 bg-primary/10 text-primary signalflow-glow font-semibold shadow-sm"
-                : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
+                ? "text-primary font-semibold"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
             <Icon className={cn("h-4 w-4", active ? "text-primary" : "text-muted-foreground")} />
@@ -62,10 +62,10 @@ export function MobileNavigation() {
             href={link.href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all",
+              "flex shrink-0 items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors",
               active
-                ? "border border-primary/40 bg-primary/10 text-primary signalflow-glow font-semibold"
-                : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
+                ? "text-primary font-semibold"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
             <Icon className={cn("h-3.5 w-3.5", active ? "text-primary" : "text-muted-foreground")} />

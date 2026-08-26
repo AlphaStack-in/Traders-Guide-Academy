@@ -10,7 +10,7 @@ export default function ContactPage() {
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
-      <main className="mx-auto flex-1 w-full px-4 py-10 sm:px-6 lg:px-8">
+      <main className="mx-auto flex-1 w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="mb-12 grid gap-8 sm:grid-cols-2 items-center signalflow-glass signalflow-glow rounded-2xl border border-white/5 p-8">
           <div className="flex justify-center">
             <div className="relative">

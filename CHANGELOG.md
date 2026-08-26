@@ -8,6 +8,12 @@ Versioning continues the semantic patch series from the SignalFlow template (`1.
 
 ## [Unreleased]
 
+## [1.0.13] - 2026-08-26
+
+### Changed
+- Removed rounded bordered highlight boxes from active public navbar links (Home, Dashboard, Signals, Contact)
+- Contact page content width constrained to `max-w-7xl` to match navbar (logo through Register Premium)
+
 ## [1.0.12] - 2026-08-26
 
 ### Added
