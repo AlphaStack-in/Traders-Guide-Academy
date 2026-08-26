@@ -4,11 +4,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-Versioning continues the semantic patch series from the SignalFlow template (`1.0.7` → `1.0.8` …). The footer and Admin Changelog page read the current version from `package.json` (now **1.0.19**).
+Versioning continues the semantic patch series from the SignalFlow template (`1.0.7` → `1.0.8` …). The footer and Admin Changelog page read the current version from `package.json` (now **1.0.20**).
 
 Each release header now includes a build timestamp (24-hour IST, matching `build-info.ts`'s `formattedBuildTime`), not just a date — this reflects the actual commit that shipped the version. While adding timestamps, two pre-existing dates were corrected to match their real shipping commit: `1.0.8` (was dated by the TGA fork commit, 3 days before the digest-email feature in that release actually shipped) and `1.0.2` (was off by one day around a just-after-midnight IST commit).
 
 ## [Unreleased]
+
+## [1.0.20] - 2026-08-26 23:29 IST
+
+### Changed
+- Home page pricing section redesigned into a single compact card: the 3 separate Monthly/Quarterly/Yearly cards plus a full-width "Every plan includes" panel are now one glass card with a slim 3-column comparison row, a condensed benefits/timings strip, and the "Most Popular" badge shown inline next to the plan name instead of an overlapping floating badge
+- AliceBlue broker offer switched from a large standalone card to a compact horizontal banner (logo, one line of offer copy, one CTA)
+- Removed the large decorative bull illustration from the pricing section to reclaim vertical space — this was the one visible content change beyond layout, agreed as part of the compact redesign
 
 ## [1.0.19] - 2026-08-26 23:05 IST
 

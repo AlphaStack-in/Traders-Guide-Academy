@@ -31,6 +31,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.20",
+    date: "26 Aug 2026, 23:29 IST",
+    title: "Compact Pricing Section Redesign",
+    highlights: [
+      "Home page pricing section rebuilt as one compact card with a slim 3-column plan comparison row, replacing 3 separate cards plus a full-width benefits panel",
+      "\"Most Popular\" badge now sits inline next to the plan name instead of floating above the card",
+      "AliceBlue broker offer is now a compact horizontal banner instead of a large standalone card",
+      "Removed the large decorative bull illustration from the pricing section to save vertical space",
+    ],
+  },
+  {
     version: "1.0.19",
     date: "26 Aug 2026, 23:05 IST",
     title: "Monthly / Quarterly / Yearly Pricing Tiers",
