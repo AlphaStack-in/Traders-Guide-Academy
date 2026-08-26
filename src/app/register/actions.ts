@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { clientConfig } from "@/lib/client-config";
+import { setRegisteredBrowserCookie } from "@/lib/subscriber-auth";
 
 export interface RegisterInput {
   name: string;
@@ -56,6 +57,7 @@ export async function registerSubscriber(input: RegisterInput) {
           invitationToken: null,
         },
       });
+      await setRegisteredBrowserCookie();
       return { success: true };
     }
   }
@@ -72,5 +74,6 @@ export async function registerSubscriber(input: RegisterInput) {
     },
   });
 
+  await setRegisteredBrowserCookie();
   return { success: true };
 }

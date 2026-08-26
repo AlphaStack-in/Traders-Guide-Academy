@@ -26,6 +26,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.16",
+    date: "26 Aug 2026",
+    title: "Navbar Register vs Login Mutual Exclusion",
+    highlights: [
+      "Set tga_registered browser cookie after successful registration",
+      "Navbar shows Register Premium or Login (never both) based on registration cookie and session state",
+      "Removed duplicate Register Premium button from navbar.tsx",
+    ],
+  },
+  {
     version: "1.0.15",
     date: "26 Aug 2026",
     title: "Contact Bio Cleanup",

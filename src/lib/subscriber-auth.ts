@@ -18,6 +18,10 @@ import { createSessionToken, verifySessionToken } from "@/lib/session-cookie";
 export const SUBSCRIBER_SESSION_COOKIE = "subscriber_session";
 const SUBSCRIBER_SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30; // 30 days
 
+/** Marks this browser as having completed registration (not a live session). */
+export const SUBSCRIBER_REGISTERED_COOKIE = "tga_registered";
+const SUBSCRIBER_REGISTERED_MAX_AGE_SECONDS = 60 * 60 * 24 * 365; // 1 year
+
 interface SubscriberSessionPayload {
   role: "subscriber";
   subscriberId: string;
@@ -42,6 +46,22 @@ export async function createSubscriberSession(subscriberId: string): Promise<voi
 export async function clearSubscriberSession(): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.delete(SUBSCRIBER_SESSION_COOKIE);
+}
+
+export async function setRegisteredBrowserCookie(): Promise<void> {
+  const cookieStore = await cookies();
+  cookieStore.set(SUBSCRIBER_REGISTERED_COOKIE, "1", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: SUBSCRIBER_REGISTERED_MAX_AGE_SECONDS,
+  });
+}
+
+export async function getHasRegisteredBrowser(): Promise<boolean> {
+  const cookieStore = await cookies();
+  return cookieStore.get(SUBSCRIBER_REGISTERED_COOKIE)?.value === "1";
 }
 
 export async function getCurrentSubscriber() {

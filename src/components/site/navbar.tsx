@@ -1,16 +1,15 @@
-import Link from "next/link";
 import { NavbarLogo } from "@/components/site/navbar-logo";
-import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/site/notification-bell";
 import { IndexTicker } from "@/components/site/index-ticker";
 import { SubscriberNavStatus } from "@/components/site/subscriber-nav-status";
 import { AdminNavLink } from "@/components/site/admin-nav-link";
 import { DesktopNavigation, MobileNavigation } from "@/components/site/main-navigation";
 import { IstClock } from "@/components/site/ist-clock";
-import { getCurrentSubscriber } from "@/lib/subscriber-auth";
+import { getCurrentSubscriber, getHasRegisteredBrowser } from "@/lib/subscriber-auth";
 
 export async function Navbar() {
   const subscriber = await getCurrentSubscriber();
+  const hasRegistered = await getHasRegisteredBrowser();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-white/5 signalflow-glass">
@@ -20,13 +19,11 @@ export async function Navbar() {
         <div className="flex items-center gap-2.5 sm:gap-3">
           <IstClock />
           <NotificationBell />
-          <SubscriberNavStatus subscriberName={subscriber?.name ?? null} />
+          <SubscriberNavStatus
+            subscriberName={subscriber?.name ?? null}
+            hasRegistered={hasRegistered}
+          />
           <AdminNavLink />
-          {!subscriber && (
-            <Button asChild size="sm" className="signalflow-glow signalflow-btn-gradient text-xs font-semibold">
-              <Link href="/register">Register Premium</Link>
-            </Button>
-          )}
         </div>
       </div>
       <MobileNavigation />

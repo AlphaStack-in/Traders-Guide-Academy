@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Gift, LogIn, LogOut, User } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,11 +12,25 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
-export function SubscriberNavStatus({ subscriberName }: { subscriberName: string | null }) {
+export function SubscriberNavStatus({
+  subscriberName,
+  hasRegistered,
+}: {
+  subscriberName: string | null;
+  hasRegistered: boolean;
+}) {
   const router = useRouter();
   const pathname = usePathname();
 
   if (!subscriberName) {
+    if (!hasRegistered) {
+      return (
+        <Button asChild size="sm" className="signalflow-glow signalflow-btn-gradient text-xs font-semibold">
+          <Link href="/register">Register Premium</Link>
+        </Button>
+      );
+    }
+
     const isLoginActive = pathname.startsWith("/login");
     return (
       <Link

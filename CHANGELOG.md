@@ -8,6 +8,12 @@ Versioning continues the semantic patch series from the SignalFlow template (`1.
 
 ## [Unreleased]
 
+## [1.0.16] - 2026-08-26
+
+### Fixed
+- Navbar no longer shows Register Premium and Login at the same time for logged-out visitors
+- After registration, a long-lived `tga_registered` cookie drives whether the navbar shows Register or Login
+
 ## [1.0.15] - 2026-08-26
 
 ### Removed
