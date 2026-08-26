@@ -157,9 +157,13 @@ function BrokerOfferCard() {
       <Image
         src={offer.logoSrc}
         alt={offer.logoAlt}
-        width={40}
-        height={40}
-        className="mx-auto rounded-xl"
+        width={offer.logoWidth ?? 40}
+        height={offer.logoHeight ?? 40}
+        className={
+          offer.logoWidth
+            ? "mx-auto h-10 w-auto max-w-[140px] object-contain"
+            : "mx-auto rounded-xl"
+        }
       />
       <p className="mt-3 font-heading text-lg font-bold">
         Free Demat account with <span className="signalflow-gold-text">{offer.brandName}</span> 🔥

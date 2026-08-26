@@ -7,6 +7,7 @@ import { Testimonials } from "@/components/landing/testimonials";
 import { Pricing } from "@/components/landing/pricing";
 import { NewsAlertsSection } from "@/components/news/news-alerts-section";
 import { InstagramGrid } from "@/components/landing/instagram-grid";
+import { clientConfig } from "@/lib/client-config";
 
 export default function Home() {
   return (
@@ -18,9 +19,11 @@ export default function Home() {
         <HowItWorks />
         <Testimonials />
         <Pricing />
-        <section className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-          <NewsAlertsSection />
-        </section>
+        {clientConfig.newsAlertsEnabled && (
+          <section className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+            <NewsAlertsSection />
+          </section>
+        )}
         <InstagramGrid />
       </main>
       <Footer />

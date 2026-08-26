@@ -100,7 +100,7 @@ export function NewsAlertsSection() {
           </div>
           <div>
             <h3 className="text-base font-bold font-heading text-foreground tracking-wide flex items-center gap-2">
-              SignalFlow <span className="signalflow-gold-text">News & Market Alerts</span>
+              <span className="signalflow-gold-text">News &amp; Market Alerts</span>
             </h3>
             <p className="text-[11px] text-muted-foreground">
               Real-time global macro, regulatory & volatility intelligence for {clientConfig.siteName}

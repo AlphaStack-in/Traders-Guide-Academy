@@ -39,6 +39,8 @@ export interface BrokerOfferConfig {
   brandName: string;
   logoSrc: string;
   logoAlt: string;
+  logoWidth?: number;
+  logoHeight?: number;
   brokerageDiscountPercent: number;
 }
 
@@ -103,6 +105,8 @@ export interface ClientConfig {
   // Gates the weekly performance digest email cron. Set to true once the
   // Resend domain is verified and the digest is ready for production.
   digestEnabled: boolean;
+  // Gates the home-page News & Market Alerts panel.
+  newsAlertsEnabled: boolean;
   batchInfo: BatchInfo;
   paymentInfo: PaymentInfo;
   testimonials: Testimonial[];
@@ -147,13 +151,16 @@ const CLIENTS: Record<ClientId, ClientConfig> = {
     dhanOfferEnabled: true,
     brokerOffer: {
       brandName: "AliceBlue",
-      logoSrc: "/aliceblue-logo.svg",
+      logoSrc: "/aliceblue-logo.png",
       logoAlt: "AliceBlue",
+      logoWidth: 140,
+      logoHeight: 40,
       brokerageDiscountPercent: 20,
     },
     dhanConnectEnabled: false,
     goodwillBrokerEnabled: false,
     digestEnabled: false,
+    newsAlertsEnabled: false,
     batchInfo: {
       batchNumber: 1,
       priceInr: 4999,
