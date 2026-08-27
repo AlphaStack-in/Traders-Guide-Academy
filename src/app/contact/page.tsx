@@ -63,12 +63,9 @@ export default function ContactPage() {
         </div>
 
         <div className="mb-8">
-          <h1 className="font-heading text-3xl font-bold sm:text-4xl">
-            Get in <span className="signalflow-gold-text">Touch</span>
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Questions about a signal, a batch, or payment — reach us directly.
-          </p>
+          <h2 className="font-heading text-2xl font-bold sm:text-3xl">
+            Join our <span className="signalflow-gold-text">free communities</span>
+          </h2>
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -89,6 +86,15 @@ export default function ContactPage() {
               <p className="mt-1 text-sm text-muted-foreground">{description}</p>
             </a>
           ))}
+        </div>
+
+        <div className="mt-12 mb-8">
+          <h1 className="font-heading text-3xl font-bold sm:text-4xl">
+            Get in <span className="signalflow-gold-text">Touch</span>
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Questions about a signal, a batch, or payment — reach us directly.
+          </p>
         </div>
 
         <ContactForm />

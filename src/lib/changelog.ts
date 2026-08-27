@@ -31,6 +31,24 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.22",
+    date: "27 Aug 2026, 18:40 IST",
+    title: "Admin Navbar Active Link Styling",
+    highlights: [
+      "Removed rounded bordered highlight boxes from active admin navbar links on desktop and mobile",
+      "Active admin nav items now use primary text color and semibold weight only, matching the public site navbar",
+    ],
+  },
+  {
+    version: "1.0.21",
+    date: "27 Aug 2026, 18:34 IST",
+    title: "Contact Page Heading Cleanup",
+    highlights: [
+      "Added a \"Join our free communities\" heading above the social channel cards",
+      "Moved the \"Get in Touch\" heading to sit directly above the Send us a Message form",
+    ],
+  },
+  {
     version: "1.0.20",
     date: "26 Aug 2026, 23:29 IST",
     title: "Compact Pricing Section Redesign",

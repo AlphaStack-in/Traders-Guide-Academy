@@ -4,11 +4,22 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-Versioning continues the semantic patch series from the SignalFlow template (`1.0.7` → `1.0.8` …). The footer and Admin Changelog page read the current version from `package.json` (now **1.0.20**).
+Versioning continues the semantic patch series from the SignalFlow template (`1.0.7` → `1.0.8` …). The footer and Admin Changelog page read the current version from `package.json` (now **1.0.22**).
 
 Each release header now includes a build timestamp (24-hour IST, matching `build-info.ts`'s `formattedBuildTime`), not just a date — this reflects the actual commit that shipped the version. While adding timestamps, two pre-existing dates were corrected to match their real shipping commit: `1.0.8` (was dated by the TGA fork commit, 3 days before the digest-email feature in that release actually shipped) and `1.0.2` (was off by one day around a just-after-midnight IST commit).
 
 ## [Unreleased]
+
+## [1.0.22] - 2026-08-27 18:40 IST
+
+### Changed
+- Admin navbar: removed rounded bordered highlight boxes from active menu links (desktop and mobile); active state now uses primary text color and semibold weight only, matching the public site navbar
+
+## [1.0.21] - 2026-08-27 18:34 IST
+
+### Changed
+- Contact page: added a "Join our free communities" heading above the Instagram/Telegram/YouTube cards, so that section reads as its own thing instead of being unlabeled
+- Contact page: moved the "Get in Touch" heading and subheadline down to sit directly above the "Send us a Message" form, instead of above the social channel cards
 
 ## [1.0.20] - 2026-08-26 23:29 IST
 
