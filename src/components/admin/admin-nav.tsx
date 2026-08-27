@@ -73,7 +73,7 @@ export function AdminNav({
   return (
     <div className="flex items-center gap-3 sm:gap-4">
       <IstClock />
-      <nav className="hidden items-center gap-2 lg:flex">
+      <nav className="hidden items-center gap-1.5 lg:flex">
         {links.map((link) => {
           const Icon = link.icon;
           const active = pathname.startsWith(link.href);
@@ -83,10 +83,10 @@ export function AdminNav({
               href={link.href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium transition-all",
+                "flex items-center gap-2 px-3 py-1.5 text-sm font-medium transition-colors",
                 active
-                  ? "border border-primary/40 bg-primary/10 text-primary signalflow-glow font-semibold"
-                  : "text-muted-foreground hover:bg-white/5 hover:text-foreground",
+                  ? "text-primary font-semibold"
+                  : "text-muted-foreground hover:text-foreground",
               )}
             >
               <Icon className={cn("h-4 w-4", active ? "text-primary" : "text-muted-foreground")} />
@@ -99,10 +99,10 @@ export function AdminNav({
         <DropdownMenu>
           <DropdownMenuTrigger
             className={cn(
-              "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium outline-none transition-all cursor-pointer",
+              "flex cursor-pointer items-center gap-2 px-3 py-1.5 text-sm font-medium outline-none transition-colors",
               isMembersActive
-                ? "border border-primary/40 bg-primary/10 text-primary signalflow-glow font-semibold"
-                : "text-muted-foreground hover:bg-white/5 hover:text-foreground",
+                ? "text-primary font-semibold"
+                : "text-muted-foreground hover:text-foreground",
             )}
           >
             <Users className={cn("h-4 w-4", isMembersActive ? "text-primary" : "text-muted-foreground")} />
@@ -130,10 +130,10 @@ export function AdminNav({
         <DropdownMenu>
           <DropdownMenuTrigger
             className={cn(
-              "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium outline-none transition-all cursor-pointer",
+              "flex cursor-pointer items-center gap-2 px-3 py-1.5 text-sm font-medium outline-none transition-colors",
               isAdminGroupActive
-                ? "border border-primary/40 bg-primary/10 text-primary signalflow-glow font-semibold"
-                : "text-muted-foreground hover:bg-white/5 hover:text-foreground",
+                ? "text-primary font-semibold"
+                : "text-muted-foreground hover:text-foreground",
             )}
           >
             <Shield className={cn("h-4 w-4", isAdminGroupActive ? "text-primary" : "text-muted-foreground")} />
@@ -206,10 +206,10 @@ export function AdminMobileNav({ isSuperAdmin = false }: { isSuperAdmin?: boolea
             href={link.href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "whitespace-nowrap rounded-lg px-2.5 py-1 text-xs font-medium transition-all",
+              "shrink-0 whitespace-nowrap px-3 py-1.5 text-xs font-medium transition-colors",
               active
-                ? "border border-primary/40 bg-primary/10 text-primary signalflow-glow font-semibold"
-                : "text-muted-foreground hover:bg-white/5 hover:text-foreground",
+                ? "text-primary font-semibold"
+                : "text-muted-foreground hover:text-foreground",
             )}
           >
             {link.label}
