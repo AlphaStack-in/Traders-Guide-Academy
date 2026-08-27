@@ -31,6 +31,13 @@ model Signal {
   updatedAt      DateTime     @updatedAt
   adminNote      String?
   instrument     Instrument?
+  // Actual stock ticker when this signal was entered under the "Stock"
+  // instrument category in Manual Signal Entry (e.g. "RELIANCE") — the
+  // `instrument` enum above only covers the index instruments, so a stock
+  // trade's real symbol has nowhere else to live. Null for every
+  // index/commodity signal. Used to seed the Stock Symbol combobox with
+  // "already used" suggestions.
+  stockSymbol    String?
   // Options expiry date, admin-set at signal creation — needed to resolve
   // this signal to an exact tradable Dhan contract (see broker connect
   // feature). Nullable since older signals predate this field.

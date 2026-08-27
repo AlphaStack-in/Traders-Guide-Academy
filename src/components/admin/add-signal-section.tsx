@@ -4,7 +4,13 @@ import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { AddSignalForm } from "@/components/admin/add-signal-form";
 
-export function AddSignalSection({ defaultOpen }: { defaultOpen: boolean }) {
+export function AddSignalSection({
+  defaultOpen,
+  usedStockSymbols = [],
+}: {
+  defaultOpen: boolean;
+  usedStockSymbols?: string[];
+}) {
   const [open, setOpen] = useState(defaultOpen);
   // `defaultOpen` recomputes server-side (no ongoing trades -> open by
   // default) and reaches this already-mounted component via the sound-alert
@@ -39,7 +45,7 @@ export function AddSignalSection({ defaultOpen }: { defaultOpen: boolean }) {
       </button>
       {open && (
         <div className="mt-6">
-          <AddSignalForm />
+          <AddSignalForm usedStockSymbols={usedStockSymbols} />
         </div>
       )}
     </div>

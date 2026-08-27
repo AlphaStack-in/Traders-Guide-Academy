@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Combobox } from "@/components/ui/combobox";
 import { createSignals, type SignalInput } from "@/app/admin/(protected)/signals/actions";
 import { INSTRUMENTS, INSTRUMENT_LABEL, type InstrumentLiteral } from "@/lib/instruments";
 import { getNextExpiry, type InstrumentCategory, type ExpiryOption } from "@/lib/expiry";
@@ -20,8 +21,20 @@ import { Send } from "lucide-react";
 
 export type ExtendedInstrument = InstrumentLiteral | "STOCK";
 
+// Most frequently traded intraday F&O stocks (standard NSE trading
+// symbols) — seeds the Stock Symbol combobox alongside whatever symbols
+// this deployment has actually used before (see usedStockSymbols prop).
+// Not exhaustive; a symbol not on this list can still be typed freely.
 export const POPULAR_STOCKS = [
-  "RVNL", "TCS", "ADANI ENT", "RELIANCE", "INFY", "TATAMOTORS", "TATASTEEL", "ICICIBANK", "HDFCBANK", "SBIN", "BHARTIARTL", "ITC", "LT"
+  "RELIANCE", "TCS", "HDFCBANK", "ICICIBANK", "INFY", "SBIN", "AXISBANK",
+  "KOTAKBANK", "BAJFINANCE", "BHARTIARTL", "ITC", "LT", "HINDUNILVR",
+  "TATAMOTORS", "TATASTEEL", "ADANIENT", "ADANIPORTS", "MARUTI",
+  "SUNPHARMA", "WIPRO", "HCLTECH", "ONGC", "NTPC", "POWERGRID",
+  "ULTRACEMCO", "ASIANPAINT", "TITAN", "JSWSTEEL", "COALINDIA", "TECHM",
+  "M&M", "DRREDDY", "GRASIM", "HINDALCO", "EICHERMOT", "BPCL", "CIPLA",
+  "APOLLOHOSP", "SBILIFE", "HDFCLIFE", "BRITANNIA", "INDUSINDBK",
+  "HEROMOTOCO", "BAJAJ-AUTO", "RVNL", "IRFC", "PNB", "IDEA", "TATAPOWER",
+  "ZOMATO", "SUZLON", "YESBANK",
 ];
 
 export interface ManualFormValues {
@@ -63,11 +76,20 @@ function emptyForm(): ManualFormValues {
 interface ManualSignalFormProps {
   prefilledValues?: Partial<ManualFormValues> | null;
   onSaved?: () => void;
+  // Stock symbols already used in a previous signal on this deployment —
+  // shown first in the Stock Symbol combobox, ahead of the generic
+  // frequently-traded list, since they're the most likely re-pick.
+  usedStockSymbols?: string[];
 }
 
-export function ManualSignalForm({ prefilledValues, onSaved }: ManualSignalFormProps) {
+export function ManualSignalForm({ prefilledValues, onSaved, usedStockSymbols = [] }: ManualSignalFormProps) {
   const [form, setForm] = useState<ManualFormValues>(emptyForm);
   const [isPending, startTransition] = useTransition();
+
+  const stockSuggestions = useMemo(
+    () => Array.from(new Set([...usedStockSymbols, ...POPULAR_STOCKS])),
+    [usedStockSymbols],
+  );
 
   // Dynamic Expiry Calculation based on Selected Category & Stock Symbol
   const expiryResult = useMemo(() => {
@@ -185,6 +207,10 @@ export function ManualSignalForm({ prefilledValues, onSaved }: ManualSignalFormP
       chartImageUrl: form.chartImageUrl,
       target1: targets[0] ?? null,
       target2: targets[1] ?? null,
+      // Persist the actual typed symbol so it shows up as an "already
+      // used" suggestion next time — the `instrument` enum field has no
+      // slot for a stock name (see stockSymbol's comment in schema.prisma).
+      stockSymbol: form.category === "STOCK" ? form.stockSymbol.trim().toUpperCase() : null,
     };
 
     startTransition(async () => {
@@ -288,13 +314,15 @@ export function ManualSignalForm({ prefilledValues, onSaved }: ManualSignalFormP
         </div>
 
         {/* ================= COLUMN 3 ================= */}
-        {/* Row 3 Col 1: CMP */}
+        {/* Row 3 Col 1: CMP (Optional) — already falls back to Entry Price
+            when left blank (see handleSubmit's priceAtSignalVal); this just
+            makes that explicit in the label, matching Sell Price below. */}
         <div className="flex flex-col gap-1.5 w-full">
-          <Label className="text-xs font-semibold text-muted-foreground">CMP</Label>
+          <Label className="text-xs font-semibold text-muted-foreground">CMP (Optional)</Label>
           <Input
             value={form.priceAtSignal}
             onChange={(e) => set("priceAtSignal", e.target.value)}
-            placeholder="15"
+            placeholder="Defaults to Entry Price"
             className="h-9 text-xs font-mono bg-black/40 border-white/10 focus:border-primary/50 w-full"
           />
         </div>
@@ -352,25 +380,21 @@ export function ManualSignalForm({ prefilledValues, onSaved }: ManualSignalFormP
           </Select>
         </div>
 
-        {/* Row 4 Col 2: Stock Symbol (Only if Stock selected) */}
+        {/* Row 4 Col 2: Stock Symbol (Only if Stock selected) — free-text
+            combobox: type to filter, pick a suggestion, or type a symbol
+            that isn't on the list at all. Suggestions are this deployment's
+            previously-used symbols first, then a frequently-traded-stocks
+            seed list. */}
         {form.category === "STOCK" && (
           <div className="flex flex-col gap-1.5 w-full">
             <Label className="text-xs font-semibold text-muted-foreground">Stock Symbol</Label>
-            <Select
+            <Combobox
               value={form.stockSymbol}
-              onValueChange={handleStockSymbolChange}
-            >
-              <SelectTrigger className="h-9 text-xs font-mono bg-black/40 border-white/10 w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-[#12131a] border-white/10">
-                {POPULAR_STOCKS.map((s) => (
-                  <SelectItem key={s} value={s}>
-                    {s}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              onChange={handleStockSymbolChange}
+              suggestions={stockSuggestions}
+              placeholder="e.g. RELIANCE"
+              uppercase
+            />
           </div>
         )}
       </div>

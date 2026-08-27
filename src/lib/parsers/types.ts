@@ -26,6 +26,13 @@ export interface CanonicalSignalDraft {
   // when the format doesn't carry an expiry — callers fall back to their
   // own default (e.g. next weekly expiry) in that case.
   expiry?: string | null;
+  // True when the raw text gave targets as points-from-entry rather than
+  // absolute prices (e.g. "TARGET- 18/40/80/150 POINT") — in that case
+  // `targets`/`target1`/`target2` above already hold the converted prices
+  // (entryPrice + points), and `targetPoints` below holds the original
+  // point values for display/traceability.
+  targetsArePoints?: boolean;
+  targetPoints?: number[] | null;
   signalType?: string; // e.g., "Positional Breakout", "Hero Zero", "Intraday"
   context: string[]; // Structured contextual tags (e.g., ["Positional Breakout", "Result Based Trade"])
   status: "OPEN" | "TARGET_HIT" | "SL_HIT" | "CLOSED_MANUAL" | "UPDATE";

@@ -31,6 +31,12 @@ export interface SignalInput {
   contextTags?: string[];
   confidence?: string;
   parserName?: string;
+  // The typed stock symbol when this signal's instrument category is
+  // "Stock" (see manual-signal-form.tsx) — null for index/commodity
+  // signals. Kept separate from `instrument` (still an index-only enum)
+  // so a real stock name can be persisted and later offered back as an
+  // "already used" suggestion.
+  stockSymbol?: string | null;
 }
 
 function toSignalCreateData(input: SignalInput) {
@@ -65,6 +71,7 @@ function toSignalCreateData(input: SignalInput) {
     contextTags: input.contextTags ?? [],
     confidence: input.confidence ?? "HIGH",
     parserName: input.parserName ?? "SIGNALFLOW",
+    stockSymbol: input.stockSymbol ?? null,
   };
 }
 

@@ -5,14 +5,25 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ManualSignalForm, type ManualFormValues } from "@/components/admin/manual-signal-form";
-import { parseSignalMessage, type ParsedSignalDraft } from "@/lib/parser";
+// TGA only ever sends signals in one format (see SAMPLE_SIGNAL_TEMPLATE
+// below) — parseSignalFlowMessage is that format's own dedicated parser.
+// Deliberately NOT importing parseSignalMessage/resolveCustomerParser: those
+// live in src/lib/parsers/resolver.ts and auto-detect between this format
+// and Goodwill's, a different client's signal-group format bundled into the
+// shared codebase this project was forked from. TGA is single-tenant and
+// never receives Goodwill-format text, so routing through that generic,
+// multi-vendor auto-detector only adds a way to guess wrong (see CHANGELOG
+// 1.0.25) for zero benefit here — calling this format's own parser directly
+// makes goodwill-parser.ts's logic structurally unreachable from TGA's admin
+// UI, not just unlikely to be picked.
+import { parseSignalFlowMessage, type ParsedSignalDraft } from "@/lib/parser";
 import { nextWeeklyExpiry } from "@/lib/expiry";
 import { Sparkles, ArrowDown, CheckCircle2, AlertTriangle, ShieldCheck, Zap } from "lucide-react";
 import { INSTRUMENTS, type InstrumentLiteral } from "@/lib/instruments";
 
 const SAMPLE_SIGNAL_TEMPLATE = "NIFTY 24450 PE BUY ABOVE 15 SL 1 TARGETS 155,170";
 
-export function AddSignalForm() {
+export function AddSignalForm({ usedStockSymbols = [] }: { usedStockSymbols?: string[] }) {
   const [rawText, setRawText] = useState("");
   const [parsedResults, setParsedResults] = useState<ParsedSignalDraft[] | null>(null);
   const [prefilledManualForm, setPrefilledManualForm] = useState<Partial<ManualFormValues> | null>(null);
@@ -23,8 +34,9 @@ export function AddSignalForm() {
       return;
     }
 
-    // Automatic Customer / Parser Resolution
-    const results = parseSignalMessage(rawText);
+    // TGA's own format parser — see the import comment above for why this
+    // deliberately doesn't go through the generic multi-vendor resolver.
+    const results = parseSignalFlowMessage(rawText);
     if (results.length === 0) {
       toast.error("Couldn't parse any signal from that text.");
       setParsedResults(null);
@@ -32,7 +44,7 @@ export function AddSignalForm() {
     }
 
     setParsedResults(results);
-    toast.success(`Successfully parsed ${results.length} signal${results.length === 1 ? "" : "s"} (${results[0].parserName || "SIGNALFLOW"}).`);
+    toast.success(`Successfully parsed ${results.length} signal${results.length === 1 ? "" : "s"} (TGA parser).`);
   }
 
   function handleUseParsedData(parsed: ParsedSignalDraft) {
@@ -135,7 +147,10 @@ export function AddSignalForm() {
                       {parsed.mappedInstrument || parsed.instrument} {parsed.strike} {parsed.optionType}
                     </span>
                     <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-primary/20 text-primary border border-primary/30">
-                      Parser: {parsed.parserName || "SIGNALFLOW"}
+                      {/* Always TGA's own parser now — see the handleParse
+                          comment above. Not reading parsed.parserName here
+                          on purpose, so this can never show "GOODWILL". */}
+                      Parser: TGA
                     </span>
                   </div>
 
@@ -176,6 +191,14 @@ export function AddSignalForm() {
                     <span className="font-semibold text-foreground">₹{parsed.cmp ?? parsed.priceAtSignal ?? parsed.entryPrice ?? "-"}</span>
                   </div>
                 </div>
+
+                {/* Informational notes (e.g. points-to-price target conversion) — separate from warnings, doesn't affect confidence */}
+                {parsed.notes && (
+                  <div className="flex items-start gap-1.5 text-xs text-primary/90 bg-primary/10 p-2 rounded-lg border border-primary/20">
+                    <Sparkles className="h-4 w-4 shrink-0 mt-0.5" />
+                    <span>{parsed.notes}</span>
+                  </div>
+                )}
 
                 {/* Genuine Warnings if any */}
                 {parsed.warnings && parsed.warnings.length > 0 && (
@@ -220,7 +243,7 @@ export function AddSignalForm() {
           </div>
         </div>
 
-        <ManualSignalForm prefilledValues={prefilledManualForm} />
+        <ManualSignalForm prefilledValues={prefilledManualForm} usedStockSymbols={usedStockSymbols} />
       </div>
     </div>
   );

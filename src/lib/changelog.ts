@@ -31,6 +31,26 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.26",
+    date: "27 Aug 2026, 21:32 IST",
+    title: "TGA-Only Signal Parser",
+    highlights: [
+      "Parse Signal now calls TGA's own format parser directly — Goodwill's parser is no longer reachable from the admin panel",
+      "Parsed-result badge and toast now read \"TGA\" instead of \"SIGNALFLOW\" or \"GOODWILL\"",
+    ],
+  },
+  {
+    version: "1.0.25",
+    date: "27 Aug 2026, 20:57 IST",
+    title: "Parser Fixes, Points Targets & Stock Combobox",
+    highlights: [
+      "Fixed signal misclassification: slash-separated targets with ABOVE/EXPIRY keywords no longer route to the Goodwill parser",
+      "Targets written as points-from-entry (e.g. TARGET- 18/40/80/150 POINT) are converted to actual prices using the parsed entry",
+      "Stock Symbol field is now a type-to-search combobox with previously-used symbols and an expanded seed list",
+      "CMP field label now explicitly says (Optional)",
+    ],
+  },
+  {
     version: "1.0.23",
     date: "27 Aug 2026, 19:25 IST",
     title: "Signal Parser, Profile Overhaul & Testimonials",

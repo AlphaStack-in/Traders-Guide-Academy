@@ -11,6 +11,13 @@ const STOP_LOSS = /SL\s*-?\s*(\d+(?:\.\d+)?)/i;
 // "TARGET- 18/40/80/150"); trailing words like "POINT"/"POINTS" fall
 // outside the character class and are ignored automatically.
 const TARGETS = /(?:Trgts?|Targets?|Trgt)\.?\s*-?\s*([\d.,/\s]+)/i;
+// "TARGET- 18/40/80/150 POINT" (or "POINTS") means the numbers are
+// points-to-add-to-entry, not absolute target prices — as opposed to
+// "Targets 155,170" which already are absolute prices. Matched separately
+// from TARGETS above (whose character class stops right before the word)
+// so the two concerns — parsing the number list vs. deciding what it means
+// — stay independent.
+const TARGETS_POINTS_SUFFIX = /(?:Trgts?|Targets?|Trgt)\.?\s*-?\s*[\d.,/\s]+POINTS?\b/i;
 const PRICE_AT_SIGNAL = /Now\s*-?\s*(\d+(?:\.\d+)?)/i;
 const SELL_PRICE = /sell(?:ing)?\s*price\s*-?\s*(\d+(?:\.\d+)?)/i;
 
@@ -153,13 +160,33 @@ export function parseSignalFlowSignalBlock(block: string, rawTextContext?: strin
   if (stopLoss == null) warnings.push("Missing stop loss (SL)");
 
   const targetsMatch = block.match(TARGETS);
-  const targets = targetsMatch
+  const rawTargetValues = targetsMatch
     ? targetsMatch[1]
         .split(/[,/]/)
         .map((t) => parseFloat(t.trim()))
         .filter((t) => Number.isFinite(t))
     : [];
-  if (targets.length === 0) warnings.push("Missing target(s) (Target)");
+  if (rawTargetValues.length === 0) warnings.push("Missing target(s) (Target)");
+
+  // When the signal wrote targets as points ("18/40/80/150 POINT"), convert
+  // to absolute prices using the entry price so `targets` always holds
+  // prices ready to compare against entry/stop-loss/sell-price downstream
+  // (deriveStatus, P&L calc, the Manual Signal Entry form) — never a mix of
+  // the two units. The original point values are kept in `targetPoints` so
+  // the admin can still see exactly what the raw text said.
+  const targetsArePoints = rawTargetValues.length > 0 && TARGETS_POINTS_SUFFIX.test(block);
+  let targets = rawTargetValues;
+  let targetPoints: number[] | null = null;
+  let notes: string | null = null;
+  if (targetsArePoints) {
+    if (entryPrice != null) {
+      targetPoints = rawTargetValues;
+      targets = rawTargetValues.map((pts) => Math.round((entryPrice + pts) * 100) / 100);
+      notes = `Targets were written in points (${targetPoints.join("/")}) — converted to price using entry ₹${entryPrice}: ${targets.join(", ")}`;
+    } else {
+      warnings.push("Targets look like points-from-entry but no entry price was found to convert them — showing raw point values, please double-check");
+    }
+  }
 
   const priceAtSignal = num(block.match(PRICE_AT_SIGNAL));
 
@@ -186,11 +213,14 @@ export function parseSignalFlowSignalBlock(block: string, rawTextContext?: strin
     target1: targets[0] ?? null,
     target2: targets[1] ?? null,
     targets,
+    targetsArePoints,
+    targetPoints,
     stopLoss,
     expiry,
     signalType: "Intraday",
     context: [],
     status: sellPrice != null ? "CLOSED_MANUAL" : "OPEN",
+    notes,
     rawMessage: block,
     parserName: "SIGNALFLOW",
     parserVersion: "1.0.0",

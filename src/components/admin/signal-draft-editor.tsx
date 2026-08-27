@@ -32,7 +32,9 @@ export interface EditableDraft {
   chartImageUrl?: string | null;
   contextTags?: string[];
   confidence?: "HIGH" | "MEDIUM" | "LOW";
-  parserName?: "SIGNALFLOW" | "GOODWILL";
+  // TGA only ever parses its own signal format — see add-signal-form.tsx's
+  // handleParse comment. Not a "GOODWILL"-capable union on purpose.
+  parserName?: "TGA";
 }
 
 export function SignalDraftEditor({
@@ -61,7 +63,7 @@ export function SignalDraftEditor({
 
       <div className="flex items-center gap-2 flex-wrap text-xs">
         <span className="font-semibold text-foreground px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
-          Parser: {draft.parserName || "SIGNALFLOW"}
+          Parser: TGA
         </span>
         {draft.confidence && (
           <span

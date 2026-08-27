@@ -32,6 +32,9 @@ export default async function ManageSignalsPage({
 
   const signals = await prisma.signal.findMany({ orderBy: { signalTime: "desc" } });
   const allIds = signals.map((s) => s.id);
+  const usedStockSymbols = Array.from(
+    new Set(signals.map((s) => s.stockSymbol).filter((v): v is string => !!v)),
+  ).sort();
   const adminUpdatesMap = await getAdminUpdatesForSignals(allIds);
 
   const rows: ManageSignalRow[] = signals.map((s) => {
@@ -82,7 +85,7 @@ export default async function ManageSignalsPage({
         </div>
         <RefreshButton />
       </div>
-      <AddSignalSection defaultOpen={ongoing.length === 0} />
+      <AddSignalSection defaultOpen={ongoing.length === 0} usedStockSymbols={usedStockSymbols} />
       <OngoingSignals
         signals={ongoing}
         editable

@@ -13,6 +13,17 @@ export function resolveCustomerParser(customer?: CustomerType | string, rawText?
 
   // Auto-detection based on message heuristics if customer is unspecified
   if (rawText) {
+    // "Above ..." entries and an explicit "Expiry" are SignalFlow-only —
+    // Goodwill's own samples never use either (its entry is "@"/"AROUND"/
+    // "FROM", and it has no expiry concept at all). Check these first,
+    // before the looser Goodwill "number/number" heuristic below, so a
+    // SignalFlow multi-target list like "TARGET- 18/40/80/150" (which
+    // contains "18/40", matching that heuristic) doesn't get misclassified
+    // as Goodwill just because it has a slash in it.
+    if (/\bABOVE\b/i.test(rawText) || /\bEXPIRY\b/i.test(rawText)) {
+      return "SIGNALFLOW";
+    }
+
     const isGoodwill = /ALERT\s*:|CMP|POSTIONAL|POSITIONAL|HERO[\s\/]*ZERO|STOP@|BUY\s+AROUND|\b\d+(?:\.\d+)?\/\d+(?:\.\d+)?\b|CRUDE|GOLD|COPPER|JUBILANT|RVNL|TCS|ADANI|HOLD TILL|AVRG|TRG|CLOSING TIME/i.test(rawText);
     if (isGoodwill) return "GOODWILL";
   }
