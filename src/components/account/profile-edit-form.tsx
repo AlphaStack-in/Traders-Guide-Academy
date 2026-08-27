@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BROKER_OPTIONS } from "@/lib/brokers";
 import { updateSubscriberProfile } from "@/app/account/profile/actions";
+import { ContinuePremiumPanel } from "@/components/site/continue-premium-panel";
+import type { PricingPlan } from "@/lib/client-config";
 
 interface ProfileEditFormProps {
   initialName: string;
@@ -16,16 +18,30 @@ interface ProfileEditFormProps {
   initialCurrentBroker: string | null;
   /** Pre-formatted, read-only — which pricing tier they registered under. */
   planLabel: string;
-  /** Pre-formatted, read-only — batch assignment isn't user-editable. */
-  batchLabel: string;
+  /**
+   * Pre-formatted, read-only — an *estimated* current-period range projected
+   * from registration date + plan length (there's no real renewal tracking
+   * yet, payment is still manual/off-platform). Both null together when the
+   * subscriber has no billing cycle on record to project from.
+   */
+  periodStartLabel: string | null;
+  periodEndLabel: string | null;
   /** Pre-formatted, read-only. */
   joinedLabel: string;
+  /** For the Upgrade/Extend panels below the Plan row. */
+  plans: PricingPlan[];
+  currentPlanId?: PricingPlan["id"];
+  upgradePlanId?: PricingPlan["id"];
+  /** False once already on the top tier — nothing to upgrade to. */
+  showUpgrade: boolean;
 }
 
 /**
  * Lets a subscriber view and edit their own Name/Phone/Email/Current Broker
- * on the account dashboard (src/app/account/profile/page.tsx). Plan, Batch,
- * and Joined date stay read-only — those aren't self-service fields.
+ * on the account dashboard (src/app/account/profile/page.tsx). Plan, period
+ * dates, and Joined date stay read-only — those aren't self-service fields
+ * (a plan change routes through the Upgrade/Extend WhatsApp flow, not a
+ * plain form edit).
  */
 export function ProfileEditForm({
   initialName,
@@ -33,8 +49,13 @@ export function ProfileEditForm({
   initialEmail,
   initialCurrentBroker,
   planLabel,
-  batchLabel,
+  periodStartLabel,
+  periodEndLabel,
   joinedLabel,
+  plans,
+  currentPlanId,
+  upgradePlanId,
+  showUpgrade,
 }: ProfileEditFormProps) {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
@@ -88,35 +109,60 @@ export function ProfileEditForm({
             Edit
           </button>
         </div>
-        <div>
-          <p className="text-xs text-muted-foreground">Name</p>
-          <p className="font-heading font-semibold">{initialName}</p>
-        </div>
-        <div>
-          <p className="text-xs text-muted-foreground">Phone</p>
-          <p className="font-heading font-semibold">{initialPhone}</p>
-        </div>
-        <div>
-          <p className="text-xs text-muted-foreground">Email</p>
-          <p className="font-heading font-semibold">{initialEmail}</p>
-        </div>
-        {initialCurrentBroker && (
-          <div>
-            <p className="text-xs text-muted-foreground">Current Broker</p>
-            <p className="font-heading font-semibold">{initialCurrentBroker}</p>
-          </div>
-        )}
-        <div>
-          <p className="text-xs text-muted-foreground">Plan</p>
-          <p className="font-heading font-semibold">{planLabel}</p>
-        </div>
-        <div>
-          <p className="text-xs text-muted-foreground">Batch</p>
-          <p className="font-heading font-semibold">{batchLabel}</p>
-        </div>
-        <div>
-          <p className="text-xs text-muted-foreground">Joined</p>
-          <p className="font-heading font-semibold">{joinedLabel}</p>
+        <table className="w-full border-collapse text-sm">
+          <tbody>
+            <tr className="border-b border-white/5">
+              <td className="w-[38%] py-2 pr-4 align-top text-xs text-muted-foreground">Name</td>
+              <td className="py-2 font-heading font-semibold">{initialName}</td>
+            </tr>
+            <tr className="border-b border-white/5">
+              <td className="py-2 pr-4 align-top text-xs text-muted-foreground">Phone</td>
+              <td className="py-2 font-heading font-semibold">{initialPhone}</td>
+            </tr>
+            <tr className="border-b border-white/5">
+              <td className="py-2 pr-4 align-top text-xs text-muted-foreground">Email</td>
+              <td className="py-2 font-heading font-semibold">{initialEmail}</td>
+            </tr>
+            {initialCurrentBroker && (
+              <tr className="border-b border-white/5">
+                <td className="py-2 pr-4 align-top text-xs text-muted-foreground">Current Broker</td>
+                <td className="py-2 font-heading font-semibold">{initialCurrentBroker}</td>
+              </tr>
+            )}
+            <tr className="border-b border-white/5">
+              <td className="py-2 pr-4 align-top text-xs text-muted-foreground">Plan</td>
+              <td className="py-2 font-heading font-semibold">{planLabel}</td>
+            </tr>
+            {periodStartLabel && periodEndLabel && (
+              <tr className="border-b border-white/5">
+                <td className="py-2 pr-4 align-top text-xs text-muted-foreground">Period (est.)</td>
+                <td className="py-2 font-heading font-semibold">
+                  {periodStartLabel} – {periodEndLabel}
+                </td>
+              </tr>
+            )}
+            <tr>
+              <td className="py-2 pr-4 align-top text-xs text-muted-foreground">Joined</td>
+              <td className="py-2 font-heading font-semibold">{joinedLabel}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div className="flex flex-wrap items-center gap-2 border-t border-white/5 pt-3">
+          {showUpgrade && (
+            <ContinuePremiumPanel
+              plans={plans}
+              triggerLabel="Upgrade"
+              defaultPlanId={upgradePlanId}
+              initialPhone={initialPhone}
+            />
+          )}
+          <ContinuePremiumPanel
+            plans={plans}
+            triggerLabel="Extend"
+            defaultPlanId={currentPlanId}
+            initialPhone={initialPhone}
+          />
         </div>
       </div>
     );

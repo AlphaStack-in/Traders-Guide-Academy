@@ -54,6 +54,16 @@ export function OngoingSignals({
   defaultOpen?: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
+  // Same "re-sync when defaultOpen actually flips" pattern as
+  // AddSignalSection — see that file for why. Here it's what makes this
+  // section auto-expand the moment the first ongoing trade appears (or
+  // auto-collapse once the last one closes), even though the sound-alert
+  // poller's router.refresh() lands on an already-mounted component.
+  const [prevDefaultOpen, setPrevDefaultOpen] = useState(defaultOpen);
+  if (defaultOpen !== prevDefaultOpen) {
+    setPrevDefaultOpen(defaultOpen);
+    setOpen(defaultOpen);
+  }
   const [expandedOrderIds, setExpandedOrderIds] = useState<Set<string>>(new Set());
   const showBody = !collapsible || open;
 

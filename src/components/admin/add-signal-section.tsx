@@ -6,6 +6,16 @@ import { AddSignalForm } from "@/components/admin/add-signal-form";
 
 export function AddSignalSection({ defaultOpen }: { defaultOpen: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
+  // `defaultOpen` recomputes server-side (no ongoing trades -> open by
+  // default) and reaches this already-mounted component via the sound-alert
+  // poller's router.refresh() once a signal goes out. Re-sync `open` to it
+  // whenever it actually flips, so the section auto-collapses the moment a
+  // signal is sent, without fighting a manual toggle in between refreshes.
+  const [prevDefaultOpen, setPrevDefaultOpen] = useState(defaultOpen);
+  if (defaultOpen !== prevDefaultOpen) {
+    setPrevDefaultOpen(defaultOpen);
+    setOpen(defaultOpen);
+  }
 
   return (
     <div className="signalflow-glass rounded-xl border border-white/5 p-4 sm:p-6">

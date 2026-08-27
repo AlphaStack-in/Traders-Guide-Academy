@@ -31,6 +31,19 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.23",
+    date: "27 Aug 2026, 19:25 IST",
+    title: "Signal Parser, Profile Overhaul & Testimonials",
+    highlights: [
+      "Signal parser now handles slash-separated targets, entry ranges, and explicit expiry dates from signal text",
+      "Manage Signals and Ongoing Trades sections auto-expand/collapse when signals are added or closed",
+      "Profile page redesigned with 2-column info table, estimated billing period, Upgrade/Extend buttons, and more broker options",
+      "Shared Continue Premium panel extracted for home pricing and profile renewal flows",
+      "Account menu dropdown now shows a chevron next to the subscriber name",
+      "Updated three testimonial member names",
+    ],
+  },
+  {
     version: "1.0.22",
     date: "27 Aug 2026, 18:40 IST",
     title: "Admin Navbar Active Link Styling",

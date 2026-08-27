@@ -55,7 +55,7 @@ export function AddSignalForm() {
       priceAtSignal: parsed.priceAtSignal != null ? String(parsed.priceAtSignal) : parsed.cmp != null ? String(parsed.cmp) : parsed.entryPrice != null ? String(parsed.entryPrice) : "",
       sellPrice: parsed.sellPrice != null ? String(parsed.sellPrice) : "",
       risk: "Medium",
-      expiry: nextWeeklyExpiry(),
+      expiry: parsed.expiry ?? nextWeeklyExpiry(),
     };
 
     setPrefilledManualForm(prefilled);

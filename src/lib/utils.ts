@@ -39,6 +39,36 @@ export function formatUpdateTime(date: string | Date) {
   })
 }
 
+// "27 Aug 2026" — a full calendar date (with year) but no time, for ranges
+// that can span months/years (e.g. a Yearly plan's estimated renewal date on
+// the account profile page), where formatSignalDate's compact "27Aug" (no
+// year, meant for same-year signal timestamps) would be ambiguous.
+export function formatDateOnly(date: string | Date) {
+  const d = new Date(date)
+  const day = d.toLocaleDateString("en-GB", { day: "2-digit", timeZone: "Asia/Kolkata" })
+  const month = d.toLocaleDateString("en-IN", { month: "short", timeZone: "Asia/Kolkata" })
+  const year = d.toLocaleDateString("en-IN", { year: "numeric", timeZone: "Asia/Kolkata" })
+  return `${day} ${month} ${year}`
+}
+
+// Full date + time, e.g. "27 Aug 2026, 18:57 IST" — same convention as the
+// CHANGELOG.md / changelog.ts build timestamps. For places where a bare date
+// (formatSignalDate) doesn't say enough, e.g. "Joined" on the account
+// profile page.
+export function formatFullTimestamp(date: string | Date) {
+  const d = new Date(date)
+  const day = d.toLocaleDateString("en-GB", { day: "2-digit", timeZone: "Asia/Kolkata" })
+  const month = d.toLocaleDateString("en-IN", { month: "short", timeZone: "Asia/Kolkata" })
+  const year = d.toLocaleDateString("en-IN", { year: "numeric", timeZone: "Asia/Kolkata" })
+  const time = d.toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: "Asia/Kolkata",
+  })
+  return `${day} ${month} ${year}, ${time} IST`
+}
+
 // Dynamic runtime join URL resolver — a client with its own external
 // broker-hosted join page (goodwillBrokerEnabled) uses that instead of this
 // app's own domain, to avoid cross-client leaks.

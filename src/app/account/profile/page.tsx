@@ -6,8 +6,23 @@ import { PaymentDetailsCard } from "@/components/account/payment-details-card";
 import { ProfileEditForm } from "@/components/account/profile-edit-form";
 import { getCurrentSubscriber } from "@/lib/subscriber-auth";
 import { prisma } from "@/lib/prisma";
-import { clientConfig } from "@/lib/client-config";
-import { formatSignalDate } from "@/lib/utils";
+import { clientConfig, type PricingPlan } from "@/lib/client-config";
+import { formatDateOnly, formatFullTimestamp } from "@/lib/utils";
+
+const TIER_ORDER: PricingPlan["id"][] = ["monthly", "quarterly", "yearly"];
+
+// No renewal/payment tracking exists yet (payment is manual, off-platform —
+// see PaymentDetailsCard), so there's no real "current billing period" date
+// on record. This estimates one from registration date + plan length, purely
+// informational — it won't reflect an actual renewal. Labeled "(est.)" in
+// the UI for that reason; see profile-edit-form.tsx.
+function addCycleInterval(date: Date, cycle: "MONTHLY" | "QUARTERLY" | "YEARLY"): Date {
+  const d = new Date(date);
+  if (cycle === "MONTHLY") d.setMonth(d.getMonth() + 1);
+  else if (cycle === "QUARTERLY") d.setMonth(d.getMonth() + 3);
+  else d.setFullYear(d.getFullYear() + 1);
+  return d;
+}
 
 export default async function ProfilePage() {
   const subscriber = await getCurrentSubscriber();
@@ -22,14 +37,23 @@ export default async function ProfilePage() {
       })
     : null;
 
-  // Subscribers created before billingCycle existed have none on record —
-  // show all tiers in that case rather than assuming one (see
-  // PaymentDetailsCard's `plan` prop doc comment).
   const subscriberPlan = subscriber.billingCycle
     ? clientConfig.pricingPlans.find(
         (p) => p.id === subscriber.billingCycle!.toLowerCase(),
       )
     : null;
+
+  const periodStartLabel = subscriber.billingCycle ? formatDateOnly(subscriber.createdAt) : null;
+  const periodEndLabel = subscriber.billingCycle
+    ? formatDateOnly(addCycleInterval(subscriber.createdAt, subscriber.billingCycle))
+    : null;
+
+  const currentTierIndex = subscriberPlan ? TIER_ORDER.indexOf(subscriberPlan.id) : -1;
+  const upgradePlanId =
+    currentTierIndex >= 0 && currentTierIndex < TIER_ORDER.length - 1
+      ? TIER_ORDER[currentTierIndex + 1]
+      : undefined;
+  const showUpgrade = currentTierIndex !== TIER_ORDER.length - 1;
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -45,8 +69,13 @@ export default async function ProfilePage() {
           initialEmail={subscriber.email ?? ""}
           initialCurrentBroker={subscriber.currentBroker}
           planLabel={subscriberPlan ? subscriberPlan.label : "—"}
-          batchLabel={subscriber.batchNumber != null ? `Batch ${subscriber.batchNumber}` : "—"}
-          joinedLabel={formatSignalDate(subscriber.createdAt)}
+          periodStartLabel={periodStartLabel}
+          periodEndLabel={periodEndLabel}
+          joinedLabel={formatFullTimestamp(subscriber.createdAt)}
+          plans={clientConfig.pricingPlans}
+          currentPlanId={subscriberPlan?.id}
+          upgradePlanId={upgradePlanId}
+          showUpgrade={showUpgrade}
         />
 
         <div className="signalflow-glass signalflow-gold-border flex flex-col gap-3 rounded-2xl border p-5">

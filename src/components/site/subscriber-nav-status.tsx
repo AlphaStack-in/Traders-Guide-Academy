@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Gift, LogIn, LogOut, User } from "lucide-react";
+import { ChevronDown, Gift, LogIn, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -73,6 +73,7 @@ export function SubscriberNavStatus({
           {initial}
         </span>
         <span className="hidden max-w-[90px] truncate sm:inline">{subscriberName.split(" ")[0]}</span>
+        <ChevronDown className="h-3.5 w-3.5 shrink-0 text-primary/70" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-44">
         <DropdownMenuItem asChild className="cursor-pointer gap-2">

@@ -4,11 +4,24 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-Versioning continues the semantic patch series from the SignalFlow template (`1.0.7` → `1.0.8` …). The footer and Admin Changelog page read the current version from `package.json` (now **1.0.22**).
+Versioning continues the semantic patch series from the SignalFlow template (`1.0.7` → `1.0.8` …). The footer and Admin Changelog page read the current version from `package.json` (now **1.0.23**).
 
 Each release header now includes a build timestamp (24-hour IST, matching `build-info.ts`'s `formattedBuildTime`), not just a date — this reflects the actual commit that shipped the version. While adding timestamps, two pre-existing dates were corrected to match their real shipping commit: `1.0.8` (was dated by the TGA fork commit, 3 days before the digest-email feature in that release actually shipped) and `1.0.2` (was off by one day around a just-after-midnight IST commit).
 
 ## [Unreleased]
+
+## [1.0.23] - 2026-08-27 19:25 IST
+
+### Added
+- Signal parser: slash-separated targets (e.g. `18/40/80/150`), entry range upper bound (`ABOVE 160-170` → `entryHigh`), and explicit expiry from signal text (`EXPIRY 18th aug`)
+- Profile page: estimated billing period row, Upgrade/Extend buttons via shared Continue Premium flow, and more broker options (Alice Blue, Lemonn, Sahi, SBI Securities, IIFL Securities, Paytm Money, SAMCO)
+- Account menu: chevron on the subscriber name dropdown trigger
+
+### Changed
+- Manage Signals and Ongoing Trades sections now auto-expand/collapse when the first/last signal appears (re-syncs `defaultOpen` after `router.refresh()`)
+- Profile page: 2-column info table, removed Batch row, full timestamp for Joined date
+- Home pricing section: extracted shared `ContinuePremiumPanel` component (also used on profile)
+- Testimonials: updated three member names (Rohan Deshmukh, Siddharth Mehta, Aditya Kulkarni)
 
 ## [1.0.22] - 2026-08-27 18:40 IST
 

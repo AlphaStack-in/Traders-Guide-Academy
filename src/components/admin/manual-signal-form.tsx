@@ -115,13 +115,27 @@ export function ManualSignalForm({ prefilledValues, onSaved }: ManualSignalFormP
         stockSymbol: isStock ? rawInst : "RVNL",
       });
 
+      // If the parsed signal text named an explicit expiry (e.g. "EXPIRY
+      // 18th Aug"), honor it — but only when it's actually one of this
+      // instrument's valid tradable expiries, so we never silently select a
+      // non-existent contract. Otherwise fall back to the auto-next expiry,
+      // same as before, and let the admin know why.
+      const requestedExpiry = prefilledValues.expiry;
+      const isRequestedExpiryValid =
+        !!requestedExpiry && res.upcomingExpiries.some((exp) => exp.date === requestedExpiry);
+      if (requestedExpiry && !isRequestedExpiryValid) {
+        toast.warning(
+          `Signal text named an expiry (${requestedExpiry}) that isn't a valid ${cat} contract — defaulted to the next expiry, please double-check.`,
+        );
+      }
+
       setForm((prev) => ({
         ...prev,
         ...prefilledValues,
         category: cat,
         instrument: isStock ? "NIFTY" : (rawInst as InstrumentLiteral),
         stockSymbol: isStock ? rawInst : prev.stockSymbol,
-        expiry: res.expiryDate, // Automatically recalculated next valid expiry for parsed instrument
+        expiry: isRequestedExpiryValid ? requestedExpiry : res.expiryDate,
       }));
     }
   }, [prefilledValues]);

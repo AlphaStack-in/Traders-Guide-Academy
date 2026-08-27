@@ -21,6 +21,11 @@ export interface CanonicalSignalDraft {
   target2: number | null;
   targets: number[];
   stopLoss: number | null;
+  // Options expiry date, ISO "YYYY-MM-DD", when the raw text names one
+  // explicitly (e.g. "EXPIRY 18th Aug", "Expiry - 18/08"). Undefined/null
+  // when the format doesn't carry an expiry — callers fall back to their
+  // own default (e.g. next weekly expiry) in that case.
+  expiry?: string | null;
   signalType?: string; // e.g., "Positional Breakout", "Hero Zero", "Intraday"
   context: string[]; // Structured contextual tags (e.g., ["Positional Breakout", "Result Based Trade"])
   status: "OPEN" | "TARGET_HIT" | "SL_HIT" | "CLOSED_MANUAL" | "UPDATE";
