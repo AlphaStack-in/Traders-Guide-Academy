@@ -31,6 +31,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.35",
+    date: "28 Aug 2026, 20:54 IST",
+    title: "Tech Debt Ledger Now Lives In The Repo",
+    highlights: [
+      "New static tech-debt-ledger.html page (also at /tech-debt-ledger.html once deployed) — open technical debt grouped by role with severity pills",
+      "Admin Changelog \"Tech debts\" link now points to the in-repo ledger instead of an external artifact URL",
+    ],
+  },
+  {
     version: "1.0.34",
     date: "28 Aug 2026, 20:31 IST",
     title: "Admin Can Now Set A Subscriber's Password",

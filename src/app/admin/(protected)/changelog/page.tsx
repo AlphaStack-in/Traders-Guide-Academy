@@ -33,7 +33,7 @@ export default function AdminChangelogPage() {
             Complete chronological deployment audit log &amp; revision history for SignalFlow.
           </p>
           <a
-            href="https://claude.ai/code/artifact/ed6bf353-3c2d-4a12-9733-c26eb46c1a9f"
+            href="/tech-debt-ledger.html"
             target="_blank"
             rel="noopener noreferrer"
             className="mt-1 inline-flex w-fit items-center gap-1 text-xs font-medium text-primary hover:underline"

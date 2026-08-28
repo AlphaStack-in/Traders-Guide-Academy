@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TGA Debt Ledger</title>
+<style>
+  :root {
+    --bg: #0a0b10;
+    --panel: #0d0e14;
+    --border: rgba(255,255,255,0.1);
+    --border-strong: rgba(255,255,255,0.2);
+    --text: #f2f2f5;
+    --muted: #9a9aa5;
+    --primary: #d4a441;
+    --high-bg: rgba(248,113,113,0.15);
+    --high-text: #f87171;
+    --high-border: rgba(248,113,113,0.4);
+    --med-bg: rgba(251,191,36,0.15);
+    --med-text: #fbbf24;
+    --med-border: rgba(251,191,36,0.4);
+    --low-bg: rgba(148,163,184,0.15);
+    --low-text: #94a3b8;
+    --low-border: rgba(148,163,184,0.4);
+    --code-bg: rgba(255,255,255,0.08);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  .wrap {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+  .eyebrow {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    color: var(--primary);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  h1 {
+    font-size: 34px;
+    font-weight: 800;
+    margin: 0 0 16px;
+    line-height: 1.15;
+  }
+  .lede {
+    color: var(--muted);
+    font-size: 15px;
+    max-width: 760px;
+    margin: 0 0 28px;
+  }
+  .lede b { color: var(--text); }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+  .stat {
+    background: var(--panel);
+    padding: 16px 20px;
+  }
+  .stat .num { font-size: 26px; font-weight: 800; }
+  .stat .num.high { color: var(--high-text); }
+  .stat .label { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 32px;
+  }
+  .tag {
+    font-family: "SFMono-Regular", Consolas, monospace;
+    font-size: 12px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 5px 10px;
+    border-radius: 999px;
+  }
+  section.role { margin-bottom: 40px; }
+  .role-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+  .role-head h2 { font-size: 21px; margin: 0; font-weight: 800; }
+  .role-badge {
+    font-family: "SFMono-Regular", Consolas, monospace;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    padding: 3px 8px;
+    border-radius: 6px;
+  }
+  .role-desc { color: var(--muted); font-size: 13.5px; margin: 0 0 16px; }
+  table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  thead th {
+    text-align: left;
+    font-family: "SFMono-Regular", Consolas, monospace;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    text-transform: uppercase;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,0.03);
+  }
+  tbody tr { border-bottom: 1px solid var(--border); }
+  tbody tr:last-child { border-bottom: none; }
+  tbody td { padding: 14px 16px; vertical-align: top; font-size: 13.5px; }
+  td.item { font-weight: 700; width: 26%; }
+  td.why { color: #d6d6dd; }
+  td.sev { width: 90px; white-space: nowrap; }
+  code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 12.5px;
+    background: var(--code-bg);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+  .sev-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: "SFMono-Regular", Consolas, monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 3px 9px;
+    border-radius: 999px;
+    border: 1px solid;
+  }
+  .sev-pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .sev-pill.high { background: var(--high-bg); color: var(--high-text); border-color: var(--high-border); }
+  .sev-pill.medium { background: var(--med-bg); color: var(--med-text); border-color: var(--med-border); }
+  .sev-pill.low { background: var(--low-bg); color: var(--low-text); border-color: var(--low-border); }
+  footer {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 13px;
+  }
+  footer p { max-width: 760px; margin: 0 0 10px; }
+  @media (max-width: 700px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    table, thead, tbody, th, td, tr { display: block; }
+    thead { display: none; }
+    tbody tr { padding: 14px 4px; }
+    td.item, td.why, td.sev { width: auto; padding: 4px 4px; }
+    td.sev { margin-top: 6px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Traders Guide Academy — Internal</div>
+  <h1>Open technical debt, by who owns closing it</h1>
+  <p class="lede">
+    Twenty-four items surfaced across the codebase and this build history, sorted into
+    the five roles that would actually action each one. <b>TGA is proof-of-concept stage
+    — nothing here is a fire</b>, but several become real risk the moment the product
+    goes live with paying, India-based subscribers.
+  </p>
+
+  <div class="stats">
+    <div class="stat"><div class="num">24</div><div class="label">Total items</div></div>
+    <div class="stat"><div class="num high">10</div><div class="label">High</div></div>
+    <div class="stat"><div class="num" style="color:var(--med-text)">9</div><div class="label">Medium</div></div>
+    <div class="stat"><div class="num" style="color:var(--low-text)">5</div><div class="label">Low</div></div>
+  </div>
+
+  <div class="tags">
+    <span class="tag">Technical Architect · 7</span>
+    <span class="tag">Product Manager · 6</span>
+    <span class="tag">Developer · 5</span>
+    <span class="tag">QA / Test · 3</span>
+    <span class="tag">DevOps / SRE · 3</span>
+  </div>
+
+  <section class="role">
+    <div class="role-head"><h2>Technical Architect</h2><span class="role-badge">SYSTEM &amp; DATA MODEL</span></div>
+    <p class="role-desc">Decisions about the shape of the system that only get harder to unwind the longer they sit.</p>
+    <table>
+      <thead><tr><th>Item</th><th>Why it matters</th><th>Severity</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="item">No CI pipeline</td>
+          <td class="why">No <code>.github/workflows</code> exists — nothing builds, lints, type-checks, or runs tests before a change reaches <code>main</code>. Every deploy is a manual act of trust.</td>
+          <td class="sev"><span class="sev-pill high">HIGH</span></td>
+        </tr>
+        <tr>
+          <td class="item">No production observability</td>
+          <td class="why">No error monitoring and no structured logging anywhere in the app. A crashed action or a bad signal parse is invisible until a subscriber or admin happens to notice and say something.</td>
+          <td class="sev"><span class="sev-pill high">HIGH</span></td>
+        </tr>
+        <tr>
+          <td class="item">Single hardcoded admin, dead RBAC schema</td>
+          <td class="why"><code>AdminUser</code> and <code>AdminUserAuditLog</code> tables still exist from a pre-Neon-migration Supabase Auth system, but are entirely unreferenced now — <code>admin-rbac.ts</code> checks a single <code>ADMIN_EMAIL</code> / <code>ADMIN_PASSWORD_HASH</code> env pair instead. No per-admin identity, no real audit trail, and two unused tables sitting in the live schema.</td>
+          <td class="sev"><span class="sev-pill medium">MEDIUM</span></td>
+        </tr>
+        <tr>
+          <td class="item">Stock signals misuse the instrument column</td>
+          <td class="why">The <code>instrument</code> enum has no STOCK value, so a stock trade is stored as <code>"NIFTY"</code> and the real symbol only survives via a separately bolted-on <code>stockSymbol</code> column. Works, but the data model doesn't actually describe what happened.</td>
+          <td class="sev"><span class="sev-pill medium">MEDIUM</span></td>
+        </tr>
+        <tr>
+          <td class="item">No unique constraint on subscriber email</td>
+          <td class="why">Duplicate accounts are possible at the database layer — uniqueness is only enforced by application-level lookups, not the schema itself.</td>
+          <td class="sev"><span class="sev-pill medium">MEDIUM</span></td>
+        </tr>
+        <tr>
+          <td class="item"><code>AdminUpdate.signalId</code> isn't a real foreign key</td>
+          <td class="why">Deleting a signal requires an explicit, separate <code>deleteMany</code> to avoid orphaned update rows — one missed call site anywhere in future code would leak them silently.</td>
+          <td class="sev"><span class="sev-pill low">LOW</span></td>
+        </tr>
+        <tr>
+          <td class="item">Unreachable multi-vendor parser code still bundled</td>
+          <td class="why">Goodwill's parser and the generic auto-detector remain in the codebase from the SignalFlow fork, structurally unreachable from TGA's single-tenant UI — dead weight with no functional risk, but a maintenance tax on anyone reading the parser layer cold.</td>
+          <td class="sev"><span class="sev-pill low">LOW</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="role">
+    <div class="role-head"><h2>Product Manager</h2><span class="role-badge">PRODUCT COMPLETENESS</span></div>
+    <p class="role-desc">Gaps between what the product appears to do and what it actually does today.</p>
+    <table>
+      <thead><tr><th>Item</th><th>Why it matters</th><th>Severity</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="item">Payment is entirely manual, off-platform</td>
+          <td class="why">No payment gateway is integrated. The UPI payee ID and manager contact in config are still literal placeholders (<code>TODO@upi</code>) — every collection, reconciliation, and receipt today happens outside the product.</td>
+          <td class="sev"><span class="sev-pill high">HIGH</span></td>
+        </tr>
+        <tr>
+          <td class="item">No self-service plan upgrade or renewal</td>
+          <td class="why">Upgrade/Extend buttons hand off to a WhatsApp conversation rather than completing an in-app transaction — every plan change is a manual, human-in-the-loop process.</td>
+          <td class="sev"><span class="sev-pill medium">MEDIUM</span></td>
+        </tr>
+        <tr>
+          <td class="item">Two admin actions look real but do nothing</td>
+          <td class="why">The Registered Members "Announcement" button only shows a toast, and replying to a contact-form message saves the reply internally without ever emailing the person back — an admin could easily believe both actually reached someone.</td>
+          <td class="sev"><span class="sev-pill medium">MEDIUM</span></td>
+        </tr>
+        <tr>
+          <td class="item">No admin UI to reset a subscriber's password</td>
+          <td class="why">A code comment claims an admin can reset a subscriber's password from the panel — the button doesn't exist. Today, a reset needs a developer to run a script by hand.</td>
+          <td class="sev"><span class="sev-pill medium">MEDIUM</span></td>
+        </tr>
+        <tr>
+          <td class="item">Brand identity still placeholder</td>
+          <td class="why">Logo/favicon, brand colors, and pricing tiers are all marked provisional in <code>client-config.ts</code> — a real go-live needs a deliberate pass to replace every one of them.</td>
+          <td class="sev"><span class="sev-pill medium">MEDIUM</span></td>
+        </tr>
+        <tr>
+          <td class="item">Digest, news alerts, and broker connect built but off</td>
+          <td class="why">Weekly digest emails, news alerts, and Dhan broker connect/order placement are all implemented and just switched off — a straightforward product call on if and when to turn each on.</td>
+          <td class="sev"><span class="sev-pill low">LOW</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="role">
+    <div class="role-head"><h2>Developer</h2><span class="role-badge">IMPLEMENTATION</span></div>
+    <p class="role-desc">Code-level debt that will slow down or trip up whoever touches these areas next.</p>
+    <table>
+      <thead><tr><th>Item</th><th>Why it matters</th><th>Severity</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="item">Signal parser has zero test coverage</td>
+          <td class="why">The most complex, highest-risk logic in the app — and the source of at least two real bugs found this session alone (misrouted targets, a stale-expiry rollover) — has no automated tests protecting it. Only three test files exist in the whole repo, none of them here.</td>
+          <td class="sev"><span class="sev-pill high">HIGH</span></td>
+        </tr>
+        <tr>
+          <td class="item">No rate limiting or lockout on login</td>
+          <td class="why">Neither subscriber nor admin login throttles repeated password attempts — nothing stands between a real credential set and a brute-force script.</td>
+          <td class="sev"><span class="sev-pill high">HIGH</span></td>
+        </tr>
+        <tr>
+          <td class="item">TODO placeholders shipped in live config</td>
+          <td class="why"><code>client-config.ts</code> and <code>utils.ts</code> carry unresolved TODOs for brand colors, logo path, UPI payee, and production domain — easy to miss without a dedicated go-live checklist pass.</td>
+          <td class="sev"><span class="sev-pill medium">MEDIUM</span></td>
+        </tr>
+        <tr>
+          <td class="item"><code>setSubscriberPassword</code> is dead code</td>
+          <td class="why">The server action works and is fully wired to the database, but no UI component calls it anywhere — it's waiting behind the missing admin reset button (see PM).</td>
+          <td class="sev"><span class="sev-pill low">LOW</span></td>
+        </tr>
+        <tr>
+          <td class="item">Admin audit schema is dead weight</td>
+          <td class="why">Same root cause as the Architect item — <code>AdminUser</code> / <code>AdminUserAuditLog</code> mean any future "who did what" admin feature gets rebuilt from scratch, not resumed from what's already there.</td>
+          <td class="sev"><span class="sev-pill low">LOW</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="role">
+    <div class="role-head"><h2>QA / Test Engineer</h2><span class="role-badge">VERIFICATION</span></div>
+    <p class="role-desc">What stands between a broken change and a live subscriber seeing it.</p>
+    <table>
+      <thead><tr><th>Item</th><th>Why it matters</th><th>Severity</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="item">No coverage on parser, auth, or signal lifecycle</td>
+          <td class="why">Parsing, login/session handling, and the create/close/delete actions that move real trade data all rely on manual click-through today — there's no automated safety net on the paths that matter most.</td>
+          <td class="sev"><span class="sev-pill high">HIGH</span></td>
+        </tr>
+        <tr>
+          <td class="item">No CI gate at all</td>
+          <td class="why">Nothing today stops an untested, broken change from reaching <code>main</code> — the gate is entirely human review, if that.</td>
+          <td class="sev"><span class="sev-pill high">HIGH</span></td>
+        </tr>
+        <tr>
+          <td class="item">This session's two newest features are untested</td>
+          <td class="why">General Admin Updates and the richer Status-label logic both shipped this session with no test coverage — the latter touches P&amp;L-adjacent display logic worth locking down before it drifts.</td>
+          <td class="sev"><span class="sev-pill medium">MEDIUM</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="role">
+    <div class="role-head"><h2>DevOps / SRE</h2><span class="role-badge">OPERATIONS</span></div>
+    <p class="role-desc">Operational readiness for the day this stops being a proof of concept.</p>
+    <table>
+      <thead><tr><th>Item</th><th>Why it matters</th><th>Severity</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="item">No CI/CD pipeline</td>
+          <td class="why">Every deploy and every quality gate — lint, type-check, test — is a manual step performed by whoever happens to be pushing.</td>
+          <td class="sev"><span class="sev-pill high">HIGH</span></td>
+        </tr>
+        <tr>
+          <td class="item">No error monitoring or alerting</td>
+          <td class="why">Same gap as the Architect item, from the operations side: there's no on-call signal at all today — an outage is discovered by a person, not a system.</td>
+          <td class="sev"><span class="sev-pill high">HIGH</span></td>
+        </tr>
+        <tr>
+          <td class="item">No rate limiting at the infrastructure layer</td>
+          <td class="why">Nothing in front of the app throttles auth traffic either — this is the same gap as the Developer login item, but there's also no infra-level backstop behind it.</td>
+          <td class="sev"><span class="sev-pill high">HIGH</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <footer>
+    <p>Compiled from direct codebase inspection (schema, auth, parser, config, test suite, CI config) plus gaps documented while building features earlier in this project's history.</p>
+    <p>One thing worth restating: SignalFlow is the canonical version and is not live; TGA is a proof-of-concept fork with an India-only subscriber base. None of this is urgent by itself — it's a map for prioritizing before that changes.</p>
+  </footer>
+</div>
+</body>
+</html>
