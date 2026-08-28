@@ -70,3 +70,62 @@ export async function sendReferralInviteEmail({
     return { success: false, error: message };
   }
 }
+
+export interface SendAnnouncementEmailParams {
+  toEmail: string;
+  memberName: string;
+  subject: string;
+  message: string;
+}
+
+/**
+ * Admin -> members broadcast email (the "Announcement" panel in the admin
+ * Subscribers table — see subscribers-table.tsx). Deliberately a separate
+ * channel from sendReferralInviteEmail and the weekly digest: it is not
+ * gated by Subscriber.emailDigestOptOut, since that flag only covers the
+ * automated performance digest, not one-off admin messages an admin
+ * explicitly chose to send to this member.
+ */
+export async function sendAnnouncementEmail({
+  toEmail,
+  memberName,
+  subject,
+  message,
+}: SendAnnouncementEmailParams): Promise<{ success: boolean; error?: string }> {
+  const resend = getResendClient();
+
+  if (!resend) {
+    console.log(`[Dev Email Simulation] Announcement "${subject}" sent to ${toEmail} (${memberName})`);
+    console.log(`[Dev Email Simulation] Body: ${message}`);
+    return { success: true };
+  }
+
+  try {
+    const fromAddress = getFromAddress();
+
+    const { error } = await resend.emails.send({
+      from: fromAddress,
+      to: [toEmail],
+      subject,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; background-color: #0B0B0D; color: #F3F4F6; padding: 32px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+          <h2 style="color: #F0C949; margin-top: 0;">${clientConfig.siteName}</h2>
+          <p>Hello ${memberName},</p>
+          <p style="white-space: pre-line;">${message}</p>
+          <p style="font-size: 12px; color: #9CA3AF; margin-top: 32px;">You're receiving this because you're a registered member of ${clientConfig.siteName}.</p>
+        </div>
+      `,
+    });
+
+    if (error) {
+      console.error("Resend API error (announcement):", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : "Failed to send announcement email.";
+    console.error("Error sending announcement email:", err);
+    return { success: false, error: errorMessage };
+  }
+}

@@ -14,6 +14,7 @@ import {
   Pencil,
   Plus,
   Search,
+  Send,
   Trash2,
   X,
 } from "lucide-react";
@@ -23,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -42,6 +44,7 @@ import {
   createSubscriber,
   deleteSubscriber,
   inviteSubscriber,
+  sendAnnouncement,
   setSubscriberPassword,
   updateSubscriber,
   type SubscriberInput,
@@ -375,6 +378,197 @@ function AddMemberFullWidthPanel({
   );
 }
 
+function AnnouncementPanel({
+  open,
+  onOpenChange,
+  totalCount,
+  totalWithEmailCount,
+  selectedCount,
+  selectedWithEmailCount,
+  selectedIds,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  totalCount: number;
+  totalWithEmailCount: number;
+  selectedCount: number;
+  selectedWithEmailCount: number;
+  selectedIds: string[];
+}) {
+  const [message, setMessage] = useState("");
+  const [subject, setSubject] = useState("");
+  const [postInApp, setPostInApp] = useState(true);
+  const [sendEmail, setSendEmail] = useState(false);
+  const [isSending, startSending] = useTransition();
+
+  const useSelected = selectedCount > 0;
+  const emailTargetCount = useSelected ? selectedWithEmailCount : totalWithEmailCount;
+  const emailTargetLabel = useSelected
+    ? `${selectedCount} selected member${selectedCount === 1 ? "" : "s"} (${selectedWithEmailCount} with an email on file)`
+    : `all ${totalCount} member${totalCount === 1 ? "" : "s"} (${totalWithEmailCount} with an email on file)`;
+
+  function reset() {
+    setMessage("");
+    setSubject("");
+    setPostInApp(true);
+    setSendEmail(false);
+  }
+
+  function handleSend() {
+    if (!message.trim()) {
+      toast.error("Write a message first.");
+      return;
+    }
+    if (!postInApp && !sendEmail) {
+      toast.error("Choose at least one channel: in-app or email.");
+      return;
+    }
+    if (sendEmail && !subject.trim()) {
+      toast.error("Subject is required to send email.");
+      return;
+    }
+    if (sendEmail && emailTargetCount === 0) {
+      toast.error("None of the targeted members have an email on file.");
+      return;
+    }
+
+    startSending(async () => {
+      const result = await sendAnnouncement({
+        message: message.trim(),
+        subject: subject.trim(),
+        postInApp,
+        sendEmail,
+        subscriberIds: useSelected ? selectedIds : "all",
+      });
+
+      if (!result.success) {
+        toast.error(result.error ?? "Failed to send announcement.");
+        return;
+      }
+
+      const parts: string[] = [];
+      if (result.inAppPosted) {
+        parts.push("Posted in-app notification for all members.");
+      }
+      if (result.email) {
+        const { attempted, sent, failed, skippedNoEmail } = result.email;
+        let emailLine = `Emailed ${sent}/${attempted} member${attempted === 1 ? "" : "s"}.`;
+        if (skippedNoEmail > 0) {
+          emailLine += ` ${skippedNoEmail} skipped (no email on file).`;
+        }
+        if (failed > 0) {
+          emailLine += ` ${failed} failed to send.`;
+        }
+        parts.push(emailLine);
+      }
+
+      const summary = parts.join(" ") || "Nothing was sent.";
+      if (result.email && result.email.failed > 0 && result.email.sent === 0) {
+        toast.error(summary);
+      } else {
+        toast.success(summary);
+      }
+      reset();
+      onOpenChange(false);
+    });
+  }
+
+  if (!open) return null;
+
+  return (
+    <div className="signalflow-glass w-full flex flex-col gap-3 rounded-xl border border-white/10 p-4 transition-all">
+      <div className="flex items-center justify-between">
+        <Label className="font-heading text-sm font-semibold text-foreground">Send Announcement</Label>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+          disabled={isSending}
+          onClick={() => {
+            reset();
+            onOpenChange(false);
+          }}
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+
+      <Textarea
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        placeholder="Message to members..."
+        className="min-h-24"
+        disabled={isSending}
+      />
+
+      <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:gap-6">
+        <label className="flex items-start gap-2 text-sm">
+          <Checkbox
+            checked={postInApp}
+            onCheckedChange={(checked) => setPostInApp(!!checked)}
+            className="mt-0.5"
+            disabled={isSending}
+          />
+          <span>
+            <span className="block text-foreground">In-app notification</span>
+            <span className="block text-xs text-muted-foreground">
+              Posted to the site-wide notification bell — reaches every member, regardless of the
+              selection above.
+            </span>
+          </span>
+        </label>
+
+        <label className="flex items-start gap-2 text-sm">
+          <Checkbox
+            checked={sendEmail}
+            onCheckedChange={(checked) => setSendEmail(!!checked)}
+            className="mt-0.5"
+            disabled={isSending}
+          />
+          <span>
+            <span className="block text-foreground">Email registered members</span>
+            <span className="block text-xs text-muted-foreground">Sends to {emailTargetLabel}.</span>
+          </span>
+        </label>
+      </div>
+
+      {sendEmail && (
+        <Input
+          value={subject}
+          onChange={(e) => setSubject(e.target.value)}
+          placeholder="Email subject"
+          className="h-9"
+          disabled={isSending}
+        />
+      )}
+
+      <div className="flex items-center justify-end gap-2 pt-1">
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-8"
+          disabled={isSending}
+          onClick={() => {
+            reset();
+            onOpenChange(false);
+          }}
+        >
+          Cancel
+        </Button>
+        <Button
+          size="sm"
+          className="signalflow-glow signalflow-btn-gradient h-8 gap-1.5 px-4"
+          disabled={isSending}
+          onClick={handleSend}
+        >
+          <Send className="h-3.5 w-3.5" />
+          {isSending ? "Sending…" : "Send"}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 function SubscriberRowItem({
   subscriber,
   selected,
@@ -693,6 +887,7 @@ export function SubscribersTable({ subscribers }: { subscribers: SubscriberRow[]
   const [brokerFilter, setBrokerFilter] = useState("all");
   const [sort, setSort] = useState<SortState>({ key: "createdAt", direction: "desc" });
   const [addPanelOpen, setAddPanelOpen] = useState(false);
+  const [announcementPanelOpen, setAnnouncementPanelOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const batchNumbers = useMemo(() => {
@@ -703,6 +898,10 @@ export function SubscribersTable({ subscribers }: { subscribers: SubscriberRow[]
     return Array.from(set).sort((a, b) => b - a);
   }, [subscribers]);
   const hasUnassigned = subscribers.some((s) => s.batchNumber == null);
+  const totalWithEmailCount = subscribers.filter((s) => s.email).length;
+  const selectedWithEmailCount = subscribers.filter(
+    (s) => selectedIds.has(s.id) && s.email,
+  ).length;
 
   function handleSort(key: SortKey) {
     setSort((prev) => {
@@ -867,7 +1066,7 @@ export function SubscribersTable({ subscribers }: { subscribers: SubscriberRow[]
             size="sm"
             variant="outline"
             className="h-9 gap-1.5"
-            onClick={() => toast.info("Announcement feature development underway.")}
+            onClick={() => setAnnouncementPanelOpen((prev) => !prev)}
           >
             <Megaphone className="h-4 w-4" />
             Announcement
@@ -885,6 +1084,16 @@ export function SubscribersTable({ subscribers }: { subscribers: SubscriberRow[]
       </div>
 
       <AddMemberFullWidthPanel open={addPanelOpen} onOpenChange={setAddPanelOpen} />
+
+      <AnnouncementPanel
+        open={announcementPanelOpen}
+        onOpenChange={setAnnouncementPanelOpen}
+        totalCount={subscribers.length}
+        totalWithEmailCount={totalWithEmailCount}
+        selectedCount={selectedIds.size}
+        selectedWithEmailCount={selectedWithEmailCount}
+        selectedIds={Array.from(selectedIds)}
+      />
 
       {selectedIds.size > 0 && (
         <div className="signalflow-glass flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/10 px-4 py-2.5 text-sm">

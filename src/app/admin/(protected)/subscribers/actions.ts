@@ -4,7 +4,7 @@ import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin-auth";
-import { sendReferralInviteEmail } from "@/lib/email";
+import { sendAnnouncementEmail, sendReferralInviteEmail } from "@/lib/email";
 import { hashPassword } from "@/lib/password";
 
 export interface SubscriberInput {
@@ -143,3 +143,100 @@ export async function inviteSubscriber(id: string, origin?: string) {
   return { success: true };
 }
 
+export interface SendAnnouncementInput {
+  message: string;
+  subject: string;
+  postInApp: boolean;
+  sendEmail: boolean;
+  // "all" or an explicit list of Subscriber ids. Only used for the email
+  // channel -- the in-app post always goes out to every member via the
+  // existing site-wide AdminUpdate broadcast (see notification-bell.tsx),
+  // there is no per-subscriber targeting for that channel yet.
+  subscriberIds: string[] | "all";
+}
+
+export interface SendAnnouncementResult {
+  success: boolean;
+  error?: string;
+  inAppPosted?: boolean;
+  email?: {
+    attempted: number;
+    sent: number;
+    failed: number;
+    skippedNoEmail: number;
+    failedNames: string[];
+  };
+}
+
+/**
+ * Real send behind the admin Subscribers "Announcement" button (previously
+ * just `toast.info(...)` with no actual delivery). Two independent,
+ * honestly-reported channels:
+ *  - In-app: one AdminUpdate row, broadcast to everyone (reuses
+ *    postGeneralAdminUpdate's exact mechanism from signals/actions.ts).
+ *  - Email: real Resend send to each targeted subscriber's registered
+ *    email, looped sequentially so the caller gets a true sent/failed
+ *    count back instead of a blind success toast.
+ */
+export async function sendAnnouncement(
+  input: SendAnnouncementInput,
+): Promise<SendAnnouncementResult> {
+  await requireAdmin();
+
+  const message = input.message.trim();
+  if (!message) {
+    return { success: false, error: "Message can't be empty." };
+  }
+  if (!input.postInApp && !input.sendEmail) {
+    return { success: false, error: "Choose at least one channel to send through." };
+  }
+
+  let inAppPosted: boolean | undefined;
+  if (input.postInApp) {
+    await prisma.adminUpdate.create({ data: { message } });
+    revalidatePath("/admin/signals");
+    revalidatePath("/signals");
+    inAppPosted = true;
+  }
+
+  let emailSummary: SendAnnouncementResult["email"];
+  if (input.sendEmail) {
+    const subject = input.subject.trim();
+    if (!subject) {
+      return { success: false, error: "Subject is required to send email." };
+    }
+
+    const recipients = await prisma.subscriber.findMany({
+      where: input.subscriberIds === "all" ? {} : { id: { in: input.subscriberIds } },
+      select: { id: true, name: true, email: true },
+    });
+    const withEmail = recipients.filter((r) => r.email);
+    const skippedNoEmail = recipients.length - withEmail.length;
+
+    let sent = 0;
+    const failedNames: string[] = [];
+    for (const r of withEmail) {
+      const result = await sendAnnouncementEmail({
+        toEmail: r.email!,
+        memberName: r.name,
+        subject,
+        message,
+      });
+      if (result.success) {
+        sent += 1;
+      } else {
+        failedNames.push(r.name);
+      }
+    }
+
+    emailSummary = {
+      attempted: withEmail.length,
+      sent,
+      failed: failedNames.length,
+      skippedNoEmail,
+      failedNames,
+    };
+  }
+
+  return { success: true, inAppPosted, email: emailSummary };
+}

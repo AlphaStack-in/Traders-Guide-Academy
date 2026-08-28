@@ -6,11 +6,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 **[Tech debts](./tech-debt-ledger.html)** — once deployed, also served at `/tech-debt-ledger.html`
 
-Versioning continues the semantic patch series from the SignalFlow template (`1.0.7` → `1.0.8` …). The footer and Admin Changelog page read the current version from `package.json` (now **1.0.35**).
+Versioning continues the semantic patch series from the SignalFlow template (`1.0.7` → `1.0.8` …). The footer and Admin Changelog page read the current version from `package.json` (now **1.0.36**).
 
 Each release header now includes a build timestamp (24-hour IST, matching `build-info.ts`'s `formattedBuildTime`), not just a date — this reflects the actual commit that shipped the version. While adding timestamps, two pre-existing dates were corrected to match their real shipping commit: `1.0.8` (was dated by the TGA fork commit, 3 days before the digest-email feature in that release actually shipped) and `1.0.2` (was off by one day around a just-after-midnight IST commit).
 
 ## [Unreleased]
+
+## [1.0.36] - 2026-08-28 22:09 IST
+
+### Added
+- Admin Registered Members "Announcement" button now actually sends a message, instead of just showing a toast that made it look like it had. Admin can target all members or only the currently selected members
+- New "in-app notification" channel: posts to the existing site-wide notification bell (broadcasts to every member regardless of the selection above it -- the panel says so explicitly so that isn't mistaken for per-member targeting)
+- New "email" channel: sends a real email (via the existing Resend integration used for referral invites) to each targeted member's registered email address, with an editable subject + message
+- The result toast now reports what actually happened -- e.g. "Emailed 8/10 members. 2 skipped (no email on file)." -- instead of a blind success message with no real delivery behind it
+
+### Fixed
+- The "Announcement" button previously only ran `toast.info("Announcement feature development underway.")` on click -- it looked like a real admin action but never reached a single member; this was the actual bug this release fixes
+
+**Not done in this pass:**
+- **WhatsApp channel.** No WhatsApp Business API provider (Meta Cloud API / Twilio / Gupshup / etc.) is configured in this project, so it's out of scope here -- add provider credentials first if you want a real WhatsApp send added later
+- **Per-member targeted in-app notifications.** The in-app channel always broadcasts to every member (it reuses the same `AdminUpdate` mechanism as general admin updates); scoping it to only the selected members would need the notification bell to become subscriber-aware, which today it isn't
+- **Email deliverability.** Reuses the same Resend setup as referral invite emails -- needs `RESEND_API_KEY` set in the deployed environment to actually send (falls back to a console-only dev simulation otherwise, same as the existing invite flow)
 
 ## [1.0.35] - 2026-08-28 20:54 IST
 

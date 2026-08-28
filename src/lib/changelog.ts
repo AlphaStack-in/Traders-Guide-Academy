@@ -31,6 +31,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.36",
+    date: "28 Aug 2026, 22:09 IST",
+    title: "Real Announcement Send (In-App + Email)",
+    highlights: [
+      "Admin \"Announcement\" button now actually sends a message instead of just showing a toast \u2014 target all members or only the currently selected ones",
+      "New in-app channel (posts to the existing notification bell, always all members) and email channel (real Resend send to each targeted member's registered email)",
+      "Result toast reports the real outcome (sent/failed/skipped counts) instead of a blind success message",
+      "WhatsApp send and per-member-targeted in-app notifications are intentionally out of scope for this pass \u2014 see CHANGELOG.md",
+    ],
+  },
+  {
     version: "1.0.35",
     date: "28 Aug 2026, 20:54 IST",
     title: "Tech Debt Ledger Now Lives In The Repo",
