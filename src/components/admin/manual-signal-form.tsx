@@ -4,7 +4,6 @@ import { useState, useEffect, useTransition, useMemo } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -227,177 +226,186 @@ export function ManualSignalForm({ prefilledValues, onSaved, usedStockSymbols = 
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-      {/* 3-COLUMN UNIFORM GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 items-start">
-        {/* ================= COLUMN 1 ================= */}
-        {/* Row 1 Col 1: Strike */}
-        <div className="flex flex-col gap-1.5 w-full">
-          <Label className="text-xs font-semibold text-muted-foreground">Strike</Label>
-          <Input
-            value={form.strike}
-            onChange={(e) => set("strike", e.target.value)}
-            placeholder="24450"
-            className="h-9 text-xs font-mono bg-black/40 border-white/10 focus:border-primary/50 w-full"
-            required
-          />
-        </div>
+      {/* 2-COLUMN TABLE: label left, input/select/combobox right */}
+      <table className="w-full border-collapse text-sm">
+        <colgroup>
+          <col className="w-[38%] sm:w-[32%]" />
+          <col />
+        </colgroup>
+        <tbody>
+          <tr className="border-b border-white/5">
+            <td className="py-2.5 pr-4 align-middle text-xs font-semibold text-muted-foreground">Strike</td>
+            <td className="py-2.5">
+              <Input
+                value={form.strike}
+                onChange={(e) => set("strike", e.target.value)}
+                placeholder="24450"
+                className="h-9 text-xs font-mono bg-black/40 border-white/10 focus:border-primary/50 w-full"
+                required
+              />
+            </td>
+          </tr>
 
-        {/* Row 1 Col 2: Type */}
-        <div className="flex flex-col gap-1.5 w-full">
-          <Label className="text-xs font-semibold text-muted-foreground">Type</Label>
-          <Select value={form.optionType} onValueChange={(v) => set("optionType", v as "CE" | "PE")}>
-            <SelectTrigger className="h-9 text-xs font-mono bg-black/40 border-white/10 w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="bg-[#12131a] border-white/10">
-              <SelectItem value="CE">CE (Call)</SelectItem>
-              <SelectItem value="PE">PE (Put)</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+          <tr className="border-b border-white/5">
+            <td className="py-2.5 pr-4 align-middle text-xs font-semibold text-muted-foreground">Type</td>
+            <td className="py-2.5">
+              <Select value={form.optionType} onValueChange={(v) => set("optionType", v as "CE" | "PE")}>
+                <SelectTrigger className="h-9 text-xs font-mono bg-black/40 border-white/10 w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-[#12131a] border-white/10">
+                  <SelectItem value="CE">CE (Call)</SelectItem>
+                  <SelectItem value="PE">PE (Put)</SelectItem>
+                </SelectContent>
+              </Select>
+            </td>
+          </tr>
 
-        {/* Row 1 Col 3: Instrument */}
-        <div className="flex flex-col gap-1.5 w-full">
-          <Label className="text-xs font-semibold text-muted-foreground">Instrument</Label>
-          <Select
-            value={form.category}
-            onValueChange={(v) => handleCategoryChange(v as ExtendedInstrument)}
-          >
-            <SelectTrigger className="h-9 text-xs font-semibold bg-black/40 border-white/10 w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="bg-[#12131a] border-white/10">
-              <SelectItem value="NIFTY">Nifty</SelectItem>
-              <SelectItem value="SENSEX">Sensex</SelectItem>
-              <SelectItem value="BANK_NIFTY">Bank Nifty</SelectItem>
-              <SelectItem value="MIDCAP_NIFTY">Midcap Nifty</SelectItem>
-              <SelectItem value="STOCK">Stock</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+          <tr className="border-b border-white/5">
+            <td className="py-2.5 pr-4 align-middle text-xs font-semibold text-muted-foreground">Instrument</td>
+            <td className="py-2.5">
+              <Select
+                value={form.category}
+                onValueChange={(v) => handleCategoryChange(v as ExtendedInstrument)}
+              >
+                <SelectTrigger className="h-9 text-xs font-semibold bg-black/40 border-white/10 w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-[#12131a] border-white/10">
+                  <SelectItem value="NIFTY">Nifty</SelectItem>
+                  <SelectItem value="SENSEX">Sensex</SelectItem>
+                  <SelectItem value="BANK_NIFTY">Bank Nifty</SelectItem>
+                  <SelectItem value="MIDCAP_NIFTY">Midcap Nifty</SelectItem>
+                  <SelectItem value="STOCK">Stock</SelectItem>
+                </SelectContent>
+              </Select>
+            </td>
+          </tr>
 
-        {/* ================= COLUMN 2 ================= */}
-        {/* Row 2 Col 1: Entry Price */}
-        <div className="flex flex-col gap-1.5 w-full">
-          <Label className="text-xs font-semibold text-muted-foreground">Entry Price</Label>
-          <Input
-            value={form.entryPrice}
-            onChange={(e) => set("entryPrice", e.target.value)}
-            placeholder="15"
-            className="h-9 text-xs font-mono bg-black/40 border-white/10 focus:border-primary/50 w-full"
-            required
-          />
-        </div>
+          <tr className="border-b border-white/5">
+            <td className="py-2.5 pr-4 align-middle text-xs font-semibold text-muted-foreground">Entry Price</td>
+            <td className="py-2.5">
+              <Input
+                value={form.entryPrice}
+                onChange={(e) => set("entryPrice", e.target.value)}
+                placeholder="15"
+                className="h-9 text-xs font-mono bg-black/40 border-white/10 focus:border-primary/50 w-full"
+                required
+              />
+            </td>
+          </tr>
 
-        {/* Row 2 Col 2: Stop Loss */}
-        <div className="flex flex-col gap-1.5 w-full">
-          <Label className="text-xs font-semibold text-muted-foreground">Stop Loss</Label>
-          <Input
-            value={form.stopLoss}
-            onChange={(e) => set("stopLoss", e.target.value)}
-            placeholder="1"
-            className="h-9 text-xs font-mono bg-black/40 border-white/10 focus:border-primary/50 text-rose-400 w-full"
-            required
-          />
-        </div>
+          <tr className="border-b border-white/5">
+            <td className="py-2.5 pr-4 align-middle text-xs font-semibold text-muted-foreground">Stop Loss</td>
+            <td className="py-2.5">
+              <Input
+                value={form.stopLoss}
+                onChange={(e) => set("stopLoss", e.target.value)}
+                placeholder="1"
+                className="h-9 text-xs font-mono bg-black/40 border-white/10 focus:border-primary/50 text-rose-400 w-full"
+                required
+              />
+            </td>
+          </tr>
 
-        {/* Row 2 Col 3: Target(s) */}
-        <div className="flex flex-col gap-1.5 w-full">
-          <Label className="text-xs font-semibold text-muted-foreground">Target(s)</Label>
-          <Input
-            value={form.targets}
-            onChange={(e) => set("targets", e.target.value)}
-            placeholder="155,170"
-            className="h-9 text-xs font-mono bg-black/40 border-white/10 focus:border-primary/50 text-emerald-400 w-full"
-            required
-          />
-        </div>
+          <tr className="border-b border-white/5">
+            <td className="py-2.5 pr-4 align-middle text-xs font-semibold text-muted-foreground">Target(s)</td>
+            <td className="py-2.5">
+              <Input
+                value={form.targets}
+                onChange={(e) => set("targets", e.target.value)}
+                placeholder="155,170"
+                className="h-9 text-xs font-mono bg-black/40 border-white/10 focus:border-primary/50 text-emerald-400 w-full"
+                required
+              />
+            </td>
+          </tr>
 
-        {/* ================= COLUMN 3 ================= */}
-        {/* Row 3 Col 1: CMP (Optional) — already falls back to Entry Price
-            when left blank (see handleSubmit's priceAtSignalVal); this just
-            makes that explicit in the label, matching Sell Price below. */}
-        <div className="flex flex-col gap-1.5 w-full">
-          <Label className="text-xs font-semibold text-muted-foreground">CMP (Optional)</Label>
-          <Input
-            value={form.priceAtSignal}
-            onChange={(e) => set("priceAtSignal", e.target.value)}
-            placeholder="Defaults to Entry Price"
-            className="h-9 text-xs font-mono bg-black/40 border-white/10 focus:border-primary/50 w-full"
-          />
-        </div>
+          <tr className="border-b border-white/5">
+            <td className="py-2.5 pr-4 align-middle text-xs font-semibold text-muted-foreground">CMP (Optional)</td>
+            <td className="py-2.5">
+              <Input
+                value={form.priceAtSignal}
+                onChange={(e) => set("priceAtSignal", e.target.value)}
+                placeholder="Defaults to Entry Price"
+                className="h-9 text-xs font-mono bg-black/40 border-white/10 focus:border-primary/50 w-full"
+              />
+            </td>
+          </tr>
 
-        {/* Row 3 Col 2: Sell Price (Optional) */}
-        <div className="flex flex-col gap-1.5 w-full">
-          <Label className="text-xs font-semibold text-muted-foreground">Sell Price (Optional)</Label>
-          <Input
-            value={form.sellPrice}
-            onChange={(e) => set("sellPrice", e.target.value)}
-            placeholder="Optional"
-            className="h-9 text-xs font-mono bg-black/40 border-white/10 focus:border-primary/50 w-full"
-          />
-        </div>
+          <tr className="border-b border-white/5">
+            <td className="py-2.5 pr-4 align-middle text-xs font-semibold text-muted-foreground">Sell Price (Optional)</td>
+            <td className="py-2.5">
+              <Input
+                value={form.sellPrice}
+                onChange={(e) => set("sellPrice", e.target.value)}
+                placeholder="Optional"
+                className="h-9 text-xs font-mono bg-black/40 border-white/10 focus:border-primary/50 w-full"
+              />
+            </td>
+          </tr>
 
-        {/* Row 3 Col 3: Expiry Date */}
-        <div className="flex flex-col gap-1.5 w-full">
-          <div className="flex items-center justify-between">
-            <Label className="text-xs font-semibold text-muted-foreground">Expiry Date</Label>
-            <span className="text-[10px] text-primary/80 font-normal">AUTO-NEXT</span>
-          </div>
-          <Select
-            value={form.expiry}
-            onValueChange={(v) => set("expiry", v)}
-          >
-            <SelectTrigger className="h-9 text-xs font-mono bg-black/40 border-white/10 text-primary font-semibold w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="bg-[#12131a] border-white/10">
-              {expiryResult.upcomingExpiries.map((exp) => (
-                <SelectItem key={exp.date} value={exp.date} className="font-mono text-xs">
-                  {exp.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+          <tr className="border-b border-white/5">
+            <td className="py-2.5 pr-4 align-middle text-xs font-semibold text-muted-foreground">
+              <div className="flex items-center justify-between gap-2">
+                <span>Expiry Date</span>
+                <span className="text-[10px] text-primary/80 font-normal">AUTO-NEXT</span>
+              </div>
+            </td>
+            <td className="py-2.5">
+              <Select
+                value={form.expiry}
+                onValueChange={(v) => set("expiry", v)}
+              >
+                <SelectTrigger className="h-9 text-xs font-mono bg-black/40 border-white/10 text-primary font-semibold w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-[#12131a] border-white/10">
+                  {expiryResult.upcomingExpiries.map((exp) => (
+                    <SelectItem key={exp.date} value={exp.date} className="font-mono text-xs">
+                      {exp.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </td>
+          </tr>
 
-        {/* ================= ROW 4 ================= */}
-        {/* Row 4 Col 1: Risk Rating */}
-        <div className="flex flex-col gap-1.5 w-full">
-          <Label className="text-xs font-semibold text-muted-foreground">Risk Rating</Label>
-          <Select
-            value={form.risk}
-            onValueChange={(v) => set("risk", v as "Low" | "Medium" | "High")}
-          >
-            <SelectTrigger className="h-9 text-xs bg-black/40 border-white/10 w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="bg-[#12131a] border-white/10">
-              <SelectItem value="Low">Low Risk</SelectItem>
-              <SelectItem value="Medium">Medium Risk</SelectItem>
-              <SelectItem value="High">High Risk</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+          <tr className={form.category === "STOCK" ? "border-b border-white/5" : undefined}>
+            <td className="py-2.5 pr-4 align-middle text-xs font-semibold text-muted-foreground">Risk Rating</td>
+            <td className="py-2.5">
+              <Select
+                value={form.risk}
+                onValueChange={(v) => set("risk", v as "Low" | "Medium" | "High")}
+              >
+                <SelectTrigger className="h-9 text-xs bg-black/40 border-white/10 w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-[#12131a] border-white/10">
+                  <SelectItem value="Low">Low Risk</SelectItem>
+                  <SelectItem value="Medium">Medium Risk</SelectItem>
+                  <SelectItem value="High">High Risk</SelectItem>
+                </SelectContent>
+              </Select>
+            </td>
+          </tr>
 
-        {/* Row 4 Col 2: Stock Symbol (Only if Stock selected) — free-text
-            combobox: type to filter, pick a suggestion, or type a symbol
-            that isn't on the list at all. Suggestions are this deployment's
-            previously-used symbols first, then a frequently-traded-stocks
-            seed list. */}
-        {form.category === "STOCK" && (
-          <div className="flex flex-col gap-1.5 w-full">
-            <Label className="text-xs font-semibold text-muted-foreground">Stock Symbol</Label>
-            <Combobox
-              value={form.stockSymbol}
-              onChange={handleStockSymbolChange}
-              suggestions={stockSuggestions}
-              placeholder="e.g. RELIANCE"
-              uppercase
-            />
-          </div>
-        )}
-      </div>
+          {form.category === "STOCK" && (
+            <tr>
+              <td className="py-2.5 pr-4 align-middle text-xs font-semibold text-muted-foreground">Stock Symbol</td>
+              <td className="py-2.5">
+                <Combobox
+                  value={form.stockSymbol}
+                  onChange={handleStockSymbolChange}
+                  suggestions={stockSuggestions}
+                  placeholder="e.g. RELIANCE"
+                  uppercase
+                />
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
 
       {/* LEFT-ALIGNED [ Send Signal ] BUTTON WITH MATCHING SIZE, TEXT, & ICON */}
       <div className="pt-2 flex justify-start">

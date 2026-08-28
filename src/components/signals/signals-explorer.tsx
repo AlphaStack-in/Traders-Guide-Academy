@@ -21,6 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { INSTRUMENTS, INSTRUMENT_LABEL, type InstrumentLiteral } from "@/lib/instruments";
+import { computeDisplayStatus } from "@/lib/signal-metrics";
 import {
   computeBoundaries,
   matchesDateFilter,
@@ -56,14 +57,6 @@ export interface SignalRow {
   confidence?: string | null;
   parserName?: string | null;
 }
-
-const STATUS_LABEL: Record<SignalRow["status"], string> = {
-  OPEN: "Open*",
-  TARGET_HIT: "Target Hit",
-  SL_HIT: "SL Hit",
-  CLOSED_MANUAL: "Closed",
-  EXPIRED: "Expired",
-};
 
 type OptionFilter = "ALL" | "CE" | "PE";
 type InstrumentFilter = "ALL" | InstrumentLiteral;
@@ -388,7 +381,7 @@ export function SignalsExplorer({
                           : "—"}
                       </TableCell>
                       <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
-                        {STATUS_LABEL[signal.status]}
+                        {computeDisplayStatus(signal)}
                       </TableCell>
                     </TableRow>
                   );

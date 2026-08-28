@@ -261,9 +261,14 @@ model Referral {
 // bell — Signal.adminNote only holds the current note, this is the history.
 model AdminUpdate {
   id         String      @id @default(uuid())
-  signalId   String
-  strike     Int
-  optionType OptionType
+  // Null when this is a general broadcast update posted independent of any
+  // specific signal (e.g. admin has something to tell subscribers even
+  // though no trade is currently ongoing) — see postGeneralAdminUpdate in
+  // src/app/admin/(protected)/signals/actions.ts. Non-null rows keep their
+  // original per-signal meaning (new signal, admin note, target hit, etc).
+  signalId   String?
+  strike     Int?
+  optionType OptionType?
   message    String
   createdAt  DateTime    @default(now())
   instrument Instrument?

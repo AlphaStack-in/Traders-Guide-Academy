@@ -151,6 +151,16 @@ EXPIRY 18th aug`}
               Save applies every change at once, including a sell price if you set one there.
               Delete requires clicking twice within a few seconds (a safety confirm, not a typo).
             </p>
+            <p className="mt-2">
+              The <span className="font-semibold text-foreground">Admin Updates</span> panel next
+              to the risk/reward chart isn&apos;t limited to trades that are currently open — type
+              into the box above it and click{" "}
+              <span className="font-semibold text-foreground">Post Update</span> to send a general
+              message to subscribers (e.g. &quot;no signals today, market holiday&quot;) even when
+              nothing is ongoing. It shows up there and on the public Trade Log page&apos;s same
+              panel, tagged <span className="italic">General</span> rather than a specific
+              instrument.
+            </p>
           </Section>
 
           <Section id="all-signals" title="All Signals table & filters">
@@ -164,7 +174,14 @@ EXPIRY 18th aug`}
               <Link href="/signals" className="text-primary underline underline-offset-2">
                 Signals
               </Link>{" "}
-              page shows subscribers, just with edit/close controls available here.
+              page shows subscribers, just with edit/close controls available here. Its Status
+              column shows exactly which target closed the trade (
+              <span className="font-semibold text-foreground">T1 Hit</span>,{" "}
+              <span className="font-semibold text-foreground">T2 Hit</span>, and so on, when there
+              was more than one target to tell apart) rather than a flat &quot;Target Hit&quot;,
+              and a manual exit that was still in profit shows as{" "}
+              <span className="font-semibold text-foreground">Partial Profit</span> instead of a
+              flat &quot;Closed&quot;.
             </p>
           </Section>
 

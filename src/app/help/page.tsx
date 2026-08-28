@@ -204,8 +204,16 @@ export default function HelpPage() {
                   • <span className="font-semibold text-foreground">Open*</span> — still running
                 </li>
                 <li>
-                  • <span className="font-semibold text-foreground">Target Hit</span> — closed at
-                  a profit target
+                  • <span className="font-semibold text-foreground">T1 Hit</span>,{" "}
+                  <span className="font-semibold text-foreground">T2 Hit</span> (and so on) —
+                  closed at that specific profit target, when the signal had more than one target
+                  to tell apart; shown as just{" "}
+                  <span className="font-semibold text-foreground">Target Hit</span> when there was
+                  only one
+                </li>
+                <li>
+                  • <span className="font-semibold text-foreground">Partial Profit</span> —
+                  manually closed before reaching a full target, but still in profit
                 </li>
                 <li>
                   • <span className="font-semibold text-foreground">SL Hit</span> — closed at
@@ -213,13 +221,19 @@ export default function HelpPage() {
                 </li>
                 <li>
                   • <span className="font-semibold text-foreground">Closed</span> — manually
-                  closed at a different price
+                  closed at breakeven or a loss (without hitting stop-loss)
                 </li>
                 <li>
                   • <span className="font-semibold text-foreground">Expired</span> — reached
                   expiry without being closed
                 </li>
               </ul>
+              <p className="mt-2">
+                Above the table, the{" "}
+                <span className="font-semibold text-foreground">Admin Updates</span> panel shows
+                messages from us — notes on a specific ongoing trade, or a general message (e.g.
+                no signals on a market holiday) even when nothing is currently open.
+              </p>
               <p className="mt-2">
                 The bell icon in the navbar toggles a sound alert that chimes when a new signal is
                 posted or an existing one updates, while you have the site open in a tab.

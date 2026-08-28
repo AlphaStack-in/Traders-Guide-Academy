@@ -9,7 +9,10 @@ import {
   type RangePreset,
   type SignalsDateFilter,
 } from "@/components/admin/manage-signals-filtered-table";
-import { getAdminUpdatesForSignals } from "@/app/admin/(protected)/signals/actions";
+import {
+  getAdminUpdatesForSignals,
+  getGeneralAdminUpdates,
+} from "@/app/admin/(protected)/signals/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -36,6 +39,7 @@ export default async function ManageSignalsPage({
     new Set(signals.map((s) => s.stockSymbol).filter((v): v is string => !!v)),
   ).sort();
   const adminUpdatesMap = await getAdminUpdatesForSignals(allIds);
+  const generalUpdates = await getGeneralAdminUpdates();
 
   const rows: ManageSignalRow[] = signals.map((s) => {
     const updates = adminUpdatesMap[s.id] ?? [];
@@ -88,6 +92,7 @@ export default async function ManageSignalsPage({
       <AddSignalSection defaultOpen={ongoing.length === 0} usedStockSymbols={usedStockSymbols} />
       <OngoingSignals
         signals={ongoing}
+        generalUpdates={generalUpdates}
         editable
         collapsible
         defaultOpen={ongoing.length > 0}

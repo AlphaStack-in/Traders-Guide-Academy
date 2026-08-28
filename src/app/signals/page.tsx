@@ -5,7 +5,10 @@ import { OngoingSignals } from "@/components/signals/ongoing-signals";
 import { SoundAlertToggle } from "@/components/signals/sound-alert-toggle";
 import { RefreshButton } from "@/components/site/refresh-button";
 import { prisma } from "@/lib/prisma";
-import { getAdminUpdatesForSignals } from "@/app/admin/(protected)/signals/actions";
+import {
+  getAdminUpdatesForSignals,
+  getGeneralAdminUpdates,
+} from "@/app/admin/(protected)/signals/actions";
 import type { SignalRow } from "@/components/signals/signals-explorer";
 import {
   RANGE_PRESETS,
@@ -35,6 +38,7 @@ export default async function SignalsPage({
   const signals = await getSignals();
   const allIds = signals.map((s) => s.id);
   const adminUpdatesMap = await getAdminUpdatesForSignals(allIds);
+  const generalUpdates = await getGeneralAdminUpdates();
   const rows: SignalRow[] = signals.map((s) => {
     const updates = adminUpdatesMap[s.id] ?? [];
     return {
@@ -82,7 +86,7 @@ export default async function SignalsPage({
           </div>
         </div>
 
-        <OngoingSignals signals={ongoing} />
+        <OngoingSignals signals={ongoing} generalUpdates={generalUpdates} />
         <SignalsExplorer signals={rows} initialFilter={initialFilter} />
       </main>
       <Footer />

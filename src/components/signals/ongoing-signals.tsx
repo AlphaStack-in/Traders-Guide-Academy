@@ -1,9 +1,12 @@
 "use client";
 
-import { Fragment, useState } from "react";
+import { Fragment, useState, useTransition } from "react";
+import { toast } from "sonner";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { cn, formatSignalDate, formatSignalTime, formatUpdateTime } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { PlaceOrderTrigger } from "@/components/account/place-order-trigger";
 import { OrderExpansionPanel } from "@/components/account/order-expansion-panel";
 import {
@@ -19,8 +22,69 @@ import { ManageSignalsTable } from "@/components/admin/manage-signals-table";
 import type { SignalRow } from "@/components/signals/signals-explorer";
 import { INSTRUMENT_LABEL } from "@/lib/instruments";
 import { getActiveOrderBroker } from "@/lib/client-config";
+import {
+  postGeneralAdminUpdate,
+  type AdminUpdateItem,
+} from "@/app/admin/(protected)/signals/actions";
 
 const ORDER_BROKER = getActiveOrderBroker();
+
+interface FeedItem {
+  id: string;
+  message: string;
+  createdAt: string;
+  // Null for a general broadcast update (not tied to a specific signal) —
+  // rendered without the instrument/strike tag those carry.
+  context: string | null;
+}
+
+// Small always-available composer for posting a general "Admin Updates"
+// message that isn't tied to any specific signal — usable even when there
+// are zero ongoing trades, unlike the per-signal admin note field on
+// Manage Signals which requires an actual open trade to attach to.
+function GeneralUpdateComposer() {
+  const [message, setMessage] = useState("");
+  const [isPending, startTransition] = useTransition();
+
+  function handlePost() {
+    const trimmed = message.trim();
+    if (!trimmed) {
+      toast.error("Type a message first.");
+      return;
+    }
+    startTransition(async () => {
+      const result = await postGeneralAdminUpdate(trimmed);
+      if (result.success) {
+        toast.success("Posted — visible under Admin Updates.");
+        setMessage("");
+      } else {
+        toast.error(result.error ?? "Failed to post update.");
+      }
+    });
+  }
+
+  return (
+    <div className="mb-2.5 flex flex-col gap-1.5 border-b border-white/5 pb-2.5">
+      <Textarea
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        placeholder="Post an update visible to subscribers (e.g. no signals today, market holiday)…"
+        className="min-h-[52px] text-xs bg-black/40 border-white/10 focus:border-primary/50"
+      />
+      <div className="flex justify-end">
+        <Button
+          type="button"
+          size="sm"
+          onClick={handlePost}
+          disabled={isPending}
+          className="h-7 signalflow-glow signalflow-btn-gradient px-3 text-[11px]"
+        >
+          {isPending ? "Posting…" : "Post Update"}
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 function instrumentPrefix(signal: SignalRow) {
   return signal.instrument ? `${INSTRUMENT_LABEL[signal.instrument]} ` : "";
@@ -44,11 +108,16 @@ function toRiskReward(signal: SignalRow) {
 
 export function OngoingSignals({
   signals,
+  generalUpdates = [],
   editable = false,
   collapsible = false,
   defaultOpen = true,
 }: {
   signals: SignalRow[];
+  // Broadcast admin updates not tied to any specific signal (see
+  // postGeneralAdminUpdate) — shown in the "Admin Updates" panel alongside
+  // per-signal updates, regardless of how many trades are ongoing.
+  generalUpdates?: AdminUpdateItem[];
   editable?: boolean;
   collapsible?: boolean;
   defaultOpen?: boolean;
@@ -83,6 +152,35 @@ export function OngoingSignals({
   const avgLoss = chartData.length
     ? chartData.reduce((sum, d) => sum + d.lossPercent, 0) / chartData.length
     : 0;
+
+  // "Admin Updates" feed: general broadcast updates (no specific signal)
+  // merged with each ongoing signal's own updates/note, newest first
+  // overall — this used to be per-signal boxes only, which meant a message
+  // with no signal attached had nowhere to go.
+  const generalFeedItems: FeedItem[] = generalUpdates.map((u) => ({
+    id: u.id,
+    message: u.message,
+    createdAt: u.createdAt,
+    context: null,
+  }));
+  const perSignalFeedItems: FeedItem[] = signals.flatMap((signal) => {
+    const updates =
+      signal.adminUpdates && signal.adminUpdates.length > 0
+        ? signal.adminUpdates
+        : signal.adminNote
+          ? [{ id: signal.id, message: signal.adminNote, createdAt: signal.adminNoteAt ?? signal.signalTime }]
+          : [];
+    const context = `${instrumentPrefix(signal)}${signal.strike} ${signal.optionType}`;
+    return updates.map((u, idx) => ({
+      id: u.id || `${signal.id}-note-${idx}`,
+      message: u.message,
+      createdAt: u.createdAt,
+      context,
+    }));
+  });
+  const feedItems = [...generalFeedItems, ...perSignalFeedItems].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
 
   return (
     <div className="signalflow-glass signalflow-neutral-border mb-8 rounded-2xl border p-4 sm:p-6">
@@ -186,50 +284,37 @@ export function OngoingSignals({
         </div>
 
         <div className="rounded-xl border border-white/5 bg-black/10 p-3 lg:flex lg:h-full lg:flex-col">
-          {signals.some((signal) => (signal.adminUpdates && signal.adminUpdates.length > 0) || signal.adminNote) ? (
-            <div className="flex w-full flex-col gap-3">
-              {signals
-                .filter((signal) => (signal.adminUpdates && signal.adminUpdates.length > 0) || signal.adminNote)
-                .map((signal) => {
-                  const updates =
-                    signal.adminUpdates && signal.adminUpdates.length > 0
-                      ? signal.adminUpdates
-                      : signal.adminNote
-                        ? [{ id: signal.id, message: signal.adminNote, createdAt: signal.adminNoteAt ?? signal.signalTime }]
-                        : [];
-                  return (
-                    <div
-                      key={signal.id}
-                      className="signalflow-glass rounded-xl border border-primary/20 bg-primary/5 p-3"
-                    >
-                      <div className="mb-2 flex items-center justify-between gap-2 border-b border-white/5 pb-1.5">
-                        <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                          Update on {instrumentPrefix(signal)}{signal.strike} {signal.optionType}
-                        </p>
-                      </div>
-                      <div className="max-h-[240px] overflow-y-auto pr-1 flex flex-col gap-2.5">
-                        {updates.map((update, idx) => (
-                          <div key={update.id || idx} className={cn(idx > 0 && "border-t border-white/5 pt-2")}>
-                            <div className="flex items-start justify-between gap-2">
-                              <p className="whitespace-pre-line text-xs text-foreground/90">
-                                {update.message}
-                              </p>
-                              <p className="shrink-0 text-xs text-muted-foreground pt-0.5">
-                                {formatUpdateTime(update.createdAt)}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+          <div className="mb-2 flex items-center justify-between gap-2 border-b border-white/5 pb-1.5">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Admin Updates
+            </p>
+          </div>
+
+          {editable && <GeneralUpdateComposer />}
+
+          {feedItems.length > 0 ? (
+            <div className="max-h-[240px] overflow-y-auto pr-1 flex flex-col gap-2.5">
+              {feedItems.map((item, idx) => (
+                <div key={item.id} className={cn(idx > 0 && "border-t border-white/5 pt-2")}>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex flex-col gap-0.5">
+                      <p className="text-[10px] font-semibold signalflow-gold-text">
+                        {item.context ?? "General"}
+                      </p>
+                      <p className="whitespace-pre-line text-xs text-foreground/90">
+                        {item.message}
+                      </p>
                     </div>
-                  );
-                })}
+                    <p className="shrink-0 text-xs text-muted-foreground pt-0.5">
+                      {formatUpdateTime(item.createdAt)}
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
-            <div className="flex h-[140px] w-full flex-col items-center justify-center gap-1 text-center lg:h-full">
-              <p className="text-xs text-muted-foreground">
-                No admin updates on open trades yet.
-              </p>
+            <div className="flex flex-1 w-full flex-col items-center justify-center gap-1 text-center">
+              <p className="text-xs text-muted-foreground">No admin updates yet.</p>
             </div>
           )}
         </div>

@@ -32,6 +32,7 @@ import {
   type SignalUpdateInput,
 } from "@/app/admin/(protected)/signals/actions";
 import { INSTRUMENTS, INSTRUMENT_LABEL, type InstrumentLiteral } from "@/lib/instruments";
+import { computeDisplayStatus } from "@/lib/signal-metrics";
 
 export interface ManageSignalRow {
   id: string;
@@ -55,14 +56,6 @@ export interface ManageSignalRow {
   confidence?: string | null;
   parserName?: string | null;
 }
-
-const STATUS_LABEL: Record<ManageSignalRow["status"], string> = {
-  OPEN: "Open*",
-  TARGET_HIT: "Target Hit",
-  SL_HIT: "SL Hit",
-  CLOSED_MANUAL: "Closed",
-  EXPIRED: "Expired",
-};
 
 function CloseTradeCell({ signal }: { signal: ManageSignalRow }) {
   const [sellPrice, setSellPrice] = useState("");
@@ -380,7 +373,7 @@ function ManageSignalRowItem({ signal }: { signal: ManageSignalRow }) {
           : "—"}
       </TableCell>
       <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
-        {STATUS_LABEL[signal.status]}
+        {computeDisplayStatus(signal)}
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-1.5">

@@ -31,6 +31,31 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.30",
+    date: "28 Aug 2026, 17:50 IST",
+    title: "Admin Updates Without an Open Trade & Richer Status Labels",
+    highlights: [
+      "Admin can now post a general \"Admin Updates\" message to subscribers even when there's no ongoing trade — the update panel is no longer tied to an open signal, and now shows a single combined, newest-first feed",
+      "\"All Signals\" Status column now shows which target was hit (\"T1 Hit\", \"T2 Hit\", …) and distinguishes a still-profitable manual exit (\"Partial Profit\") from a flat \"Closed\"",
+    ],
+  },
+  {
+    version: "1.0.29",
+    date: "28 Aug 2026, 17:37 IST",
+    title: "Manual Signal Entry — 2-Column Table Layout",
+    highlights: [
+      "Manual Signal Entry now lays out every field as a 2-column table (label on the left, the input/select/combobox on the right) instead of the previous 3-column card grid — same fields, same order, same behavior, just a cleaner scan-down layout",
+    ],
+  },
+  {
+    version: "1.0.28",
+    date: "28 Aug 2026, 17:27 IST",
+    title: "Insert Sample Signal Updated to TGA's Real Format",
+    highlights: [
+      "\"Insert Sample Signal\" on Parse Signal now prefills TGA's actual signal format (ABOVE range, slash-separated points-based targets, SL-, EXPIRY) instead of the older generic single-line example — parses HIGH confidence with no warnings",
+    ],
+  },
+  {
     version: "1.0.27",
     date: "28 Aug 2026, 07:27 IST",
     title: "Subscriber Help Manual & Admin Manual",

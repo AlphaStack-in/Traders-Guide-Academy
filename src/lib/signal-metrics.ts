@@ -37,6 +37,38 @@ export function deriveStatus(input: {
   return "CLOSED_MANUAL";
 }
 
+// Turns the 5-value SignalStatus enum into the more specific label shown
+// in the "All Signals" tables (admin Manage Signals + subscriber Trade
+// Log): TARGET_HIT becomes "T1 Hit"/"T2 Hit" (via inferHitTargetLabel)
+// instead of a flat "Target Hit" whenever there's more than one target to
+// disambiguate, and CLOSED_MANUAL becomes "Partial Profit" when the exit
+// was still in profit (didn't reach a full target, but wasn't a loss
+// either) instead of a flat "Closed" that hid that distinction.
+export function computeDisplayStatus(input: {
+  status: SignalStatus;
+  targets: number[];
+  sellPrice: number | null | undefined;
+  pnlPercent: number | null | undefined;
+}): string {
+  const { status, targets, sellPrice, pnlPercent } = input;
+  switch (status) {
+    case "OPEN":
+      return "Open*";
+    case "SL_HIT":
+      return "SL Hit";
+    case "EXPIRED":
+      return "Expired";
+    case "TARGET_HIT": {
+      const targetLabel = sellPrice != null ? inferHitTargetLabel(targets, sellPrice) : null;
+      return targetLabel ? `${targetLabel} Hit` : "Target Hit";
+    }
+    case "CLOSED_MANUAL":
+      return pnlPercent != null && pnlPercent > 0 ? "Partial Profit" : "Closed";
+    default:
+      return status;
+  }
+}
+
 // There's no stored "which target" field — targets are entered in order
 // (T1, T2, ...) so this infers the label positionally by finding the
 // closest target to the actual sell price. Best-effort, not authoritative.

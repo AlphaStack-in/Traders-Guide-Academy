@@ -4,11 +4,31 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-Versioning continues the semantic patch series from the SignalFlow template (`1.0.7` → `1.0.8` …). The footer and Admin Changelog page read the current version from `package.json` (now **1.0.27**).
+Versioning continues the semantic patch series from the SignalFlow template (`1.0.7` → `1.0.8` …). The footer and Admin Changelog page read the current version from `package.json` (now **1.0.30**).
 
 Each release header now includes a build timestamp (24-hour IST, matching `build-info.ts`'s `formattedBuildTime`), not just a date — this reflects the actual commit that shipped the version. While adding timestamps, two pre-existing dates were corrected to match their real shipping commit: `1.0.8` (was dated by the TGA fork commit, 3 days before the digest-email feature in that release actually shipped) and `1.0.2` (was off by one day around a just-after-midnight IST commit).
 
 ## [Unreleased]
+
+## [1.0.30] - 2026-08-28 17:50 IST
+
+### Added
+- Admin can now post a general "Admin Updates" message to subscribers even when there's no ongoing trade — the update panel on Manage Signals and the public Trade Log page is no longer tied to an open signal
+- Requires a schema migration (`AdminUpdate.signalId`/`strike`/`optionType` are now nullable) — see handoff doc
+
+### Changed
+- "All Signals" Status column (both admin Manage Signals and the subscriber Trade Log) now shows which target was hit ("T1 Hit", "T2 Hit", …) instead of a flat "Target Hit", and a still-profitable manual exit shows "Partial Profit" instead of a flat "Closed"
+- The Ongoing Trades panel's update card is now labeled "Admin Updates" and shows a single combined, newest-first feed (general + per-signal) instead of separate per-signal boxes
+
+## [1.0.29] - 2026-08-28 17:37 IST
+
+### Changed
+- Manual Signal Entry now lays out its fields as a 2-column table (label on the left, the actual input/select/combobox on the right) instead of the previous 3-column card grid — same fields, same order, same behavior
+
+## [1.0.28] - 2026-08-28 17:27 IST
+
+### Changed
+- "Insert Sample Signal" on Parse Signal now prefills TGA's actual signal format (ABOVE range, slash-separated points-based targets, SL-, EXPIRY) instead of the older generic single-line example
 
 ## [1.0.27] - 2026-08-28 07:27 IST
 

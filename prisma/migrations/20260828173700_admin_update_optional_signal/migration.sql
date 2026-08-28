@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "AdminUpdate" ALTER COLUMN "signalId" DROP NOT NULL,
+ALTER COLUMN "strike" DROP NOT NULL,
+ALTER COLUMN "optionType" DROP NOT NULL;

@@ -21,7 +21,11 @@ import { nextWeeklyExpiry } from "@/lib/expiry";
 import { Sparkles, ArrowDown, CheckCircle2, AlertTriangle, ShieldCheck, Zap } from "lucide-react";
 import { INSTRUMENTS, type InstrumentLiteral } from "@/lib/instruments";
 
-const SAMPLE_SIGNAL_TEMPLATE = "NIFTY 24450 PE BUY ABOVE 15 SL 1 TARGETS 155,170";
+const SAMPLE_SIGNAL_TEMPLATE = `BUY #NIFTY 24300 CE
+ABOVE 160-170
+TARGET- 18/40/80/150 POINT
+SL-145
+EXPIRY 18th Aug`;
 
 export function AddSignalForm({ usedStockSymbols = [] }: { usedStockSymbols?: string[] }) {
   const [rawText, setRawText] = useState("");

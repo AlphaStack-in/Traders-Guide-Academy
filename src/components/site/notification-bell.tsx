@@ -22,9 +22,13 @@ const POLL_INTERVAL_MS = 20_000;
 
 interface UpdateItem {
   id: string;
-  signalId: string;
-  strike: number;
-  optionType: string;
+  // Null for a general broadcast update posted with no specific signal
+  // attached (see postGeneralAdminUpdate) — grouped together under a
+  // synthetic "general" key by groupBySignal below, since there's no real
+  // per-signal identity to group them by.
+  signalId: string | null;
+  strike: number | null;
+  optionType: string | null;
   instrument: InstrumentLiteral | null;
   message: string;
   createdAt: string;
@@ -77,15 +81,18 @@ function dayLabel(iso: string): string {
   });
 }
 
+const GENERAL_GROUP_KEY = "general";
+
 function groupBySignal(items: UpdateItem[], readIds: Set<string>): SignalGroup[] {
   const order: string[] = [];
   const bySignal = new Map<string, UpdateItem[]>();
   for (const item of items) {
-    if (!bySignal.has(item.signalId)) {
-      order.push(item.signalId);
-      bySignal.set(item.signalId, []);
+    const key = item.signalId ?? GENERAL_GROUP_KEY;
+    if (!bySignal.has(key)) {
+      order.push(key);
+      bySignal.set(key, []);
     }
-    bySignal.get(item.signalId)!.push(item);
+    bySignal.get(key)!.push(item);
   }
   return order.map((signalId) => {
     const newestFirst = bySignal.get(signalId)!;
@@ -99,6 +106,7 @@ function groupBySignal(items: UpdateItem[], readIds: Set<string>): SignalGroup[]
 }
 
 function signalLabel(item: UpdateItem) {
+  if (item.signalId == null) return "General Update";
   return `${item.instrument ? `${INSTRUMENT_LABEL[item.instrument]} ` : ""}${item.strike} ${item.optionType}`;
 }
 
@@ -343,7 +351,7 @@ export function NotificationBell() {
                             {group.latest.message}
                           </p>
                         )}
-                        {ORDER_BROKER && (
+                        {ORDER_BROKER && group.latest.signalId != null && (
                           <div className="mt-2 flex flex-col gap-2">
                             <div className="flex justify-end">
                               <PlaceOrderTrigger

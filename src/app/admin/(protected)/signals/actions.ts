@@ -269,6 +269,11 @@ export async function getAdminUpdatesForSignals(
 
   const map: Record<string, AdminUpdateItem[]> = {};
   for (const u of updates) {
+    // Guaranteed non-null here — the where clause only ever matches rows
+    // whose signalId is one of the real ids passed in — but signalId is
+    // nullable at the schema level now (see postGeneralAdminUpdate), so TS
+    // needs the guard.
+    if (!u.signalId) continue;
     if (!map[u.signalId]) {
       map[u.signalId] = [];
     }
@@ -279,6 +284,46 @@ export async function getAdminUpdatesForSignals(
     });
   }
   return map;
+}
+
+// General broadcast updates — posted independent of any signal (see
+// postGeneralAdminUpdate below) — for the "Admin Updates" panel shown on
+// both the admin Manage Signals page and the public Trade Log page, so
+// admin can message subscribers even when there's no ongoing trade to
+// attach a note to.
+export async function getGeneralAdminUpdates(limit = 50): Promise<AdminUpdateItem[]> {
+  const updates = await prisma.adminUpdate.findMany({
+    where: { signalId: null },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+  });
+
+  return updates.map((u) => ({
+    id: u.id,
+    message: u.message,
+    createdAt: u.createdAt.toISOString(),
+  }));
+}
+
+export async function postGeneralAdminUpdate(message: string) {
+  await requireAdmin();
+
+  const trimmed = message.trim();
+  if (!trimmed) {
+    return { success: false, error: "Message can't be empty." };
+  }
+
+  // signalId/strike/optionType/instrument are left null on purpose — this
+  // is a general note to subscribers, not tied to any specific trade (see
+  // the AdminUpdate model comment in schema.prisma).
+  await prisma.adminUpdate.create({
+    data: { message: trimmed },
+  });
+
+  revalidatePath("/admin/signals");
+  revalidatePath("/signals");
+
+  return { success: true };
 }
 
 // Latest AdminUpdate.createdAt per signal — used by the Ongoing Trades
