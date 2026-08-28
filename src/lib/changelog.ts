@@ -31,6 +31,40 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.34",
+    date: "28 Aug 2026, 20:31 IST",
+    title: "Admin Can Now Set A Subscriber's Password",
+    highlights: [
+      "Registered Members panel: new \"Set password\" action on each subscriber row — sets a new password (min. 6 characters) directly from the admin panel instead of requiring a developer to run a script by hand",
+      "The confirmation message reminds the admin to share the new password with the subscriber directly — there's still no self-service reset flow",
+    ],
+  },
+  {
+    version: "1.0.33",
+    date: "28 Aug 2026, 18:28 IST",
+    title: "Sample Signal's Expiry Is Now Always Current",
+    highlights: [
+      "\"Insert Sample Signal\" now names NIFTY's actual next weekly expiry (computed fresh each time) instead of a fixed \"18th Aug\" — it always parses cleanly with HIGH confidence, no matter what today's date is",
+    ],
+  },
+  {
+    version: "1.0.32",
+    date: "28 Aug 2026, 18:23 IST",
+    title: "Expiry Parsing Fix & Parser Badge Removed",
+    highlights: [
+      "Signal parser: a written expiry with no year that had already passed (e.g. \"EXPIRY 18th Aug\" parsed after that date) used to resolve to a whole year later instead of being recognized as stale — it's now reported as unparsed and falls back to the next weekly expiry, so Expiry Date never ends up blank",
+      "Removed the \"Parser: TGA\" chip from Parse Signal's parsed-result badges — internal detail, not needed on every parsed signal",
+    ],
+  },
+  {
+    version: "1.0.31",
+    date: "28 Aug 2026, 18:03 IST",
+    title: "Manual Signal Entry — Stock Symbol Moved Up Next To Instrument",
+    highlights: [
+      "Stock Symbol now appears directly below Instrument (instead of at the bottom, after Risk Rating) when Instrument is set to Stock — matches the order you'd actually fill the form in",
+    ],
+  },
+  {
     version: "1.0.30",
     date: "28 Aug 2026, 17:50 IST",
     title: "Admin Updates Without an Open Trade & Richer Status Labels",

@@ -32,6 +32,14 @@ export default function AdminChangelogPage() {
           <p className="mt-1 text-sm text-muted-foreground">
             Complete chronological deployment audit log &amp; revision history for SignalFlow.
           </p>
+          <a
+            href="https://claude.ai/code/artifact/ed6bf353-3c2d-4a12-9733-c26eb46c1a9f"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-1 inline-flex w-fit items-center gap-1 text-xs font-medium text-primary hover:underline"
+          >
+            Tech debts &#8599;
+          </a>
         </div>
 
         {/* Current Deployed Build Card */}

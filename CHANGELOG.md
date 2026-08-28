@@ -4,11 +4,36 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-Versioning continues the semantic patch series from the SignalFlow template (`1.0.7` → `1.0.8` …). The footer and Admin Changelog page read the current version from `package.json` (now **1.0.30**).
+**[Tech debts](https://claude.ai/code/artifact/ed6bf353-3c2d-4a12-9733-c26eb46c1a9f)**
+
+Versioning continues the semantic patch series from the SignalFlow template (`1.0.7` → `1.0.8` …). The footer and Admin Changelog page read the current version from `package.json` (now **1.0.34**).
 
 Each release header now includes a build timestamp (24-hour IST, matching `build-info.ts`'s `formattedBuildTime`), not just a date — this reflects the actual commit that shipped the version. While adding timestamps, two pre-existing dates were corrected to match their real shipping commit: `1.0.8` (was dated by the TGA fork commit, 3 days before the digest-email feature in that release actually shipped) and `1.0.2` (was off by one day around a just-after-midnight IST commit).
 
 ## [Unreleased]
+
+## [1.0.34] - 2026-08-28 20:31 IST
+
+### Added
+- Admin Registered Members panel: new "Set password" action on each subscriber row, wired to the existing `setSubscriberPassword` server action. No more running a script by hand to reset a subscriber's password — the admin sets a new one (min. 6 characters) directly in the panel and shares it with the subscriber themselves; there's still no self-service reset flow, and the confirmation toast says so explicitly
+
+## [1.0.33] - 2026-08-28 18:28 IST
+
+### Changed
+- "Insert Sample Signal" now names NIFTY's actual next weekly expiry (computed fresh each time) instead of a fixed "18th Aug" — it always parses cleanly with HIGH confidence, no matter what today's date is
+
+## [1.0.32] - 2026-08-28 18:23 IST
+
+### Fixed
+- Signal parser: a written expiry with no year (e.g. "EXPIRY 18th Aug") that had already passed used to silently resolve to a whole year later — a date that can never be a real tradable contract, and the Manual Signal Entry Expiry Date dropdown would end up blank because nothing in the near-term list matched it. It now only resolves to this year or next year when that lands within a near-term (~45 day) window; otherwise it's reported as unparsed and the form falls back to the next weekly expiry, same as when no expiry is written at all
+
+### Changed
+- Parse Signal: removed the "Parser: TGA" chip from the parsed-result badges row — internal detail, not something the admin needs to see on every parsed signal
+
+## [1.0.31] - 2026-08-28 18:03 IST
+
+### Changed
+- Manual Signal Entry: Stock Symbol row now appears directly below Instrument (instead of at the bottom, after Risk Rating) when Instrument is set to Stock — matches the order you'd actually fill the form in
 
 ## [1.0.30] - 2026-08-28 17:50 IST
 

@@ -42,14 +42,38 @@ function formatISODate(year: number, monthIndex: number, day: number): string {
   return `${year}-${String(monthIndex + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
-// A written date with no year ("18th Aug") is assumed to be the next
-// occurrence of that day/month from `now` — i.e. this year unless that date
-// has already passed, in which case next year. Options signals are always
-// forward-looking, so a resolved date in the past would be nonsensical.
-function resolveYear(monthIndex: number, day: number, now: Date): number {
-  const year = now.getFullYear();
+// Options expiries are always near-term (weekly/monthly, at most a few
+// weeks out) — so a written day/month with no year ("18th Aug") should
+// only ever resolve to whichever of "this year" or "next year" lands
+// within that near-term window, never to a date that's just plain in the
+// past (a stale/leftover date in the signal text, most likely) or a whole
+// year out (which can never be a real tradable contract either way).
+// Returns null rather than guessing wrong when neither fits — the caller
+// then reports the expiry as unparsed instead of confidently returning a
+// date that will never be valid.
+const MAX_EXPIRY_DAYS_OUT = 45;
+
+function resolveNearTermYear(monthIndex: number, day: number, now: Date): number | null {
   const cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
-  return new Date(year, monthIndex, day) < cutoff ? year + 1 : year;
+  const msPerDay = 24 * 60 * 60 * 1000;
+
+  const thisYear = now.getFullYear();
+  const thisYearDate = new Date(thisYear, monthIndex, day);
+  if (thisYearDate >= cutoff) {
+    const daysOut = (thisYearDate.getTime() - now.getTime()) / msPerDay;
+    if (daysOut <= MAX_EXPIRY_DAYS_OUT) return thisYear;
+  }
+
+  // This year's occurrence has already passed (or is too far out to be
+  // "this year" in a useful sense) — only accept next year's occurrence if
+  // that's actually near-term too, i.e. we're close to a year boundary
+  // (e.g. a late-December signal naming an early-January expiry).
+  const nextYear = thisYear + 1;
+  const nextYearDate = new Date(nextYear, monthIndex, day);
+  const daysOutNextYear = (nextYearDate.getTime() - now.getTime()) / msPerDay;
+  if (daysOutNextYear >= -1 && daysOutNextYear <= MAX_EXPIRY_DAYS_OUT) return nextYear;
+
+  return null;
 }
 
 function isValidCalendarDate(year: number, monthIndex: number, day: number): boolean {
@@ -71,8 +95,8 @@ function parseExpiry(block: string, now: Date = new Date()): { expiry: string | 
     const day = parseInt(textMatch[1], 10);
     const monthIndex = MONTH_INDEX[textMatch[2].toLowerCase().slice(0, 3)];
     if (monthIndex !== undefined) {
-      const year = resolveYear(monthIndex, day, now);
-      if (isValidCalendarDate(year, monthIndex, day)) {
+      const year = resolveNearTermYear(monthIndex, day, now);
+      if (year != null && isValidCalendarDate(year, monthIndex, day)) {
         return { expiry: formatISODate(year, monthIndex, day), hadExpiryKeyword: true };
       }
     }
@@ -85,8 +109,13 @@ function parseExpiry(block: string, now: Date = new Date()): { expiry: string | 
     const yearRaw = numericMatch[3];
     const year = yearRaw
       ? (yearRaw.length === 2 ? 2000 + parseInt(yearRaw, 10) : parseInt(yearRaw, 10))
-      : resolveYear(monthIndex, day, now);
-    if (monthIndex >= 0 && monthIndex <= 11 && isValidCalendarDate(year, monthIndex, day)) {
+      : resolveNearTermYear(monthIndex, day, now);
+    if (
+      year != null &&
+      monthIndex >= 0 &&
+      monthIndex <= 11 &&
+      isValidCalendarDate(year, monthIndex, day)
+    ) {
       return { expiry: formatISODate(year, monthIndex, day), hadExpiryKeyword: true };
     }
   }

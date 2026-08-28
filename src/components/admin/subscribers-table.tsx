@@ -7,6 +7,7 @@ import {
   ArrowUp,
   ArrowUpDown,
   Download,
+  KeyRound,
   Mail,
   Megaphone,
   MessageSquare,
@@ -41,6 +42,7 @@ import {
   createSubscriber,
   deleteSubscriber,
   inviteSubscriber,
+  setSubscriberPassword,
   updateSubscriber,
   type SubscriberInput,
 } from "@/app/admin/(protected)/subscribers/actions";
@@ -388,10 +390,39 @@ function SubscriberRowItem({
   const [isSaving, startSaving] = useTransition();
   const [isDeleting, startDeleting] = useTransition();
   const [isInviting, startInviting] = useTransition();
+  const [isSettingPassword, setIsSettingPassword] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [isSettingPw, startSettingPw] = useTransition();
 
   function startEdit() {
     setDraft(toDraft(subscriber));
+    setIsSettingPassword(false);
     setIsEditing(true);
+  }
+
+  function startSetPassword() {
+    setNewPassword("");
+    setIsEditing(false);
+    setIsSettingPassword(true);
+  }
+
+  function handleSetPassword() {
+    if (newPassword.length < 6) {
+      toast.error("Password must be at least 6 characters long.");
+      return;
+    }
+    startSettingPw(async () => {
+      const result = await setSubscriberPassword(subscriber.id, newPassword);
+      if (result.success) {
+        toast.success(
+          `Password set for ${subscriber.name}. Share it with them directly — there's no self-service reset.`,
+        );
+        setNewPassword("");
+        setIsSettingPassword(false);
+      } else {
+        toast.error(result.error ?? "Failed to set password.");
+      }
+    });
   }
 
   function handleSave() {
@@ -470,6 +501,64 @@ function SubscriberRowItem({
               className="h-8"
               disabled={isSaving}
               onClick={() => setIsEditing(false)}
+            >
+              <X className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </TableCell>
+      </TableRow>
+    );
+  }
+
+  if (isSettingPassword) {
+    return (
+      <TableRow className="border-b-white/5 bg-white/[0.02]">
+        <TableCell />
+        <TableCell className="whitespace-nowrap text-muted-foreground">
+          {formatSignalDate(subscriber.createdAt)}{" "}
+          <span className="text-xs">{formatSignalTime(subscriber.createdAt)}</span>
+        </TableCell>
+        <TableCell colSpan={6}>
+          <div className="flex items-center gap-2">
+            <Label
+              htmlFor={`new-password-${subscriber.id}`}
+              className="whitespace-nowrap text-xs text-muted-foreground"
+            >
+              New password for {subscriber.name}
+            </Label>
+            <Input
+              id={`new-password-${subscriber.id}`}
+              type="password"
+              autoComplete="new-password"
+              placeholder="Min. 6 characters"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleSetPassword();
+              }}
+              className="h-8 max-w-xs"
+            />
+          </div>
+        </TableCell>
+        <TableCell>
+          <div className="flex items-center gap-1.5">
+            <Button
+              size="sm"
+              className="signalflow-glow signalflow-btn-gradient h-8"
+              disabled={isSettingPw}
+              onClick={handleSetPassword}
+            >
+              {isSettingPw ? "Setting…" : "Set Password"}
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8"
+              disabled={isSettingPw}
+              onClick={() => {
+                setIsSettingPassword(false);
+                setNewPassword("");
+              }}
             >
               <X className="h-3.5 w-3.5" />
             </Button>
@@ -563,6 +652,17 @@ function SubscriberRowItem({
             onClick={startEdit}
           >
             <Pencil className="h-3.5 w-3.5" />
+          </Button>
+
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 w-8 p-0"
+            title="Set password"
+            aria-label="Set password"
+            onClick={startSetPassword}
+          >
+            <KeyRound className="h-3.5 w-3.5" />
           </Button>
 
           <Button

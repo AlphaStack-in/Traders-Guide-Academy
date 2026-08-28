@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ManualSignalForm, type ManualFormValues } from "@/components/admin/manual-signal-form";
-// TGA only ever sends signals in one format (see SAMPLE_SIGNAL_TEMPLATE
+// TGA only ever sends signals in one format (see buildSampleSignalTemplate
 // below) — parseSignalFlowMessage is that format's own dedicated parser.
 // Deliberately NOT importing parseSignalMessage/resolveCustomerParser: those
 // live in src/lib/parsers/resolver.ts and auto-detect between this format
@@ -21,16 +21,45 @@ import { nextWeeklyExpiry } from "@/lib/expiry";
 import { Sparkles, ArrowDown, CheckCircle2, AlertTriangle, ShieldCheck, Zap } from "lucide-react";
 import { INSTRUMENTS, type InstrumentLiteral } from "@/lib/instruments";
 
-const SAMPLE_SIGNAL_TEMPLATE = `BUY #NIFTY 24300 CE
+const MONTH_ABBR = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+
+// "4th", "1st", "22nd", "23rd", "18th" — matches the ordinal suffixes the
+// parser's own EXPIRY_TEXT regex expects (signalflow-parser.ts).
+function ordinal(day: number): string {
+  if (day >= 11 && day <= 13) return `${day}th`;
+  switch (day % 10) {
+    case 1: return `${day}st`;
+    case 2: return `${day}nd`;
+    case 3: return `${day}rd`;
+    default: return `${day}th`;
+  }
+}
+
+// Built fresh each time (not a fixed string) so the sample always names
+// NIFTY's actual next weekly expiry as of today, instead of a hardcoded
+// date that silently goes stale and fails to parse once "today" passes it
+// (see CHANGELOG 1.0.32).
+function buildSampleSignalTemplate(): string {
+  const [, monthStr, dayStr] = nextWeeklyExpiry().split("-");
+  const expiryText = `${ordinal(parseInt(dayStr, 10))} ${MONTH_ABBR[parseInt(monthStr, 10) - 1]}`;
+  return `BUY #NIFTY 24300 CE
 ABOVE 160-170
 TARGET- 18/40/80/150 POINT
 SL-145
-EXPIRY 18th Aug`;
+EXPIRY ${expiryText}`;
+}
 
 export function AddSignalForm({ usedStockSymbols = [] }: { usedStockSymbols?: string[] }) {
   const [rawText, setRawText] = useState("");
   const [parsedResults, setParsedResults] = useState<ParsedSignalDraft[] | null>(null);
   const [prefilledManualForm, setPrefilledManualForm] = useState<Partial<ManualFormValues> | null>(null);
+  // Recomputed on every render (cheap) rather than a fixed module-level
+  // string, so "Insert Sample Signal" always names NIFTY's actual next
+  // weekly expiry as of today — see buildSampleSignalTemplate above.
+  const sampleTemplate = buildSampleSignalTemplate();
 
   function handleParse() {
     if (rawText.trim() === "") {
@@ -105,7 +134,7 @@ export function AddSignalForm({ usedStockSymbols = [] }: { usedStockSymbols?: st
           <div className="flex items-center justify-start">
             <button
               type="button"
-              onClick={() => setRawText(SAMPLE_SIGNAL_TEMPLATE)}
+              onClick={() => setRawText(sampleTemplate)}
               className="text-xs text-primary/90 hover:text-primary underline font-semibold cursor-pointer transition-colors"
             >
               Insert Sample Signal
@@ -114,7 +143,7 @@ export function AddSignalForm({ usedStockSymbols = [] }: { usedStockSymbols?: st
           <Textarea
             value={rawText}
             onChange={(e) => setRawText(e.target.value)}
-            placeholder={`Example: ${SAMPLE_SIGNAL_TEMPLATE}`}
+            placeholder={`Example: ${sampleTemplate}`}
             className="min-h-[95px] font-mono text-sm bg-black/40 border-white/10 focus:border-primary/50"
           />
         </div>
@@ -150,12 +179,11 @@ export function AddSignalForm({ usedStockSymbols = [] }: { usedStockSymbols?: st
                     <span className="font-mono text-base font-bold text-foreground">
                       {parsed.mappedInstrument || parsed.instrument} {parsed.strike} {parsed.optionType}
                     </span>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-primary/20 text-primary border border-primary/30">
-                      {/* Always TGA's own parser now — see the handleParse
-                          comment above. Not reading parsed.parserName here
-                          on purpose, so this can never show "GOODWILL". */}
-                      Parser: TGA
-                    </span>
+                    {/* "Parser: TGA" chip intentionally hidden per admin
+                        request — TGA's admin UI only ever uses its own
+                        parser (see the handleParse comment above), so the
+                        badge was redundant/purely internal, not something
+                        the admin needs surfaced on every parsed signal. */}
                   </div>
 
                   <div className="flex items-center gap-2">

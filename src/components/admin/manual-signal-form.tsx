@@ -282,6 +282,21 @@ export function ManualSignalForm({ prefilledValues, onSaved, usedStockSymbols = 
             </td>
           </tr>
 
+          {form.category === "STOCK" && (
+            <tr className="border-b border-white/5">
+              <td className="py-2.5 pr-4 align-middle text-xs font-semibold text-muted-foreground">Stock Symbol</td>
+              <td className="py-2.5">
+                <Combobox
+                  value={form.stockSymbol}
+                  onChange={handleStockSymbolChange}
+                  suggestions={stockSuggestions}
+                  placeholder="e.g. RELIANCE"
+                  uppercase
+                />
+              </td>
+            </tr>
+          )}
+
           <tr className="border-b border-white/5">
             <td className="py-2.5 pr-4 align-middle text-xs font-semibold text-muted-foreground">Entry Price</td>
             <td className="py-2.5">
@@ -371,7 +386,7 @@ export function ManualSignalForm({ prefilledValues, onSaved, usedStockSymbols = 
             </td>
           </tr>
 
-          <tr className={form.category === "STOCK" ? "border-b border-white/5" : undefined}>
+          <tr>
             <td className="py-2.5 pr-4 align-middle text-xs font-semibold text-muted-foreground">Risk Rating</td>
             <td className="py-2.5">
               <Select
@@ -389,21 +404,6 @@ export function ManualSignalForm({ prefilledValues, onSaved, usedStockSymbols = 
               </Select>
             </td>
           </tr>
-
-          {form.category === "STOCK" && (
-            <tr>
-              <td className="py-2.5 pr-4 align-middle text-xs font-semibold text-muted-foreground">Stock Symbol</td>
-              <td className="py-2.5">
-                <Combobox
-                  value={form.stockSymbol}
-                  onChange={handleStockSymbolChange}
-                  suggestions={stockSuggestions}
-                  placeholder="e.g. RELIANCE"
-                  uppercase
-                />
-              </td>
-            </tr>
-          )}
         </tbody>
       </table>
 
