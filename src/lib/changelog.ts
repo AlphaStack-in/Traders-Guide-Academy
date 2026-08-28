@@ -31,6 +31,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.27",
+    date: "28 Aug 2026, 07:27 IST",
+    title: "Subscriber Help Manual & Admin Manual",
+    highlights: [
+      "New /help page: a step-by-step subscriber manual covering registration, login, how signals actually reach you (WhatsApp/Telegram, not the website), reading the Dashboard and Signals page, managing your profile, Upgrade/Extend, and the full Refer & Earn program — linked from the footer",
+      "New /admin/help page: an admin operator manual covering Parse Signal, Manual Signal Entry, closing/editing Ongoing Trades, Registered Members, Messages, and Referral & Reward Management — linked from the admin nav's Admin menu as \"Manual\"",
+      "Both manuals are scoped to features actually active for this deployment; a couple of real gaps found while writing them (no self-service password reset UI for admins to use on a subscriber's account, no reset-by-email flow) are called out explicitly rather than glossed over",
+    ],
+  },
+  {
     version: "1.0.26",
     date: "27 Aug 2026, 21:32 IST",
     title: "TGA-Only Signal Parser",

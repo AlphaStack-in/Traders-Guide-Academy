@@ -64,6 +64,9 @@ export function Footer() {
             <Link href="/faq" className="hover:text-primary">
               FAQ
             </Link>
+            <Link href="/help" className="hover:text-primary">
+              Help
+            </Link>
             <Link href="/privacy" className="hover:text-primary">
               Privacy Policy
             </Link>
