@@ -8,6 +8,7 @@ import { getCurrentSubscriber } from "@/lib/subscriber-auth";
 import { prisma } from "@/lib/prisma";
 import { clientConfig, type PricingPlan } from "@/lib/client-config";
 import { formatDateOnly, formatFullTimestamp } from "@/lib/utils";
+import type { SubscriptionStatus } from "@prisma/client";
 
 const TIER_ORDER: PricingPlan["id"][] = ["monthly", "quarterly", "yearly"];
 
@@ -35,6 +36,42 @@ export default async function ProfilePage() {
         where: { subscriberId: subscriber.id },
         select: { dhanClientId: true, dhanClientName: true, status: true, tokenExpiresAt: true },
       })
+    : null;
+
+  // Most recent self-service Subscription on record (see
+  // prisma/schema.prisma) — null for a subscriber who has never used the
+  // Cashfree Autopay checkout (still purely on the manual/WhatsApp flow).
+  const latestSubscription = await prisma.subscription.findFirst({
+    where: { subscriberId: subscriber.id },
+    orderBy: { createdAt: "desc" },
+    select: { status: true, currentPeriodEnd: true },
+  });
+
+  const AUTOPAY_STATUS_LABEL: Record<SubscriptionStatus, string> = {
+    CREATED: "Checkout started",
+    AUTHENTICATED: "Authorized — first charge pending",
+    ACTIVE: "Active",
+    PENDING: "Payment retrying",
+    HALTED: "Halted — renew manually",
+    CANCELLED: "Cancelled",
+    COMPLETED: "Completed",
+    EXPIRED: "Expired",
+  };
+  const CANCELLABLE_STATUSES: SubscriptionStatus[] = [
+    "CREATED",
+    "AUTHENTICATED",
+    "ACTIVE",
+    "PENDING",
+    "HALTED",
+  ];
+  const autopay = latestSubscription
+    ? {
+        statusLabel: AUTOPAY_STATUS_LABEL[latestSubscription.status],
+        isActive: CANCELLABLE_STATUSES.includes(latestSubscription.status),
+        periodEndLabel: latestSubscription.currentPeriodEnd
+          ? formatDateOnly(latestSubscription.currentPeriodEnd)
+          : null,
+      }
     : null;
 
   const subscriberPlan = subscriber.billingCycle
@@ -76,6 +113,7 @@ export default async function ProfilePage() {
           currentPlanId={subscriberPlan?.id}
           upgradePlanId={upgradePlanId}
           showUpgrade={showUpgrade}
+          autopay={autopay}
         />
 
         <div className="signalflow-glass signalflow-gold-border flex flex-col gap-3 rounded-2xl border p-5">

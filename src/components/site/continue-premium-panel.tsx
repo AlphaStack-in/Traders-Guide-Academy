@@ -2,9 +2,11 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
+import type { BillingCycle } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { WhatsAppIcon } from "@/components/site/icons";
+import { SubscriptionCheckoutButton } from "@/components/site/subscription-checkout-button";
 import { clientConfig, type PricingPlan } from "@/lib/client-config";
 import { checkExistingMember } from "@/app/register/actions";
 import { cn } from "@/lib/utils";
@@ -14,23 +16,35 @@ function toWhatsAppLink(phone: string, text: string) {
 }
 
 /**
- * Shared "confirm existing membership, then continue via WhatsApp" flow.
- * Used both on the home page pricing section (as "Continue Premium", for a
- * not-yet-identified visitor) and on the account profile page (as "Upgrade"
- * / "Extend" next to the subscriber's current plan — see profile-edit-form.tsx).
- * Payment itself stays manual/off-platform either way; this only gets the
- * right plan + price in front of the payment manager over WhatsApp.
+ * Shared "confirm existing membership, then pay" flow. Used both on the
+ * home page pricing section (as "Continue Premium", for a not-yet-identified
+ * visitor) and on the account profile page (as "Upgrade" / "Extend" next to
+ * the subscriber's current plan — see profile-edit-form.tsx).
+ *
+ * When `authenticated` is true (the profile-page case — the visitor already
+ * has a subscriber session), a real self-service Cashfree Autopay checkout
+ * (SubscriptionCheckoutButton) is the primary action once their membership
+ * is confirmed, with "Continue via WhatsApp" kept as a manual fallback.
+ * When false (the anonymous home-page case), we can't safely start a
+ * billing mandate without knowing who's actually logged in, so the primary
+ * action is "Log in to renew" instead, WhatsApp still offered as a
+ * no-login-required fallback.
  */
 export function ContinuePremiumPanel({
   plans,
   triggerLabel = "Continue Premium",
   defaultPlanId,
   initialPhone = "",
+  authenticated = false,
 }: {
   plans: PricingPlan[];
   triggerLabel?: string;
   defaultPlanId?: PricingPlan["id"];
   initialPhone?: string;
+  /** True when rendered for an already-logged-in subscriber (the account
+   * profile page's Upgrade/Extend buttons) — enables real self-service
+   * checkout instead of just the WhatsApp handoff. */
+  authenticated?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState(
@@ -129,20 +143,57 @@ export function ContinuePremiumPanel({
                 </span>
                 .
               </p>
-              {manager && (
-                <Button asChild size="sm" className="signalflow-glow signalflow-btn-gradient mt-3 w-full">
-                  <a
-                    href={toWhatsAppLink(
-                      manager.phone,
-                      `Hi, I'd like to continue my premium membership on the ${selectedPlan.label} plan at the existing-member price of ₹${selectedPlan.existingMemberPriceInr}.`,
+
+              {authenticated ? (
+                <>
+                  <SubscriptionCheckoutButton
+                    billingCycle={selectedPlan.id.toUpperCase() as BillingCycle}
+                    label={`Pay ₹${selectedPlan.existingMemberPriceInr.toLocaleString("en-IN")} & enable Autopay`}
+                    className="signalflow-btn-gradient mt-3 w-full"
+                    size="sm"
+                  />
+                  <p className="mt-2 text-center text-xs text-muted-foreground">
+                    Autopay charges this amount automatically each {selectedPlan.periodLabel.replace("/", "")} via UPI —
+                    cancel anytime from your account. Prefer to arrange payment manually instead?{" "}
+                    {manager && (
+                      <a
+                        href={toWhatsAppLink(
+                          manager.phone,
+                          `Hi, I'd like to continue my premium membership on the ${selectedPlan.label} plan at the existing-member price of ₹${selectedPlan.existingMemberPriceInr}.`,
+                        )}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary underline underline-offset-2"
+                      >
+                        Continue via WhatsApp
+                      </a>
                     )}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <WhatsAppIcon className="h-4 w-4" />
-                    Continue via WhatsApp
-                  </a>
-                </Button>
+                  </p>
+                </>
+              ) : (
+                <>
+                  <Button asChild size="sm" className="signalflow-glow signalflow-btn-gradient mt-3 w-full">
+                    <Link href="/login?redirectTo=/account/profile">Log in to renew</Link>
+                  </Button>
+                  {manager && (
+                    <p className="mt-2 text-center text-xs text-muted-foreground">
+                      Prefer not to log in?{" "}
+                      <a
+                        href={toWhatsAppLink(
+                          manager.phone,
+                          `Hi, I'd like to continue my premium membership on the ${selectedPlan.label} plan at the existing-member price of ₹${selectedPlan.existingMemberPriceInr}.`,
+                        )}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-primary underline underline-offset-2"
+                      >
+                        <WhatsAppIcon className="h-3.5 w-3.5" />
+                        Continue via WhatsApp
+                      </a>{" "}
+                      instead.
+                    </p>
+                  )}
+                </>
               )}
             </div>
           ) : (

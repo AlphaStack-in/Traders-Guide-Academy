@@ -31,6 +31,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.37",
+    date: "28 Aug 2026, 23:15 IST",
+    title: "Self-Service Plan Upgrade/Renewal (Cashfree Autopay)",
+    highlights: [
+      "Upgrade/Extend buttons on the account profile page now open real in-app checkout (Cashfree UPI Autopay recurring subscriptions) instead of only handing off to WhatsApp \u2014 WhatsApp stays as a manual fallback right below it",
+      "New Subscription/Payment/WebhookEvent tracking, a signature-verified Cashfree webhook, and a live Autopay status column in the admin Members table \u2014 replaces guesswork with a real payment record",
+      "Needs a Cashfree account + a database migration before it's actually live \u2014 see CHANGELOG.md for the exact follow-up steps",
+    ],
+  },
+  {
     version: "1.0.36",
     date: "28 Aug 2026, 22:09 IST",
     title: "Real Announcement Send (In-App + Email)",

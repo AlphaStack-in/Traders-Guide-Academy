@@ -69,6 +69,10 @@ export interface SubscriberRow {
     | "REWARD_CREDITED"
     | "REDEEMED";
   createdAt: string;
+  /** Latest self-service Subscription status label (see prisma/schema.prisma
+   * Subscription.status), or null if this member has never used the
+   * Cashfree Autopay checkout — still on the manual/WhatsApp flow only. */
+  autopayStatus: string | null;
 }
 
 interface MemberDraft {
@@ -798,6 +802,11 @@ function SubscriberRowItem({
       <TableCell>
         <ReferralChip status={subscriber.referralStatus} />
       </TableCell>
+      <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
+        {subscriber.autopayStatus ?? (
+          <span className="text-muted-foreground/50">Manual</span>
+        )}
+      </TableCell>
       <TableCell>
         <div className="flex items-center gap-1">
           <Button
@@ -1143,6 +1152,7 @@ export function SubscribersTable({ subscribers }: { subscribers: SubscriberRow[]
                 <SortableHead label="Batch" sortKey="batchNumber" sort={sort} onSort={handleSort} />
                 <TableHead>Broker</TableHead>
                 <SortableHead label="Referral" sortKey="referralStatus" sort={sort} onSort={handleSort} />
+                <TableHead>Autopay</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -1150,7 +1160,7 @@ export function SubscribersTable({ subscribers }: { subscribers: SubscriberRow[]
               {filtered.length === 0 ? (
                 <TableRow className="hover:bg-transparent">
                   <TableCell
-                    colSpan={10}
+                    colSpan={11}
                     className="py-8 text-center text-sm text-muted-foreground"
                   >
                     {subscribers.length === 0

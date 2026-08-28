@@ -6,11 +6,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 **[Tech debts](./tech-debt-ledger.html)** — once deployed, also served at `/tech-debt-ledger.html`
 
-Versioning continues the semantic patch series from the SignalFlow template (`1.0.7` → `1.0.8` …). The footer and Admin Changelog page read the current version from `package.json` (now **1.0.36**).
+Versioning continues the semantic patch series from the SignalFlow template (`1.0.7` → `1.0.8` …). The footer and Admin Changelog page read the current version from `package.json` (now **1.0.37**).
 
 Each release header now includes a build timestamp (24-hour IST, matching `build-info.ts`'s `formattedBuildTime`), not just a date — this reflects the actual commit that shipped the version. While adding timestamps, two pre-existing dates were corrected to match their real shipping commit: `1.0.8` (was dated by the TGA fork commit, 3 days before the digest-email feature in that release actually shipped) and `1.0.2` (was off by one day around a just-after-midnight IST commit).
 
 ## [Unreleased]
+
+## [1.0.37] - 2026-08-28 23:15 IST
+
+### Added
+- Self-service plan Upgrade/Extend + Continue Premium checkout via Cashfree recurring UPI Autopay subscriptions — the "Upgrade"/"Extend" buttons on the account profile page now open real in-app checkout for a logged-in subscriber, instead of only handing off to WhatsApp. WhatsApp is kept as an explicit manual fallback right below the checkout button
+- New Prisma models: `Subscription`, `Payment`, `WebhookEvent` — real payment/renewal tracking where none existed before (see schema comments)
+- `POST /api/webhooks/cashfree` — verifies Cashfree's webhook signature (HMAC-SHA256 of timestamp+body) and updates subscription/payment status from `SUBSCRIPTION_STATUS_CHANGE`/`SUBSCRIPTION_PAYMENT_SUCCESS`/`SUBSCRIPTION_PAYMENT_FAILED` events; also posts a Telegram notification for key events (activated, halted, cancelled, charged, failed) reusing the existing Telegram bot integration
+- Account profile page now shows real Autopay status + next-charge date (from `Subscription.currentPeriodEnd`) instead of the old estimated period, plus a "Cancel Autopay" control, once a subscriber has an actual subscription on record
+- Admin Registered Members table: new "Autopay" column showing each subscriber's live subscription status ("Active", "Halted", "Manual", etc.)
+- Cashfree integration calls the REST API directly (`fetch`, see `src/lib/cashfree.ts`) rather than the `cashfree-pg` npm SDK — same thin-wrapper pattern already used for Telegram/Dhan elsewhere in this codebase. Plan details are sent inline on each subscription create call (no pre-created Plan objects, unlike a Razorpay-style integration), so there's no setup script or plan-id env vars to manage
+
+### Changed
+- The home-page "Continue Premium" panel (anonymous visitor) now offers "Log in to renew" as its primary action instead of going straight to WhatsApp — starting a billing mandate for someone who isn't authenticated isn't safe, so WhatsApp remains the no-login-required fallback there
+
+**Not done in this pass, needs you before this is actually live:**
+- **Cashfree account.** No merchant account exists yet — sign up at cashfree.com (sandbox/test API keys are available immediately, no KYC), add `CASHFREE_CLIENT_ID`/`CASHFREE_CLIENT_SECRET` to `.env`. Register a webhook in the Cashfree dashboard pointed at `<your-domain>/api/webhooks/cashfree` and add its secret as `CASHFREE_WEBHOOK_SECRET` if Cashfree issues a distinct one (falls back to the client secret otherwise, per Cashfree's own docs). Live payments need account activation (business documents, ~24-48 hours) — swapping test keys for live keys afterward needs no code changes beyond setting `CASHFREE_ENV=production`
+- **Database migration.** The 3 new models above are added to `prisma/schema.prisma` only — **no migration has been generated or applied**. This sandbox's shell couldn't reach `binaries.prisma.sh` to run the Prisma CLI (network-blocked, 403), so run `npx prisma migrate dev --name add_billing_subscriptions` yourself from a normal terminal with real network access, review the generated SQL, then apply it
+- Registration-time payment (`PaymentDetailsCard` on the post-registration screen) is untouched and still manual/UPI — this pass only covers the Upgrade/Extend flow for existing subscribers, which is what was reported broken; worth a follow-up if new-member signup should get the same Autopay checkout
+- **Webhook payload shape unverified against a live Cashfree sandbox event.** The webhook handler's field extraction (`src/app/api/webhooks/cashfree/route.ts`) follows Cashfree's documented envelope and per-event field list, but wasn't checked against an actual delivered webhook (no sandbox account existed while building this) — send yourself a real test event once `CASHFREE_CLIENT_ID` is set up and confirm the nesting matches; the code has a documented fallback if it doesn't
 
 ## [1.0.36] - 2026-08-28 22:09 IST
 

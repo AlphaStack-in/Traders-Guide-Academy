@@ -3,11 +3,13 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Pencil, X } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BROKER_OPTIONS } from "@/lib/brokers";
 import { updateSubscriberProfile } from "@/app/account/profile/actions";
+import { cancelMySubscription } from "@/app/account/billing/actions";
 import { ContinuePremiumPanel } from "@/components/site/continue-premium-panel";
 import type { PricingPlan } from "@/lib/client-config";
 
@@ -34,6 +36,14 @@ interface ProfileEditFormProps {
   upgradePlanId?: PricingPlan["id"];
   /** False once already on the top tier — nothing to upgrade to. */
   showUpgrade: boolean;
+  /**
+   * Real Subscription record (see prisma/schema.prisma), when one exists —
+   * replaces the estimated Period row with the real Cashfree Autopay period
+   * end and shows a status badge + Cancel control. Null for a subscriber
+   * with no self-service subscription on record yet (still on the old
+   * manual/WhatsApp flow only).
+   */
+  autopay?: { statusLabel: string; isActive: boolean; periodEndLabel: string | null } | null;
 }
 
 /**
@@ -56,8 +66,22 @@ export function ProfileEditForm({
   currentPlanId,
   upgradePlanId,
   showUpgrade,
+  autopay = null,
 }: ProfileEditFormProps) {
   const router = useRouter();
+  const [isCancelling, startCancelling] = useTransition();
+
+  function handleCancelAutopay() {
+    startCancelling(async () => {
+      const result = await cancelMySubscription();
+      if (!result.success) {
+        toast.error(result.error);
+        return;
+      }
+      toast.success("Autopay cancelled — you won't be charged again.");
+      router.refresh();
+    });
+  }
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(initialName);
   const [phone, setPhone] = useState(initialPhone);
@@ -133,13 +157,28 @@ export function ProfileEditForm({
               <td className="py-2 pr-4 align-top text-xs text-muted-foreground">Plan</td>
               <td className="py-2 font-heading font-semibold">{planLabel}</td>
             </tr>
-            {periodStartLabel && periodEndLabel && (
+            {autopay ? (
               <tr className="border-b border-white/5">
-                <td className="py-2 pr-4 align-top text-xs text-muted-foreground">Period (est.)</td>
+                <td className="py-2 pr-4 align-top text-xs text-muted-foreground">Autopay</td>
                 <td className="py-2 font-heading font-semibold">
-                  {periodStartLabel} – {periodEndLabel}
+                  {autopay.statusLabel}
+                  {autopay.periodEndLabel && (
+                    <span className="ml-1.5 font-normal text-muted-foreground">
+                      · renews {autopay.periodEndLabel}
+                    </span>
+                  )}
                 </td>
               </tr>
+            ) : (
+              periodStartLabel &&
+              periodEndLabel && (
+                <tr className="border-b border-white/5">
+                  <td className="py-2 pr-4 align-top text-xs text-muted-foreground">Period (est.)</td>
+                  <td className="py-2 font-heading font-semibold">
+                    {periodStartLabel} – {periodEndLabel}
+                  </td>
+                </tr>
+              )
             )}
             <tr>
               <td className="py-2 pr-4 align-top text-xs text-muted-foreground">Joined</td>
@@ -155,6 +194,7 @@ export function ProfileEditForm({
               triggerLabel="Upgrade"
               defaultPlanId={upgradePlanId}
               initialPhone={initialPhone}
+              authenticated
             />
           )}
           <ContinuePremiumPanel
@@ -162,7 +202,20 @@ export function ProfileEditForm({
             triggerLabel="Extend"
             defaultPlanId={currentPlanId}
             initialPhone={initialPhone}
+            authenticated
           />
+          {autopay?.isActive && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={isCancelling}
+              onClick={handleCancelAutopay}
+              className="ml-auto text-muted-foreground hover:text-destructive"
+            >
+              {isCancelling ? "Cancelling…" : "Cancel Autopay"}
+            </Button>
+          )}
         </div>
       </div>
     );

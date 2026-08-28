@@ -94,7 +94,7 @@ Keep a one-line registry of which repo / Vercel project / Supabase project belon
 
 - **Business model**: same signal-subscription + batch pricing model as existing brands, just rebranded — no new pages or schema needed.
 - **Broker connect**: off for launch (`dhanOfferEnabled`, `dhanConnectEnabled`, `goodwillBrokerEnabled` all `false`) — ship signals + subscriptions first.
-- **Payments**: manual UPI + WhatsApp confirmation, same as current brands — no gateway integration needed yet (the `TODO(payments)` Razorpay/Stripe hook in `register/actions.ts` stays a TODO for now).
+- **Payments**: existing-subscriber Upgrade/Extend/renewal now goes through real self-service checkout — Cashfree recurring UPI Autopay subscriptions (see CHANGELOG.md 1.0.37, `prisma/schema.prisma` Subscription/Payment models, `src/app/api/webhooks/cashfree/route.ts`). WhatsApp is kept as a manual fallback next to the checkout button. New-member registration payment (`PaymentDetailsCard`) is still manual UPI + WhatsApp confirmation, unchanged. A given deployment only actually accepts real money once its own Cashfree account is set up and activated — see CHANGELOG.md 1.0.37 for the exact steps; a fresh client deployment starts back at manual-only until that's done for them, same as before.
 - **Repo access**: private to the team — full commit history kept, not handed to TGA as-is. Use Step 1 method **A** (plain clone + push), not the template-generation method.
 
 ## Note: the 2026-08-21 platform rebrand (THC → SignalFlow)

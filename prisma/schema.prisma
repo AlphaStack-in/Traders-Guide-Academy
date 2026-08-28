@@ -50,18 +50,18 @@ model Signal {
   // Snapshotted lot size from DhanInstrument at signal creation time --
   // used by the weekly digest to compute rupee P&L without needing the
   // ephemeral DhanInstrument cache (which purges expired contracts daily).
-  lotSize        Int?
+  lotSize Int?
 
   // Platform enhancement fields
-  chartImageUrl  String?
-  entryLow       Float?
-  entryHigh      Float?
-  target1        Float?
-  target2        Float?
-  contextTags    String[]     @default([])
-  confidence     String?      @default("HIGH")
-  parserName     String?      @default("SIGNALFLOW")
-  parserVersion  String?      @default("1.0.0")
+  chartImageUrl String?
+  entryLow      Float?
+  entryHigh     Float?
+  target1       Float?
+  target2       Float?
+  contextTags   String[] @default([])
+  confidence    String?  @default("HIGH")
+  parserName    String?  @default("SIGNALFLOW")
+  parserVersion String?  @default("1.0.0")
 
   @@index([signalTime])
   @@index([status])
@@ -103,6 +103,8 @@ model Subscriber {
   rewardTransactions    RewardTransaction[]
   socialPromotionEvents SocialPromotionEvent[]
   digestSendLogs        DigestSendLog[]
+  subscriptions         Subscription[]
+  payments              Payment[]
 }
 
 enum ReferralStatus {
@@ -377,7 +379,7 @@ model SocialPromotionEvent {
   subscriberId String
   subscriber   Subscriber @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
   platform     String
-  shareDate    String     // Format: YYYY-MM-DD (IST)
+  shareDate    String // Format: YYYY-MM-DD (IST)
   rewardAmount Float      @default(10)
   createdAt    DateTime   @default(now())
 
@@ -405,22 +407,22 @@ model DigestSendLog {
 }
 
 model NewsAlert {
-  id                  String   @id @default(uuid())
+  id                  String    @id @default(uuid())
   title               String
-  category            String   @default("Market")
-  severity            String   @default("INFO")
+  category            String    @default("Market")
+  severity            String    @default("INFO")
   summary             String
   content             String
   impact              String?
-  affectedInstruments String[] @default([])
+  affectedInstruments String[]  @default([])
   source              String?
   sourceUrl           String?
-  publishedAt         DateTime @default(now())
+  publishedAt         DateTime  @default(now())
   expiresAt           DateTime?
-  isBreaking          Boolean  @default(false)
-  isActive            Boolean  @default(true)
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  isBreaking          Boolean   @default(false)
+  isActive            Boolean   @default(true)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
   @@index([publishedAt])
   @@index([isActive])
@@ -468,7 +470,7 @@ model AdminUserAuditLog {
   changedBy     AdminUser @relation("ChangedBy", fields: [changedById], references: [id])
   targetAdminId String
   targetAdmin   AdminUser @relation("ChangedFor", fields: [targetAdminId], references: [id])
-  action        String    // "SET_ACCESS_LEVEL" | "ACTIVATE" | "DEACTIVATE" | "CREATE"
+  action        String // "SET_ACCESS_LEVEL" | "ACTIVATE" | "DEACTIVATE" | "CREATE"
   previousValue String?
   newValue      String?
   createdAt     DateTime  @default(now())
@@ -476,4 +478,111 @@ model AdminUserAuditLog {
   @@index([changedById])
   @@index([targetAdminId])
   @@index([createdAt])
+}
+
+// --- Self-service billing (Cashfree) ---------------------------------------
+// Added when the manual "pay via UPI, confirm over WhatsApp" flow (see
+// PaymentDetailsCard / ContinuePremiumPanel) was replaced with true
+// self-service checkout + UPI Autopay recurring subscriptions. WhatsApp is
+// kept as a manual fallback in the UI, but from here on the source of truth
+// for "is this subscriber currently paid up" is Subscription.status /
+// Subscription.currentPeriodEnd, not a human checking a chat thread.
+//
+// One Subscriber can have more than one Subscription row over time (e.g.
+// cancel, then re-subscribe later, or switch billing cycle) — the most
+// recent non-CANCELLED/EXPIRED one is the subscriber's active plan.
+model Subscription {
+  id                     String             @id @default(uuid())
+  subscriberId           String
+  subscriber             Subscriber         @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+  billingCycle           BillingCycle
+  provider               String             @default("cashfree")
+  // The subscription_id WE generate and send Cashfree when creating the
+  // subscription (Cashfree has no separate Plan object to reference —
+  // plan_details are sent inline on each create call, see
+  // src/lib/cashfree-plans.ts — so unlike a provider-assigned id, this one
+  // is ours from the start; Cashfree's own reference number is
+  // `cf_subscription_id`, not stored separately here since this id is
+  // already enough to look the subscription up via the API if ever needed).
+  providerSubscriptionId String             @unique
+  status                 SubscriptionStatus @default(CREATED)
+  // Set once Cashfree confirms the mandate (SUBSCRIPTION_STATUS_CHANGE webhook /
+  // subscription.activated) — null before then.
+  currentPeriodEnd       DateTime?
+  cancelAtPeriodEnd      Boolean            @default(false)
+  lastPaymentFailedAt    DateTime?
+  failureReason          String?
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+  payments               Payment[]
+
+  @@index([subscriberId])
+  @@index([status])
+}
+
+enum SubscriptionStatus {
+  CREATED // subscription object created, checkout not yet completed
+  AUTHENTICATED // UPI Autopay mandate authorized, first charge pending
+  ACTIVE // at least one successful charge, currently in a paid period
+  PENDING // a scheduled charge failed once, Cashfree is retrying
+  HALTED // Cashfree stopped retrying after repeated failures (or a customer pause) — treat as lapsed
+  CANCELLED // cancelled by subscriber or admin
+  COMPLETED // fixed-count plan ran its full course
+  EXPIRED // period lapsed with no successful renewal and not formally cancelled
+}
+
+// One row per payment attempt (successful or failed) — both the initial
+// mandate-authorization charge and every subsequent Autopay renewal charge,
+// plus one-off payments if a subscriber ever pays outside a subscription
+// (e.g. a manually reconciled WhatsApp/UPI payment an admin logs by hand).
+model Payment {
+  id                String        @id @default(uuid())
+  subscriberId      String
+  subscriber        Subscriber    @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+  subscriptionId    String?
+  subscription      Subscription? @relation(fields: [subscriptionId], references: [id])
+  provider          String        @default("cashfree")
+  // Cashfree's payment_id for this charge. Null for a manually-logged
+  // (WhatsApp/UPI) payment an admin enters by hand — see manualEntry below.
+  providerPaymentId String?       @unique
+  providerOrderId   String?
+  amountInPaise     Int
+  currency          String        @default("INR")
+  status            PaymentStatus
+  method            String?
+  failureReason     String?
+  // True for a payment an admin recorded manually (the WhatsApp fallback
+  // path) rather than one that came through a Cashfree webhook.
+  manualEntry       Boolean       @default(false)
+  createdAt         DateTime      @default(now())
+
+  @@index([subscriberId])
+  @@index([subscriptionId])
+  @@index([status])
+}
+
+enum PaymentStatus {
+  CREATED
+  AUTHORIZED
+  CAPTURED
+  FAILED
+  REFUNDED
+}
+
+// Idempotency log for incoming Cashfree webhook deliveries — Cashfree
+// retries a webhook if it doesn't get a 2xx quickly, so the same event can
+// arrive more than once. Cashfree doesn't send a dedicated event-id header
+// (only `x-webhook-signature` + `x-webhook-timestamp`), so eventId here is
+// a SHA-256 hash of `timestamp + rawBody` computed by the webhook handler —
+// deterministic per actual delivery, so a retried delivery hashes the same
+// and the unique constraint makes it a no-op.
+model WebhookEvent {
+  id          String   @id @default(uuid())
+  provider    String   @default("cashfree")
+  eventId     String
+  eventType   String
+  payload     Json
+  processedAt DateTime @default(now())
+
+  @@unique([provider, eventId])
 }
