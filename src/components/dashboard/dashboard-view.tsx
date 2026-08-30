@@ -15,7 +15,7 @@ import {
   type SignalForMetrics,
 } from "@/lib/signal-metrics";
 import { DashboardContent } from "@/components/dashboard/dashboard-content";
-import type { InstrumentLiteral } from "@/lib/instruments";
+import type { InstrumentValue } from "@/lib/instruments";
 
 export type SerializedSignal = Omit<SignalForMetrics, "signalTime"> & {
   strike: number;
@@ -68,7 +68,7 @@ export function DashboardView({
     let list = signals;
 
     if (instrument && instrument !== "ALL") {
-      list = list.filter((s) => s.instrument === (instrument as InstrumentLiteral));
+      list = list.filter((s) => s.instrument === (instrument as InstrumentValue));
     }
 
     list = list.filter((s) => matchesDateFilter(s.signalTime, dateFilter, boundaries));

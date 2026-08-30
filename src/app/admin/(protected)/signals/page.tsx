@@ -48,6 +48,7 @@ export default async function ManageSignalsPage({
       strike: s.strike,
       optionType: s.optionType,
       instrument: s.instrument,
+      stockSymbol: s.stockSymbol,
       entryPrice: s.entryPrice,
       stopLoss: s.stopLoss,
       targets: s.targets,
@@ -73,6 +74,7 @@ export default async function ManageSignalsPage({
     strike: r.strike,
     optionType: r.optionType,
     instrument: r.instrument,
+    stockSymbol: r.stockSymbol,
     adminNote: r.adminNote,
     adminNoteAt: r.adminNoteAt,
   }));

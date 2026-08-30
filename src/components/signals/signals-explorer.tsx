@@ -20,7 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { INSTRUMENTS, INSTRUMENT_LABEL, type InstrumentLiteral } from "@/lib/instruments";
+import { INSTRUMENTS, INSTRUMENT_LABEL, formatInstrumentLabel, type InstrumentValue } from "@/lib/instruments";
 import { computeDisplayStatus } from "@/lib/signal-metrics";
 import {
   computeBoundaries,
@@ -39,7 +39,8 @@ export interface SignalRow {
   id: string;
   strike: number;
   optionType: "CE" | "PE";
-  instrument: InstrumentLiteral | null;
+  instrument: InstrumentValue | null;
+  stockSymbol?: string | null;
   entryPrice: number;
   stopLoss: number;
   targets: number[];
@@ -59,7 +60,7 @@ export interface SignalRow {
 }
 
 type OptionFilter = "ALL" | "CE" | "PE";
-type InstrumentFilter = "ALL" | InstrumentLiteral;
+type InstrumentFilter = "ALL" | InstrumentValue;
 type ResultFilter = "ALL" | "WIN" | "LOSS" | "OPEN";
 type SortColumn = "date" | "strike" | "entry" | "sl" | "pnl";
 type SortDirection = "asc" | "desc";
@@ -248,6 +249,7 @@ export function SignalsExplorer({
                               {INSTRUMENT_LABEL[i]}
                             </SelectItem>
                           ))}
+                          <SelectItem value="STOCK">Stock</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -349,7 +351,7 @@ export function SignalsExplorer({
                         <span className="text-xs">{formatSignalTime(signal.signalTime)}</span>
                       </TableCell>
                       <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
-                        {signal.instrument ? INSTRUMENT_LABEL[signal.instrument] : "—"}
+                        {formatInstrumentLabel(signal.instrument, signal.stockSymbol) || "—"}
                       </TableCell>
                       <TableCell className="whitespace-nowrap font-medium">
                         <div className="flex items-center gap-1.5">

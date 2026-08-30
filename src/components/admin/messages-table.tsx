@@ -46,7 +46,13 @@ function MessageRowItem({ message }: { message: MessageRow }) {
     startReplying(async () => {
       const result = await replyToMessage(message.id, replyText);
       if (result.success) {
-        toast.success(`Reply saved for ${message.name}.`);
+        if (result.emailed) {
+          toast.success(`Reply emailed to ${message.name}.`);
+        } else {
+          toast.success(
+            `Note saved for ${message.name} — no email on file, so nothing was sent. Reach out via WhatsApp/call above.`,
+          );
+        }
       } else {
         toast.error(result.error ?? "Failed to save reply.");
       }
@@ -151,14 +157,18 @@ function MessageRowItem({ message }: { message: MessageRow }) {
               </div>
               <div className="flex flex-col gap-1.5">
                 <label htmlFor={`reply-${message.id}`} className="text-xs font-medium text-muted-foreground">
-                  Reply / Internal note
+                  {message.email ? "Reply (emailed to the customer)" : "Internal note (no email on file)"}
                 </label>
                 <Textarea
                   id={`reply-${message.id}`}
                   rows={3}
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
-                  placeholder="Reach out via WhatsApp/email above, then log what you replied with…"
+                  placeholder={
+                    message.email
+                      ? "Write your reply — it will be emailed to the customer…"
+                      : "No email on file — reach out via WhatsApp/call above, then log what you said here…"
+                  }
                 />
                 <div className="flex items-center gap-3">
                   <Button
@@ -167,7 +177,13 @@ function MessageRowItem({ message }: { message: MessageRow }) {
                     className="signalflow-glow signalflow-btn-gradient w-fit"
                     onClick={handleReply}
                   >
-                    {isReplying ? "Saving…" : "Mark Replied"}
+                    {isReplying
+                      ? message.email
+                        ? "Sending…"
+                        : "Saving…"
+                      : message.email
+                        ? "Send Reply"
+                        : "Save Note"}
                   </Button>
                   {message.repliedAt && (
                     <span className="text-xs text-muted-foreground">

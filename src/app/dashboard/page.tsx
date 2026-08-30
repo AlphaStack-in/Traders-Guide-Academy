@@ -35,6 +35,7 @@ export default async function PublicDashboardPage({
     strike: s.strike,
     optionType: s.optionType,
     instrument: s.instrument,
+    stockSymbol: s.stockSymbol,
     pnlPercent: s.pnlPercent,
     status: s.status,
     signalTime: s.signalTime.toISOString(),

@@ -8,13 +8,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatSignalDate, formatSignalTime } from "@/lib/utils";
-import { INSTRUMENT_LABEL, type InstrumentLiteral } from "@/lib/instruments";
+import { formatInstrumentLabel, type InstrumentValue } from "@/lib/instruments";
 
 export interface GoodwillOrderRequestRow {
   id: string;
   subscriberName: string;
   subscriberPhone: string;
-  instrument: InstrumentLiteral | null;
+  instrument: InstrumentValue | null;
   strike: number;
   optionType: "CE" | "PE";
   lotSize: number;
@@ -53,7 +53,7 @@ export function GoodwillOrderRequestsTable({ requests }: { requests: GoodwillOrd
                   <div className="text-xs text-muted-foreground">{r.subscriberPhone}</div>
                 </TableCell>
                 <TableCell>
-                  {r.instrument ? `${INSTRUMENT_LABEL[r.instrument]} ` : ""}
+                  {formatInstrumentLabel(r.instrument) ? `${formatInstrumentLabel(r.instrument)} ` : ""}
                   {r.strike} {r.optionType}
                 </TableCell>
                 <TableCell>{r.lotSize}</TableCell>

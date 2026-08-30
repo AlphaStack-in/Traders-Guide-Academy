@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { formatUpdateTime } from "@/lib/utils";
 import { updateAdminNote } from "@/app/admin/(protected)/signals/actions";
-import { INSTRUMENT_LABEL, type InstrumentLiteral } from "@/lib/instruments";
+import { formatInstrumentLabel, type InstrumentValue } from "@/lib/instruments";
 
 const QUICK_PHRASES = [
   "READY",
@@ -33,13 +33,15 @@ export interface OngoingTrade {
   id: string;
   strike: number;
   optionType: "CE" | "PE";
-  instrument: InstrumentLiteral | null;
+  instrument: InstrumentValue | null;
+  stockSymbol?: string | null;
   adminNote: string | null;
   adminNoteAt?: string | null;
 }
 
 function instrumentPrefix(trade: OngoingTrade) {
-  return trade.instrument ? `${INSTRUMENT_LABEL[trade.instrument]} ` : "";
+  const label = formatInstrumentLabel(trade.instrument, trade.stockSymbol);
+  return label ? `${label} ` : "";
 }
 
 function NoteEditor({ trade }: { trade: OngoingTrade }) {

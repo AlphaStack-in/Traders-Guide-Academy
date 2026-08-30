@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { decryptSecret } from "@/lib/broker/crypto";
 import { resolveDhanContract } from "@/lib/broker/dhan-contract-resolver";
 import { placeDhanOrder, getDhanFundLimit } from "@/lib/broker/dhan-client";
-import { INSTRUMENT_LABEL, type InstrumentLiteral } from "@/lib/instruments";
+import { formatInstrumentLabel, type InstrumentValue } from "@/lib/instruments";
 import { clientConfig } from "@/lib/client-config";
 
 export type SignalBrokerStatus = "NOT_CONNECTED" | "EXPIRED" | "REVOKED" | "ACTIVE";
@@ -15,13 +15,13 @@ export interface SignalOrderContext {
   brokerStatus: SignalBrokerStatus;
   signal: {
     id: string;
-    instrument: InstrumentLiteral | null;
+    instrument: InstrumentValue | null;
     strike: number;
     optionType: "CE" | "PE";
     entryPrice: number;
     stopLoss: number;
     targets: number[];
-    actionable: boolean; // OPEN and has instrument+expiry set (resolvable)
+    actionable: boolean; // OPEN, has instrument+expiry set, and isn't a stock signal (resolvable)
   } | null;
 }
 
@@ -66,7 +66,14 @@ export async function getSignalOrderContext(signalId: string): Promise<SignalOrd
           entryPrice: signal.entryPrice,
           stopLoss: signal.stopLoss,
           targets: signal.targets,
-          actionable: signal.status === "OPEN" && signal.instrument != null && signal.expiry != null,
+          // Broker order placement doesn't cover individual-stock signals
+          // yet — resolveDhanContract always misses for those (the
+          // DhanInstrument cache only syncs index/OPTIDX contracts).
+          actionable:
+            signal.status === "OPEN" &&
+            signal.instrument != null &&
+            signal.instrument !== "STOCK" &&
+            signal.expiry != null,
         }
       : null,
   };
@@ -120,6 +127,8 @@ export async function getOrderExpansionDetails(signalId: string): Promise<OrderE
   if (connection?.status === "ACTIVE") {
     if (!signal.instrument || !signal.expiry) {
       contractError = "This signal is missing instrument/expiry — contact support.";
+    } else if (signal.instrument === "STOCK") {
+      contractError = "Broker order placement isn't available for stock signals yet.";
     } else {
       const contract = await resolveDhanContract({
         instrument: signal.instrument,
@@ -189,6 +198,9 @@ export async function placeOrderForSignal(
   if (!signal.instrument || !signal.expiry) {
     return { success: false, error: "This signal is missing instrument/expiry — contact support." };
   }
+  if (signal.instrument === "STOCK") {
+    return { success: false, error: "Broker order placement isn't available for stock signals yet." };
+  }
 
   const contract = await resolveDhanContract({
     instrument: signal.instrument,
@@ -204,7 +216,7 @@ export async function placeOrderForSignal(
     };
   }
 
-  const label = `${INSTRUMENT_LABEL[signal.instrument]} ${signal.strike} ${signal.optionType}`;
+  const label = `${formatInstrumentLabel(signal.instrument, signal.stockSymbol)} ${signal.strike} ${signal.optionType}`;
   const quantity = lotSize * contract.lotSize;
 
   try {

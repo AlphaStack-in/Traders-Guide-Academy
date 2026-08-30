@@ -1,5 +1,14 @@
 export type InstrumentLiteral = "NIFTY" | "SENSEX" | "MIDCAP_NIFTY" | "BANK_NIFTY";
 
+// The full Signal.instrument domain — the four tradable indices, PLUS
+// "STOCK" for an individual-stock F&O trade (see Signal.stockSymbol for
+// the actual ticker in that case). Kept distinct from InstrumentLiteral
+// because everything below this line (auto-detection from raw broadcast
+// text, strike-range config, the index dropdown) is index-only by nature —
+// a stock's real symbol can't be guessed from a strike range the way an
+// index can, it's always explicitly typed in Manual Signal Entry.
+export type InstrumentValue = InstrumentLiteral | "STOCK";
+
 export const INSTRUMENTS: InstrumentLiteral[] = [
   "NIFTY",
   "SENSEX",
@@ -13,6 +22,18 @@ export const INSTRUMENT_LABEL: Record<InstrumentLiteral, string> = {
   BANK_NIFTY: "Bank Nifty",
   MIDCAP_NIFTY: "Midcap Nifty",
 };
+
+// Display label for any Signal, index or stock — prefer this over indexing
+// INSTRUMENT_LABEL directly wherever a stock signal might show up, since
+// INSTRUMENT_LABEL has no "STOCK" entry (it would render as undefined/blank).
+export function formatInstrumentLabel(
+  instrument: InstrumentValue | null | undefined,
+  stockSymbol?: string | null,
+): string {
+  if (!instrument) return "";
+  if (instrument === "STOCK") return stockSymbol || "Stock";
+  return INSTRUMENT_LABEL[instrument];
+}
 
 export interface InstrumentConfig {
   label: string;

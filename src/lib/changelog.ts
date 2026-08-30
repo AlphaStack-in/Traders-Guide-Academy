@@ -31,6 +31,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.40",
+    date: "30 Aug 2026, 22:45 IST",
+    title: "Google Sign-In, Stock Signals & Email Uniqueness",
+    highlights: [
+      "Sign in with Google restored on /login and /admin/login (OAuth PKCE) \u2014 subscribers matched by verified email, admin must match ADMIN_EMAIL",
+      "STOCK instrument type for individual-stock F&O signals with ticker in Signal.stockSymbol, shown across dashboard and admin",
+      "Subscriber.email is now a real DB unique constraint with normalized lowercase storage \u2014 run the three new Prisma migrations before deploying",
+    ],
+  },
+  {
     version: "1.0.39",
     date: "30 Aug 2026, 22:35 IST",
     title: "TGA Logo Teal Primary Buttons & Links",

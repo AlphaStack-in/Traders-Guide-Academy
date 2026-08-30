@@ -31,14 +31,15 @@ import {
   type AdminUpdateItem,
   type SignalUpdateInput,
 } from "@/app/admin/(protected)/signals/actions";
-import { INSTRUMENTS, INSTRUMENT_LABEL, type InstrumentLiteral } from "@/lib/instruments";
+import { INSTRUMENTS, INSTRUMENT_LABEL, formatInstrumentLabel, type InstrumentValue } from "@/lib/instruments";
 import { computeDisplayStatus } from "@/lib/signal-metrics";
 
 export interface ManageSignalRow {
   id: string;
   strike: number;
   optionType: "CE" | "PE";
-  instrument: InstrumentLiteral | null;
+  instrument: InstrumentValue | null;
+  stockSymbol?: string | null;
   entryPrice: number;
   stopLoss: number;
   targets: number[];
@@ -96,7 +97,8 @@ function CloseTradeCell({ signal }: { signal: ManageSignalRow }) {
 interface EditDraft {
   strike: string;
   optionType: "CE" | "PE";
-  instrument: InstrumentLiteral;
+  instrument: InstrumentValue;
+  stockSymbol: string;
   entryPrice: string;
   stopLoss: string;
   targets: string;
@@ -116,6 +118,7 @@ function toDraft(signal: ManageSignalRow): EditDraft {
     strike: String(signal.strike),
     optionType: signal.optionType,
     instrument: signal.instrument ?? "NIFTY",
+    stockSymbol: signal.stockSymbol ?? "",
     entryPrice: String(signal.entryPrice),
     stopLoss: String(signal.stopLoss),
     targets: signal.targets.join(", "),
@@ -173,10 +176,16 @@ function ManageSignalRowItem({ signal }: { signal: ManageSignalRow }) {
       return;
     }
 
+    if (draft.instrument === "STOCK" && draft.stockSymbol.trim() === "") {
+      toast.error("Enter the stock symbol.");
+      return;
+    }
+
     const input: SignalUpdateInput = {
       strike,
       optionType: draft.optionType,
       instrument: draft.instrument,
+      stockSymbol: draft.instrument === "STOCK" ? draft.stockSymbol.trim().toUpperCase() : null,
       entryPrice,
       stopLoss,
       targets,
@@ -225,21 +234,32 @@ function ManageSignalRowItem({ signal }: { signal: ManageSignalRow }) {
           />
         </TableCell>
         <TableCell>
-          <Select
-            value={draft.instrument}
-            onValueChange={(v) => setDraft((d) => ({ ...d, instrument: v as InstrumentLiteral }))}
-          >
-            <SelectTrigger size="sm" className="h-8 w-[110px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {INSTRUMENTS.map((i) => (
-                <SelectItem key={i} value={i}>
-                  {INSTRUMENT_LABEL[i]}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex flex-col gap-1">
+            <Select
+              value={draft.instrument}
+              onValueChange={(v) => setDraft((d) => ({ ...d, instrument: v as InstrumentValue }))}
+            >
+              <SelectTrigger size="sm" className="h-8 w-[110px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {INSTRUMENTS.map((i) => (
+                  <SelectItem key={i} value={i}>
+                    {INSTRUMENT_LABEL[i]}
+                  </SelectItem>
+                ))}
+                <SelectItem value="STOCK">Stock</SelectItem>
+              </SelectContent>
+            </Select>
+            {draft.instrument === "STOCK" && (
+              <Input
+                value={draft.stockSymbol}
+                onChange={(e) => setDraft((d) => ({ ...d, stockSymbol: e.target.value }))}
+                placeholder="Symbol"
+                className="h-8 w-[110px] text-xs"
+              />
+            )}
+          </div>
         </TableCell>
         <TableCell className="whitespace-nowrap">
           <div className="flex items-center gap-1.5">
@@ -343,7 +363,7 @@ function ManageSignalRowItem({ signal }: { signal: ManageSignalRow }) {
         <span className="text-xs">{formatSignalTime(signal.signalTime)}</span>
       </TableCell>
       <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
-        {signal.instrument ? INSTRUMENT_LABEL[signal.instrument] : "—"}
+        {formatInstrumentLabel(signal.instrument, signal.stockSymbol) || "—"}
       </TableCell>
       <TableCell className="whitespace-nowrap font-medium">
         <div className="flex items-center gap-1.5">

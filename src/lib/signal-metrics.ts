@@ -1,5 +1,5 @@
 import type { OptionType, Signal, SignalStatus } from "@prisma/client";
-import { INSTRUMENTS, INSTRUMENT_LABEL, type InstrumentLiteral } from "@/lib/instruments";
+import { INSTRUMENTS, INSTRUMENT_LABEL, formatInstrumentLabel, type InstrumentLiteral } from "@/lib/instruments";
 
 export function calcPnlPercent(entryPrice: number, sellPrice: number): number {
   return ((sellPrice - entryPrice) / entryPrice) * 100;
@@ -89,7 +89,7 @@ export function inferHitTargetLabel(targets: number[], sellPrice: number): strin
 
 export type SignalForMetrics = Pick<
   Signal,
-  "id" | "optionType" | "instrument" | "pnlPercent" | "status" | "signalTime"
+  "id" | "optionType" | "instrument" | "stockSymbol" | "pnlPercent" | "status" | "signalTime"
 >;
 
 export interface DashboardMetrics {
@@ -207,7 +207,7 @@ export function computeDashboardMetrics(signals: SignalForMetrics[]): DashboardM
 }
 
 export function computeBestWorstTrades<
-  T extends Pick<Signal, "strike" | "optionType" | "instrument" | "pnlPercent" | "signalTime"> & {
+  T extends Pick<Signal, "strike" | "optionType" | "instrument" | "stockSymbol" | "pnlPercent" | "signalTime"> & {
     expiry?: Date | string | null;
   },
 >(signals: T[], n = 5) {
@@ -219,7 +219,7 @@ export function computeBestWorstTrades<
       const d = new Date(s.signalTime);
       const day = String(d.getDate()).padStart(2, "0");
       const month = d.toLocaleDateString("en-IN", { month: "short" });
-      const inst = s.instrument ? (INSTRUMENT_LABEL[s.instrument] || s.instrument) : "";
+      const inst = formatInstrumentLabel(s.instrument, s.stockSymbol);
       const strikeStr = s.strike ? `${s.strike} ` : "";
       const optStr = s.optionType ? `${s.optionType} ` : "";
       return {

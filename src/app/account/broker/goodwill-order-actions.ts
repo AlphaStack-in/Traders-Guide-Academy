@@ -3,7 +3,7 @@
 import { requireSubscriber } from "@/lib/subscriber-auth";
 import { prisma } from "@/lib/prisma";
 import { clientConfig } from "@/lib/client-config";
-import type { InstrumentLiteral } from "@/lib/instruments";
+import type { InstrumentValue } from "@/lib/instruments";
 
 // Goodwill's own "Place Order" flow — Goodwill's broker is GIGAPRO, not
 // Dhan, and GIGAPRO's order API isn't integrated yet. These actions never
@@ -15,7 +15,7 @@ export type GoodwillProductType = "INTRADAY" | "MARGIN";
 export interface GoodwillOrderContext {
   signal: {
     id: string;
-    instrument: InstrumentLiteral | null;
+    instrument: InstrumentValue | null;
     strike: number;
     optionType: "CE" | "PE";
     entryPrice: number;

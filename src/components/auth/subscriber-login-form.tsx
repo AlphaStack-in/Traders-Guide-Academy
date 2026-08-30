@@ -8,9 +8,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { loginSubscriber } from "@/app/login/actions";
+import { GoogleSignInButton } from "@/components/auth/google-signin-button";
 
 const ERROR_MESSAGES: Record<string, string> = {
   auth_failed: "Authentication failed. Please try again.",
+  google_not_configured: "Google sign-in isn't set up for this site yet.",
+  google_denied: "Google sign-in was cancelled.",
+  google_auth_failed: "Something went wrong signing in with Google. Please try again.",
+  google_email_unverified: "That Google account's email isn't verified.",
+  google_no_account:
+    "No premium subscriber account matches that Google email. Register first, or log in below with your password.",
 };
 
 export function SubscriberLoginForm() {
@@ -109,6 +116,13 @@ export function SubscriberLoginForm() {
         <p className="mt-1 text-center text-xs text-muted-foreground">
           Forgot your password, or haven&apos;t set one yet? Contact support to have it set.
         </p>
+
+        <div className="relative my-1 text-center text-xs text-muted-foreground">
+          <div className="absolute inset-x-0 top-1/2 border-t border-white/10" />
+          <span className="relative bg-background px-2">or</span>
+        </div>
+
+        <GoogleSignInButton role="subscriber" redirectTo={redirectTo} />
       </form>
 
       {/* REGISTRATION PROMPT */}

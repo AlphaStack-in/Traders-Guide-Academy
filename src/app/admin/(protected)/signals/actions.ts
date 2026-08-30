@@ -9,13 +9,13 @@ import {
   formatSignalUpdateMessage,
   sendTelegramMessage,
 } from "@/lib/telegram";
-import type { InstrumentLiteral } from "@/lib/instruments";
+import type { InstrumentValue } from "@/lib/instruments";
 import { resolveDhanContract } from "@/lib/broker/dhan-contract-resolver";
 
 export interface SignalInput {
   strike: number;
   optionType: "CE" | "PE";
-  instrument: InstrumentLiteral;
+  instrument: InstrumentValue;
   entryPrice: number;
   stopLoss: number;
   targets: number[];
@@ -31,11 +31,11 @@ export interface SignalInput {
   contextTags?: string[];
   confidence?: string;
   parserName?: string;
-  // The typed stock symbol when this signal's instrument category is
-  // "Stock" (see manual-signal-form.tsx) — null for index/commodity
-  // signals. Kept separate from `instrument` (still an index-only enum)
-  // so a real stock name can be persisted and later offered back as an
-  // "already used" suggestion.
+  // The typed stock symbol when instrument === "STOCK" (see
+  // manual-signal-form.tsx) — null for index/commodity signals. The
+  // `instrument` enum only says "this is a stock", not which one, so the
+  // real ticker lives here and is also offered back as an "already used"
+  // suggestion.
   stockSymbol?: string | null;
 }
 
@@ -89,18 +89,23 @@ export async function createSignals(inputs: SignalInput[]) {
   // Created one at a time (not createMany) so each new signal's id is known
   // immediately — needed to post its "new signal" AdminUpdate row.
   for (const input of inputs) {
-    // Snapshot lot size from DhanInstrument cache (best-effort).
+    // Snapshot lot size from DhanInstrument cache (best-effort). Skipped
+    // for STOCK signals — that cache only ever syncs index (OPTIDX)
+    // contracts, never individual-stock (OPTSTK) ones, so it would always
+    // miss (see dhan-instrument-sync.ts).
     let lotSize: number | null = null;
-    try {
-      const contract = await resolveDhanContract({
-        instrument: input.instrument as InstrumentLiteral,
-        strike: input.strike,
-        optionType: input.optionType,
-        expiry: new Date(input.expiry),
-      });
-      if (contract) lotSize = contract.lotSize;
-    } catch {
-      // Non-critical -- lot size is optional
+    if (input.instrument !== "STOCK") {
+      try {
+        const contract = await resolveDhanContract({
+          instrument: input.instrument,
+          strike: input.strike,
+          optionType: input.optionType,
+          expiry: new Date(input.expiry),
+        });
+        if (contract) lotSize = contract.lotSize;
+      } catch {
+        // Non-critical -- lot size is optional
+      }
     }
 
     const signal = await prisma.signal.create({
@@ -119,7 +124,7 @@ export async function createSignals(inputs: SignalInput[]) {
         formatSignalUpdateMessage({ ...input, sellPrice: input.sellPrice, pnlPercent, status }),
       );
     } else {
-      await sendTelegramMessage(formatNewSignalMessage(input));
+      await sendTelegramMessage(formatNewSignalMessage({ ...input, stockSymbol: input.stockSymbol }));
       // So a brand-new ongoing trade shows up in the notification panel
       // immediately, not only once the admin sends a status update for it.
       await prisma.adminUpdate.create({
@@ -146,7 +151,9 @@ export async function createSignals(inputs: SignalInput[]) {
 export interface SignalUpdateInput {
   strike: number;
   optionType: "CE" | "PE";
-  instrument: InstrumentLiteral;
+  instrument: InstrumentValue;
+  // Present only when instrument === "STOCK" — see SignalInput.stockSymbol.
+  stockSymbol?: string | null;
   entryPrice: number;
   stopLoss: number;
   targets: number[];
@@ -178,6 +185,7 @@ export async function updateSignal(id: string, input: SignalUpdateInput) {
       strike: input.strike,
       optionType: input.optionType,
       instrument: input.instrument,
+      stockSymbol: input.instrument === "STOCK" ? (input.stockSymbol?.trim().toUpperCase() || null) : null,
       entryPrice: input.entryPrice,
       stopLoss: input.stopLoss,
       targets: input.targets,
@@ -410,6 +418,7 @@ export async function closeSignal(id: string, sellPrice: number) {
       strike: signal.strike,
       optionType: signal.optionType,
       instrument: signal.instrument,
+      stockSymbol: signal.stockSymbol,
       sellPrice,
       pnlPercent,
       status,

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Bell, ChevronDown } from "lucide-react";
 import { getRecentAdminUpdates } from "@/app/admin/(protected)/signals/actions";
 import { useSoundAlert } from "@/components/site/sound-alert-provider";
-import { INSTRUMENT_LABEL, type InstrumentLiteral } from "@/lib/instruments";
+import { formatInstrumentLabel, type InstrumentValue } from "@/lib/instruments";
 import { cn, formatUpdateTime } from "@/lib/utils";
 import { getActiveOrderBroker } from "@/lib/client-config";
 import { PlaceOrderTrigger } from "@/components/account/place-order-trigger";
@@ -29,7 +29,7 @@ interface UpdateItem {
   signalId: string | null;
   strike: number | null;
   optionType: string | null;
-  instrument: InstrumentLiteral | null;
+  instrument: InstrumentValue | null;
   message: string;
   createdAt: string;
 }
@@ -107,7 +107,8 @@ function groupBySignal(items: UpdateItem[], readIds: Set<string>): SignalGroup[]
 
 function signalLabel(item: UpdateItem) {
   if (item.signalId == null) return "General Update";
-  return `${item.instrument ? `${INSTRUMENT_LABEL[item.instrument]} ` : ""}${item.strike} ${item.optionType}`;
+  const label = formatInstrumentLabel(item.instrument);
+  return `${label ? `${label} ` : ""}${item.strike} ${item.optionType}`;
 }
 
 export function NotificationBell() {

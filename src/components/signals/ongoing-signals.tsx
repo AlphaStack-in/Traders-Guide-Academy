@@ -20,7 +20,7 @@ import {
 import { OngoingRiskRewardChart } from "@/components/admin/dashboard-charts";
 import { ManageSignalsTable } from "@/components/admin/manage-signals-table";
 import type { SignalRow } from "@/components/signals/signals-explorer";
-import { INSTRUMENT_LABEL } from "@/lib/instruments";
+import { formatInstrumentLabel } from "@/lib/instruments";
 import { getActiveOrderBroker } from "@/lib/client-config";
 import {
   postGeneralAdminUpdate,
@@ -87,7 +87,8 @@ function GeneralUpdateComposer() {
 }
 
 function instrumentPrefix(signal: SignalRow) {
-  return signal.instrument ? `${INSTRUMENT_LABEL[signal.instrument]} ` : "";
+  const label = formatInstrumentLabel(signal.instrument, signal.stockSymbol);
+  return label ? `${label} ` : "";
 }
 
 function toRiskReward(signal: SignalRow) {
@@ -352,7 +353,7 @@ export function OngoingSignals({
                     <Fragment key={signal.id}>
                       <TableRow className="border-b-white/5">
                         <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
-                          {signal.instrument ? INSTRUMENT_LABEL[signal.instrument] : "—"}
+                          {formatInstrumentLabel(signal.instrument, signal.stockSymbol) || "—"}
                         </TableCell>
                         <TableCell className="whitespace-nowrap font-medium">
                           <div className="flex items-center gap-1.5">

@@ -46,6 +46,7 @@ export default async function SignalsPage({
       strike: s.strike,
       optionType: s.optionType,
       instrument: s.instrument,
+      stockSymbol: s.stockSymbol,
       entryPrice: s.entryPrice,
       stopLoss: s.stopLoss,
       targets: s.targets,

@@ -8,13 +8,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { INSTRUMENT_LABEL, type InstrumentLiteral } from "@/lib/instruments";
+import { formatInstrumentLabel, type InstrumentValue } from "@/lib/instruments";
 
 export interface RecentSignalItem {
   id: string;
   strike: number;
   optionType: "CE" | "PE";
-  instrument: InstrumentLiteral | null;
+  instrument: InstrumentValue | null;
+  stockSymbol?: string | null;
   pnlPercent: number | null;
   status: "OPEN" | "TARGET_HIT" | "SL_HIT" | "CLOSED_MANUAL" | "EXPIRED";
   signalTime: string | Date;
@@ -57,7 +58,7 @@ export function RecentSignalsList({ signals }: { signals: RecentSignalItem[] }) 
                   {formatSignalDate(signal.signalTime)} {formatSignalTime(signal.signalTime)}
                 </TableCell>
                 <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
-                  {signal.instrument ? INSTRUMENT_LABEL[signal.instrument] : "—"}
+                  {formatInstrumentLabel(signal.instrument, signal.stockSymbol) || "—"}
                 </TableCell>
                 <TableCell className="whitespace-nowrap font-medium">
                   <div className="flex items-center gap-1.5">

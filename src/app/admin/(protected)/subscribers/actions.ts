@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin-auth";
 import { sendAnnouncementEmail, sendReferralInviteEmail } from "@/lib/email";
 import { hashPassword } from "@/lib/password";
+import { normalizeEmail } from "@/lib/utils";
 
 export interface SubscriberInput {
   name: string;
@@ -20,16 +21,36 @@ export async function createSubscriber(input: SubscriberInput) {
 
   const name = input.name.trim();
   const phone = input.phone.trim();
-  const email = input.email?.trim() || null;
+  const email = input.email ? normalizeEmail(input.email) : null;
   const currentBroker = input.currentBroker?.trim() || null;
 
   if (!name || !phone) {
     return { success: false, error: "Name and phone are required." };
   }
 
-  await prisma.subscriber.create({
-    data: { name, phone, email, batchNumber: input.batchNumber, currentBroker },
-  });
+  // Subscriber.email is DB-unique — this app-level check gives a friendly
+  // error for the common case (this path previously had no duplicate-email
+  // guard at all, unlike register/profile); the create below also catches
+  // P2002 in case a concurrent request races past this check.
+  if (email) {
+    const existingByEmail = await prisma.subscriber.findFirst({
+      where: { email: { equals: email, mode: "insensitive" } },
+    });
+    if (existingByEmail) {
+      return { success: false, error: "That email is already in use by another member." };
+    }
+  }
+
+  try {
+    await prisma.subscriber.create({
+      data: { name, phone, email, batchNumber: input.batchNumber, currentBroker },
+    });
+  } catch (err: any) {
+    if (err.code === "P2002" && err.meta?.target?.includes?.("email")) {
+      return { success: false, error: "That email is already in use by another member." };
+    }
+    throw err;
+  }
 
   revalidatePath("/admin/subscribers");
 
@@ -41,17 +62,33 @@ export async function updateSubscriber(id: string, input: SubscriberInput) {
 
   const name = input.name.trim();
   const phone = input.phone.trim();
-  const email = input.email?.trim() || null;
+  const email = input.email ? normalizeEmail(input.email) : null;
   const currentBroker = input.currentBroker?.trim() || null;
 
   if (!name || !phone) {
     return { success: false, error: "Name and phone are required." };
   }
 
-  await prisma.subscriber.update({
-    where: { id },
-    data: { name, phone, email, batchNumber: input.batchNumber, currentBroker },
-  });
+  if (email) {
+    const existingByEmail = await prisma.subscriber.findFirst({
+      where: { email: { equals: email, mode: "insensitive" }, id: { not: id } },
+    });
+    if (existingByEmail) {
+      return { success: false, error: "That email is already in use by another member." };
+    }
+  }
+
+  try {
+    await prisma.subscriber.update({
+      where: { id },
+      data: { name, phone, email, batchNumber: input.batchNumber, currentBroker },
+    });
+  } catch (err: any) {
+    if (err.code === "P2002" && err.meta?.target?.includes?.("email")) {
+      return { success: false, error: "That email is already in use by another member." };
+    }
+    throw err;
+  }
 
   revalidatePath("/admin/subscribers");
 

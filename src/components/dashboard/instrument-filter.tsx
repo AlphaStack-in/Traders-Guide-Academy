@@ -39,6 +39,7 @@ export function InstrumentFilter() {
             {INSTRUMENT_LABEL[i]}
           </SelectItem>
         ))}
+        <SelectItem value="STOCK">Stock</SelectItem>
       </SelectContent>
     </Select>
   );

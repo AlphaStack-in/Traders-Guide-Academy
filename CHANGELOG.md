@@ -12,6 +12,26 @@ Each release header now includes a build timestamp (24-hour IST, matching `build
 
 ## [Unreleased]
 
+## [1.0.40] - 2026-08-30 22:45 IST
+
+### Added
+- "Sign in with Google" on `/admin/login` and `/login` — hand-rolled OAuth 2.0 Authorization Code + PKCE (`src/lib/google-oauth.ts`, `src/app/api/auth/google/*`); admin Google email must match `ADMIN_EMAIL`, subscriber Google only authenticates an existing account (matched by verified email → `Subscriber.googleId`)
+- `STOCK` instrument type for individual-stock F&O signals — actual ticker stored in `Signal.stockSymbol`, shown across dashboard/signals/admin tables, with a backfill script (`scripts/backfill-stock-instrument.ts`)
+- DB-level unique constraint on `Subscriber.email` (normalized lowercase via `normalizeEmail()` at every write site) — replaces the old case-insensitive functional index with a Prisma-visible `@unique`
+- Admin contact-form reply email (`sendContactReplyEmail`) when replying from the Messages table and the submitter left an email address
+- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` documented in `.env.example`
+
+### Changed
+- Registration and login flows normalize email before lookup/write; duplicate-email errors now surface from the DB constraint as well as app-level checks
+- Signal create/update/Telegram formatting passes `stockSymbol` through for stock trades; Dhan lot-size lookup skipped for `STOCK` (cache is index-only)
+
+### Removed
+- Obsolete placeholder images from `assets/` (superseded by `public/tga-logo.png` etc.)
+
+**Not done in this pass, needs you before Google sign-in is live:**
+- Create a Google Cloud OAuth client and set the redirect URI to `<NEXT_PUBLIC_BASE_URL>/api/auth/google/callback`
+- Run `npx prisma migrate deploy` for the three new migrations (`googleId`, `STOCK` enum, email unique)
+
 ## [1.0.39] - 2026-08-30 22:35 IST
 
 ### Changed

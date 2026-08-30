@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/table";
 import { formatSignalDate, formatSignalTime } from "@/lib/utils";
 import { revokeBrokerConnection } from "@/app/admin/(protected)/broker-sessions/actions";
-import { INSTRUMENT_LABEL, type InstrumentLiteral } from "@/lib/instruments";
+import { formatInstrumentLabel, type InstrumentValue } from "@/lib/instruments";
 
 export interface BrokerSessionRow {
   subscriberId: string;
@@ -32,7 +32,7 @@ export interface OrderAuditRow {
   id: string;
   subscriberName: string;
   subscriberPhone: string;
-  instrument: InstrumentLiteral | null;
+  instrument: InstrumentValue | null;
   strike: number;
   optionType: "CE" | "PE";
   lotSize: number;
@@ -191,7 +191,7 @@ export function BrokerSessionsTable({
                       <div className="text-xs text-muted-foreground">{o.subscriberPhone}</div>
                     </TableCell>
                     <TableCell>
-                      {o.instrument ? `${INSTRUMENT_LABEL[o.instrument]} ` : ""}
+                      {formatInstrumentLabel(o.instrument) ? `${formatInstrumentLabel(o.instrument)} ` : ""}
                       {o.strike} {o.optionType}
                     </TableCell>
                     <TableCell>{o.lotSize}</TableCell>

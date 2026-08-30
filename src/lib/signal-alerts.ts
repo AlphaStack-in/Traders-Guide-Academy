@@ -8,7 +8,7 @@
  * to infer inserts vs. status-changing updates.
  */
 import { prisma } from "@/lib/prisma";
-import type { InstrumentLiteral } from "@/lib/instruments";
+import type { InstrumentValue } from "@/lib/instruments";
 
 const LOOKBACK_MS = 30 * 60 * 1000; // 30 minutes
 const MAX_ROWS = 100;
@@ -17,7 +17,8 @@ export interface SignalAlertRow {
   id: string;
   strike: number;
   optionType: string;
-  instrument: InstrumentLiteral | null;
+  instrument: InstrumentValue | null;
+  stockSymbol: string | null;
   status: string;
   closedTime: string | null;
   sellPrice: number | null;
@@ -41,6 +42,7 @@ export async function getRecentSignalAlerts(): Promise<SignalAlertRow[]> {
     strike: r.strike,
     optionType: r.optionType,
     instrument: r.instrument,
+    stockSymbol: r.stockSymbol,
     status: r.status,
     closedTime: r.closedTime ? r.closedTime.toISOString() : null,
     sellPrice: r.sellPrice,

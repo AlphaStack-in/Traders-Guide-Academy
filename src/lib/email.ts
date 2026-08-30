@@ -129,3 +129,65 @@ export async function sendAnnouncementEmail({
     return { success: false, error: errorMessage };
   }
 }
+
+export interface SendContactReplyEmailParams {
+  toEmail: string;
+  memberName: string;
+  originalMessage: string;
+  replyText: string;
+}
+
+/**
+ * Admin -> contact-form-submitter reply email, triggered from the "Reply"
+ * action on the admin Messages table (messages-table.tsx / replyToMessage).
+ * ContactMessage.email is optional (only phone is required on the public
+ * contact form), so callers must check for an email on file before calling
+ * this — when there isn't one, the admin's reply is logged internally only
+ * and the admin is expected to follow up via WhatsApp/phone instead.
+ */
+export async function sendContactReplyEmail({
+  toEmail,
+  memberName,
+  originalMessage,
+  replyText,
+}: SendContactReplyEmailParams): Promise<{ success: boolean; error?: string }> {
+  const resend = getResendClient();
+
+  if (!resend) {
+    console.log(`[Dev Email Simulation] Contact reply sent to ${toEmail} (${memberName})`);
+    console.log(`[Dev Email Simulation] Reply: ${replyText}`);
+    return { success: true };
+  }
+
+  try {
+    const fromAddress = getFromAddress();
+
+    const { error } = await resend.emails.send({
+      from: fromAddress,
+      to: [toEmail],
+      subject: `Re: Your message to ${clientConfig.siteName}`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; background-color: #0B0B0D; color: #F3F4F6; padding: 32px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+          <h2 style="color: #F0C949; margin-top: 0;">${clientConfig.siteName}</h2>
+          <p>Hello ${memberName},</p>
+          <p style="white-space: pre-line;">${replyText}</p>
+          <div style="margin-top: 24px; padding: 16px; border-left: 2px solid rgba(255,255,255,0.15); color: #9CA3AF; font-size: 13px;">
+            <p style="margin: 0 0 4px;">Your original message:</p>
+            <p style="margin: 0; white-space: pre-line;">${originalMessage}</p>
+          </div>
+        </div>
+      `,
+    });
+
+    if (error) {
+      console.error("Resend API error (contact reply):", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : "Failed to send reply email.";
+    console.error("Error sending contact reply email:", err);
+    return { success: false, error: errorMessage };
+  }
+}

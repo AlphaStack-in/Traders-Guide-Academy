@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { clientConfig } from "@/lib/client-config";
 import { createSubscriberSession, setRegisteredBrowserCookie } from "@/lib/subscriber-auth";
 import { hashPassword } from "@/lib/password";
+import { normalizeEmail } from "@/lib/utils";
 import type { BillingCycle } from "@prisma/client";
 
 const MIN_PASSWORD_LENGTH = 6;
@@ -40,7 +41,7 @@ export async function checkExistingMember(phone: string) {
 export async function registerSubscriber(input: RegisterInput) {
   const name = input.name.trim();
   const phone = input.phone.trim();
-  const email = input.email?.trim() || "";
+  const email = normalizeEmail(input.email);
   const password = input.password ?? "";
   const currentBroker = input.currentBroker?.trim() || null;
   const billingCycle: BillingCycle = VALID_BILLING_CYCLES.includes(input.billingCycle as BillingCycle)
@@ -64,9 +65,10 @@ export async function registerSubscriber(input: RegisterInput) {
     return { success: false, error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters.` };
   }
 
-  // Subscriber.email has no unique DB constraint (see prisma/schema.prisma),
-  // and login looks accounts up by email — so enforce uniqueness here at the
-  // application level to avoid two accounts sharing one login email.
+  // Subscriber.email is DB-unique (prisma/schema.prisma), but this check
+  // still runs first to return a friendly error instead of a raw P2002 for
+  // the common case — the create/update below also catches P2002 as a
+  // fallback in case a concurrent request races past this check.
   const existingByEmail = await prisma.subscriber.findFirst({
     where: { email: { equals: email, mode: "insensitive" } },
   });
@@ -86,20 +88,31 @@ export async function registerSubscriber(input: RegisterInput) {
         };
       }
 
-      const subscriber = await prisma.subscriber.update({
-        where: { id: invitedSubscriber.id },
-        data: {
-          name,
-          phone,
-          email: email || invitedSubscriber.email,
-          passwordHash,
-          currentBroker: currentBroker || invitedSubscriber.currentBroker,
-          billingCycle,
-          batchNumber: batchNumber || invitedSubscriber.batchNumber,
-          referralStatus: "JOINED",
-          invitationToken: null,
-        },
-      });
+      let subscriber;
+      try {
+        subscriber = await prisma.subscriber.update({
+          where: { id: invitedSubscriber.id },
+          data: {
+            name,
+            phone,
+            email: email || invitedSubscriber.email,
+            passwordHash,
+            currentBroker: currentBroker || invitedSubscriber.currentBroker,
+            billingCycle,
+            batchNumber: batchNumber || invitedSubscriber.batchNumber,
+            referralStatus: "JOINED",
+            invitationToken: null,
+          },
+        });
+      } catch (err: any) {
+        if (err.code === "P2002" && err.meta?.target?.includes?.("email")) {
+          return {
+            success: false,
+            error: "That email is already registered. Try logging in instead.",
+          };
+        }
+        throw err;
+      }
       await setRegisteredBrowserCookie();
       await createSubscriberSession(subscriber.id);
       return { success: true };
@@ -114,18 +127,29 @@ export async function registerSubscriber(input: RegisterInput) {
   }
 
   // Standard registration without valid referral token defaults to NOT_JOINED
-  const subscriber = await prisma.subscriber.create({
-    data: {
-      name,
-      phone,
-      email,
-      passwordHash,
-      currentBroker,
-      billingCycle,
-      batchNumber,
-      referralStatus: "NOT_JOINED",
-    },
-  });
+  let subscriber;
+  try {
+    subscriber = await prisma.subscriber.create({
+      data: {
+        name,
+        phone,
+        email,
+        passwordHash,
+        currentBroker,
+        billingCycle,
+        batchNumber,
+        referralStatus: "NOT_JOINED",
+      },
+    });
+  } catch (err: any) {
+    if (err.code === "P2002" && err.meta?.target?.includes?.("email")) {
+      return {
+        success: false,
+        error: "That email is already registered. Try logging in instead.",
+      };
+    }
+    throw err;
+  }
 
   await setRegisteredBrowserCookie();
   await createSubscriberSession(subscriber.id);

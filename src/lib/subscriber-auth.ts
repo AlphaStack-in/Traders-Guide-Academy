@@ -13,6 +13,13 @@
  * admin subscribers panel as a fallback. That's a deliberate, scoped-down
  * decision, not an oversight; a follow-up task can add reset emails via
  * Resend later.
+ *
+ * Google sign-in (src/lib/google-oauth.ts + src/app/api/auth/google/) is an
+ * additional, optional way to reach this same session: it looks up an
+ * existing Subscriber by Subscriber.googleId or verified email and calls
+ * createSubscriberSession() below exactly as loginSubscriber() does. It
+ * never creates a subscriber on its own — registration still needs a phone
+ * number Google doesn't provide.
  */
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";

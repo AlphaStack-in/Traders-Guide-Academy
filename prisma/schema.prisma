@@ -31,12 +31,11 @@ model Signal {
   updatedAt      DateTime     @updatedAt
   adminNote      String?
   instrument     Instrument?
-  // Actual stock ticker when this signal was entered under the "Stock"
-  // instrument category in Manual Signal Entry (e.g. "RELIANCE") — the
-  // `instrument` enum above only covers the index instruments, so a stock
-  // trade's real symbol has nowhere else to live. Null for every
-  // index/commodity signal. Used to seed the Stock Symbol combobox with
-  // "already used" suggestions.
+  // Actual stock ticker when instrument = STOCK (e.g. "RELIANCE") — the
+  // `instrument` enum only tells us the signal is *some* individual stock,
+  // not which one, so the real ticker lives here. Null for every
+  // index/commodity signal. Also used to seed the Stock Symbol combobox
+  // with "already used" suggestions.
   stockSymbol    String?
   // Options expiry date, admin-set at signal creation — needed to resolve
   // this signal to an exact tradable Dhan contract (see broker connect
@@ -71,7 +70,11 @@ model Subscriber {
   id                    String                 @id @default(uuid())
   name                  String
   phone                 String
-  email                 String?
+  // Normalize with normalizeEmail() (src/lib/utils.ts) before every write —
+  // the @unique constraint below is a plain case-sensitive DB unique index,
+  // so two accounts could still collide as "Foo@x.com" vs "foo@x.com" if a
+  // caller stores a non-normalized value directly.
+  email                 String?                @unique
   plan                  SubscriberPlan         @default(PREMIUM)
   createdAt             DateTime               @default(now())
   // Which pricing tier the subscriber registered under (Monthly/Quarterly/
@@ -93,6 +96,13 @@ model Subscriber {
   // directly from the admin panel (e.g. for a subscriber who forgets theirs)
   // — there is still no self-service password-reset-by-email flow.
   passwordHash          String?
+  // Google account id (the OAuth "sub" claim), set the first time a
+  // subscriber signs in with Google and their verified Google email
+  // matches an existing account (see src/app/api/auth/google/callback).
+  // Google sign-in only ever authenticates an *existing* subscriber this
+  // way — it never creates one, since registration also needs a phone
+  // number Google doesn't provide (see src/app/register/actions.ts).
+  googleId              String?                @unique
   // Whether the subscriber has opted out of the weekly performance digest
   // email. Defaults to false (opted in). Set to true via the HMAC-signed
   // unsubscribe link in the digest email footer.
@@ -313,6 +323,12 @@ enum Instrument {
   SENSEX
   MIDCAP_NIFTY
   BANK_NIFTY
+  // A single individual-stock F&O trade (e.g. RELIANCE, TCS) — the actual
+  // ticker is not encodable here (this enum only names the four tradable
+  // indices), so it's stored separately in Signal.stockSymbol. Broker order
+  // placement doesn't resolve STOCK signals yet — the DhanInstrument cache
+  // only syncs index (OPTIDX) contracts, not individual-stock (OPTSTK) ones.
+  STOCK
 }
 
 enum SignalStatus {

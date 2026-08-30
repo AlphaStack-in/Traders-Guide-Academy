@@ -3,9 +3,13 @@
  *
  * TGA has exactly one admin account, defined entirely by environment
  * variables (ADMIN_EMAIL, ADMIN_PASSWORD_HASH, SESSION_SECRET) — there is no
- * database-backed multi-admin system or OAuth provider. This replaced the
- * previous Supabase Auth (Google OAuth) + AdminUser-table RBAC when TGA
- * moved its database off Supabase onto Neon.
+ * database-backed multi-admin system. This replaced the previous Supabase
+ * Auth (Google OAuth) + AdminUser-table RBAC when TGA moved its database off
+ * Supabase onto Neon. Google sign-in returned later (see
+ * src/lib/google-oauth.ts + src/app/api/auth/google/), but only as an
+ * alternate credential for this same single env-var-defined identity — it
+ * still just calls createAdminSession() below once the Google email matches
+ * ADMIN_EMAIL, not a separate OAuth-backed account system.
  *
  * Session mechanism: an HMAC-signed, httpOnly cookie (see
  * src/lib/session-cookie.ts), verified server-side on every check — no

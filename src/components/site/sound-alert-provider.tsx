@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { getRecentSignalAlerts, type SignalAlertRow } from "@/lib/signal-alerts";
 import { inferHitTargetLabel } from "@/lib/signal-metrics";
-import { INSTRUMENT_LABEL, type InstrumentLiteral } from "@/lib/instruments";
+import { formatInstrumentLabel, type InstrumentValue } from "@/lib/instruments";
 import {
   TradeAlertOverlay,
   type CelebrationEvent,
@@ -126,11 +126,13 @@ function playSlHitTone(ctx: AudioContext) {
 }
 
 function signalLabelOf(row: {
-  instrument?: InstrumentLiteral | null;
+  instrument?: InstrumentValue | null;
+  stockSymbol?: string | null;
   strike?: number;
   optionType?: string;
 }) {
-  const prefix = row.instrument ? `${INSTRUMENT_LABEL[row.instrument]} ` : "";
+  const label = formatInstrumentLabel(row.instrument, row.stockSymbol);
+  const prefix = label ? `${label} ` : "";
   return `${prefix}${row.strike ?? ""} ${row.optionType ?? ""}`.trim();
 }
 

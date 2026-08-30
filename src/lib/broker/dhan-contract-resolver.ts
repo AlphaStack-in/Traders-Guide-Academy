@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import type { InstrumentLiteral } from "@/lib/instruments";
+import type { InstrumentValue } from "@/lib/instruments";
 
 function normalizeExpiryDate(date: Date): Date {
   return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
@@ -13,7 +13,7 @@ export interface DhanContract {
 }
 
 export interface ResolveDhanContractInput {
-  instrument: InstrumentLiteral;
+  instrument: InstrumentValue;
   strike: number;
   optionType: "CE" | "PE";
   expiry: Date;
@@ -25,6 +25,12 @@ export interface ResolveDhanContractInput {
 export async function resolveDhanContract(
   input: ResolveDhanContractInput,
 ): Promise<DhanContract | null> {
+  // The cache only ever syncs index (OPTIDX) contracts, never individual
+  // stocks (OPTSTK) — see dhan-instrument-sync.ts — so a STOCK signal can
+  // never resolve here. Short-circuit rather than issuing a query that's
+  // guaranteed to miss.
+  if (input.instrument === "STOCK") return null;
+
   const row = await prisma.dhanInstrument.findUnique({
     where: {
       underlying_expiry_strike_optionType: {

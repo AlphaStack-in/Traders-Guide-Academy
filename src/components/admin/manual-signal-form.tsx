@@ -13,12 +13,15 @@ import {
 } from "@/components/ui/select";
 import { Combobox } from "@/components/ui/combobox";
 import { createSignals, type SignalInput } from "@/app/admin/(protected)/signals/actions";
-import { INSTRUMENTS, INSTRUMENT_LABEL, type InstrumentLiteral } from "@/lib/instruments";
+import { INSTRUMENTS, type InstrumentLiteral, type InstrumentValue } from "@/lib/instruments";
 import { getNextExpiry, type InstrumentCategory, type ExpiryOption } from "@/lib/expiry";
 import { ChartImageUploader } from "@/components/signals/chart-image-uploader";
 import { Send } from "lucide-react";
 
-export type ExtendedInstrument = InstrumentLiteral | "STOCK";
+// Same domain as Signal.instrument (see InstrumentValue) — kept as its own
+// export here since this file introduced the "Stock" category concept
+// before the DB enum caught up to it; the two are the same set of values.
+export type ExtendedInstrument = InstrumentValue;
 
 // Most frequently traded intraday F&O stocks (standard NSE trading
 // symbols) — seeds the Stock Symbol combobox alongside whatever symbols
@@ -39,7 +42,7 @@ export const POPULAR_STOCKS = [
 export interface ManualFormValues {
   strike: string;
   optionType: "CE" | "PE";
-  instrument: InstrumentLiteral;
+  instrument: InstrumentValue;
   category: ExtendedInstrument;
   stockSymbol: string;
   entryPrice: string;
@@ -104,11 +107,13 @@ export function ManualSignalForm({ prefilledValues, onSaved, usedStockSymbols = 
       instrument: newCategory,
       stockSymbol: form.stockSymbol,
     });
-    const mappedInst: InstrumentLiteral = newCategory === "STOCK" ? "NIFTY" : newCategory;
     setForm((prev) => ({
       ...prev,
       category: newCategory,
-      instrument: mappedInst,
+      // category IS the real instrument now — no more collapsing "Stock"
+      // down to "NIFTY" (see stockSymbol's comment in schema.prisma for
+      // why that used to happen).
+      instrument: newCategory,
       expiry: res.expiryDate,
     }));
   }
@@ -154,7 +159,7 @@ export function ManualSignalForm({ prefilledValues, onSaved, usedStockSymbols = 
         ...prev,
         ...prefilledValues,
         category: cat,
-        instrument: isStock ? "NIFTY" : (rawInst as InstrumentLiteral),
+        instrument: cat,
         stockSymbol: isStock ? rawInst : prev.stockSymbol,
         expiry: isRequestedExpiryValid ? requestedExpiry : res.expiryDate,
       }));
@@ -206,9 +211,10 @@ export function ManualSignalForm({ prefilledValues, onSaved, usedStockSymbols = 
       chartImageUrl: form.chartImageUrl,
       target1: targets[0] ?? null,
       target2: targets[1] ?? null,
-      // Persist the actual typed symbol so it shows up as an "already
-      // used" suggestion next time — the `instrument` enum field has no
-      // slot for a stock name (see stockSymbol's comment in schema.prisma).
+      // Persist the actual typed symbol — the `instrument` enum only says
+      // "this is a stock trade", not which one, so the real ticker lives
+      // here too (see stockSymbol's comment in schema.prisma). Also shows
+      // up as an "already used" suggestion next time.
       stockSymbol: form.category === "STOCK" ? form.stockSymbol.trim().toUpperCase() : null,
     };
 

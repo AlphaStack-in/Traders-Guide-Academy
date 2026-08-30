@@ -170,21 +170,21 @@
   <div class="eyebrow">Traders Guide Academy — Internal</div>
   <h1>Open technical debt, by who owns closing it</h1>
   <p class="lede">
-    Twenty-four items surfaced across the codebase and this build history, sorted into
+    Twenty-three items surfaced across the codebase and this build history, sorted into
     the five roles that would actually action each one. <b>TGA is proof-of-concept stage
     — nothing here is a fire</b>, but several become real risk the moment the product
     goes live with paying, India-based subscribers.
   </p>
 
   <div class="stats">
-    <div class="stat"><div class="num">24</div><div class="label">Total items</div></div>
+    <div class="stat"><div class="num">23</div><div class="label">Total items</div></div>
     <div class="stat"><div class="num high">10</div><div class="label">High</div></div>
-    <div class="stat"><div class="num" style="color:var(--med-text)">9</div><div class="label">Medium</div></div>
+    <div class="stat"><div class="num" style="color:var(--med-text)">8</div><div class="label">Medium</div></div>
     <div class="stat"><div class="num" style="color:var(--low-text)">5</div><div class="label">Low</div></div>
   </div>
 
   <div class="tags">
-    <span class="tag">Technical Architect · 7</span>
+    <span class="tag">Technical Architect · 6</span>
     <span class="tag">Product Manager · 6</span>
     <span class="tag">Developer · 5</span>
     <span class="tag">QA / Test · 3</span>
@@ -210,11 +210,6 @@
         <tr>
           <td class="item">Single hardcoded admin, dead RBAC schema</td>
           <td class="why"><code>AdminUser</code> and <code>AdminUserAuditLog</code> tables still exist from a pre-Neon-migration Supabase Auth system, but are entirely unreferenced now — <code>admin-rbac.ts</code> checks a single <code>ADMIN_EMAIL</code> / <code>ADMIN_PASSWORD_HASH</code> env pair instead. No per-admin identity, no real audit trail, and two unused tables sitting in the live schema.</td>
-          <td class="sev"><span class="sev-pill medium">MEDIUM</span></td>
-        </tr>
-        <tr>
-          <td class="item">Stock signals misuse the instrument column</td>
-          <td class="why">The <code>instrument</code> enum has no STOCK value, so a stock trade is stored as <code>"NIFTY"</code> and the real symbol only survives via a separately bolted-on <code>stockSymbol</code> column. Works, but the data model doesn't actually describe what happened.</td>
           <td class="sev"><span class="sev-pill medium">MEDIUM</span></td>
         </tr>
         <tr>

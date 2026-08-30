@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { calcPnlPoints } from "@/lib/signal-metrics";
-import { INSTRUMENT_LABEL, type InstrumentLiteral } from "@/lib/instruments";
+import { formatInstrumentLabel } from "@/lib/instruments";
 import type { Signal } from "@prisma/client";
 
 // IST is fixed at UTC+5:30 year-round (no DST).
@@ -128,9 +128,7 @@ export function computeDigestMetrics(signals: Signal[]): DigestMetrics {
         s.lotSize != null ? pnlPoints * s.lotSize : null;
       return {
         id: s.id,
-        instrument: s.instrument
-          ? INSTRUMENT_LABEL[s.instrument as InstrumentLiteral] || s.instrument
-          : "Unknown",
+        instrument: formatInstrumentLabel(s.instrument, s.stockSymbol) || "Unknown",
         strike: s.strike,
         optionType: s.optionType,
         entryPrice: s.entryPrice,

@@ -6,6 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { loginAdmin } from "@/app/admin/login/actions";
+import { GoogleSignInButton } from "@/components/auth/google-signin-button";
+
+const GOOGLE_ERROR_MESSAGES: Record<string, string> = {
+  google_not_configured: "Google sign-in isn't set up for this site yet.",
+  google_denied: "Google sign-in was cancelled.",
+  google_auth_failed: "Something went wrong signing in with Google. Please try again.",
+  google_email_unverified: "That Google account's email isn't verified.",
+  google_not_admin: "That Google account isn't authorized as an admin.",
+};
 
 export function AdminLoginForm() {
   const router = useRouter();
@@ -15,7 +24,13 @@ export function AdminLoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(
+    (() => {
+      const code = searchParams.get("error");
+      if (!code) return null;
+      return GOOGLE_ERROR_MESSAGES[code] ?? decodeURIComponent(code);
+    })(),
+  );
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -80,6 +95,13 @@ export function AdminLoginForm() {
       >
         {loading ? "Signing in…" : "Sign In"}
       </Button>
+
+      <div className="relative my-1 text-center text-xs text-muted-foreground">
+        <div className="absolute inset-x-0 top-1/2 border-t border-white/10" />
+        <span className="relative bg-background px-2">or</span>
+      </div>
+
+      <GoogleSignInButton role="admin" redirectTo={redirectTo} />
     </form>
   );
 }
