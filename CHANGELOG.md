@@ -12,6 +12,12 @@ Each release header now includes a build timestamp (24-hour IST, matching `build
 
 ## [Unreleased]
 
+## [1.0.41] - 2026-08-30 23:35 IST
+
+### Changed
+- Lightened primary teal for text links and focus rings (`#23a3d1`, up from `#1b7a9d`) for better contrast on the dark background; CTA gradient buttons keep their darker teal tokens
+- Admin Changelog page now has date-range filter chips (Today / This Week / This Month / Custom Range / All Time), matching the Signals page filter UX with URL-persisted range
+
 ## [1.0.40] - 2026-08-30 22:45 IST
 
 ### Added

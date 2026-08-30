@@ -1,24 +1,42 @@
 import { getBuildInfo } from "@/lib/build-info";
 import { CHANGELOG } from "@/lib/changelog";
-import { CheckCircle2, History, ShieldCheck } from "lucide-react";
+import { History, ShieldCheck } from "lucide-react";
+import { ChangelogTimeline } from "@/components/admin/changelog-timeline";
+import {
+  RANGE_PRESETS,
+  type RangePreset,
+  type SignalsDateFilter,
+} from "@/lib/date-filter";
 
-// Changelog entries are static (committed source data) so this page can be
-// statically generated.  Build metadata (SHA, timestamp) are baked into the
-// bundle by next.config.ts — no runtime fetch needed.
-export default function AdminChangelogPage() {
+// Changelog entries are static (committed source data) — build metadata
+// (SHA, timestamp) are baked into the bundle by next.config.ts, no runtime
+// fetch needed. Reading `searchParams` (for the initial filter, so the range
+// is shareable/refresh-safe via the URL) makes this route render dynamically
+// per request; the actual filtering of CHANGELOG happens client-side in
+// ChangelogTimeline, not here — it's a small already-in-memory array, so
+// there's no need for a server round-trip just to filter it.
+export default async function AdminChangelogPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ range?: string; from?: string; to?: string }>;
+}) {
   const buildInfo = getBuildInfo();
   // "Currently Deployed" is determined by the application version, not by Git
   // SHA. Multiple changelog entries can share a version (iterative patches
   // released under the same version string), but only the FIRST matching
-  // entry at the top of the list is marked as currently deployed.
+  // entry at the top of the list is marked as currently deployed —
+  // ChangelogTimeline re-derives this itself from currentVersion.
   const currentVersion = buildInfo.version;
 
-  // Pre-compute which entry is the current one before rendering.
-  // We do this outside the map so we never mutate a variable inside a render
-  // callback, which would violate react-hooks/immutability rules.
-  const currentIndex = CHANGELOG.findIndex(
-    (entry) => entry.version === currentVersion
-  );
+  const params = await searchParams;
+  const range = RANGE_PRESETS.includes(params.range as RangePreset)
+    ? (params.range as RangePreset)
+    : "all";
+  const initialFilter: SignalsDateFilter = {
+    range,
+    from: params.from ?? "",
+    to: params.to ?? "",
+  };
 
   return (
     <div className="flex flex-col gap-8 max-w-5xl mx-auto py-2">
@@ -72,56 +90,11 @@ export default function AdminChangelogPage() {
       </div>
 
       {/* Changelog Timeline */}
-      <div className="flex flex-col gap-6">
-        {CHANGELOG.map((entry, index) => {
-          // Only the first entry whose version matches the running version is
-          // marked as currently deployed — prevents duplicate badges when
-          // multiple entries share the same version string.
-          const isCurrent = index === currentIndex;
-
-          return (
-            <div
-              key={`${entry.version}-${index}`}
-              className={`relative rounded-2xl border p-5 transition-all duration-200 ${
-                isCurrent
-                  ? "border-emerald-500/40 bg-emerald-950/10 shadow-xl"
-                  : "border-white/10 bg-[#0d0e14]/80 hover:border-white/20"
-              }`}
-            >
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-3 mb-4">
-                <div className="flex items-center gap-2.5 flex-wrap">
-                  <span className="px-2.5 py-1 rounded-lg bg-primary/20 text-primary border border-primary/30 text-xs font-bold font-mono">
-                    v{entry.version}
-                  </span>
-                  <span className="text-xs text-muted-foreground font-medium">
-                    {entry.date}
-                  </span>
-                </div>
-
-                {isCurrent && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold text-emerald-400 bg-emerald-500/20 border border-emerald-500/40 animate-pulse w-fit">
-                    <CheckCircle2 className="h-3.5 w-3.5" />
-                    Currently Deployed
-                  </span>
-                )}
-              </div>
-
-              <h3 className="text-base font-bold text-foreground leading-snug mb-3">
-                {entry.title}
-              </h3>
-
-              <ul className="flex flex-col gap-2 pl-2 text-xs text-muted-foreground">
-                {entry.highlights.map((item, idx) => (
-                  <li key={idx} className="flex items-start gap-2 leading-relaxed">
-                    <span className="text-primary font-bold shrink-0">•</span>
-                    <span className="text-foreground/90">{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          );
-        })}
-      </div>
+      <ChangelogTimeline
+        entries={CHANGELOG}
+        currentVersion={currentVersion}
+        initialFilter={initialFilter}
+      />
     </div>
   );
 }

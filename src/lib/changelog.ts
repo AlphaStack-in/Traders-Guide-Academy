@@ -29,7 +29,43 @@ export interface ChangelogEntry {
   highlights: string[];
 }
 
+const MONTH_ABBREVIATIONS = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
+const CHANGELOG_DATE_PATTERN = /^(\d{1,2}) (\w{3}) (\d{4}), (\d{2}):(\d{2}) IST$/;
+
+/**
+ * Converts a ChangelogEntry's human-readable IST timestamp (e.g.
+ * "30 Aug 2026, 22:45 IST") into an ISO 8601 instant string, so release
+ * dates can run through the same date-filter helpers (computeBoundaries /
+ * matchesDateFilter, lib/date-filter.ts) used for signal timestamps
+ * elsewhere in the admin. `new Date("30 Aug 2026, 22:45 IST")` is not used
+ * directly because that format's parsing is implementation-defined across
+ * JS engines. Falls back to the current time if a date string doesn't match
+ * the expected format (shouldn't happen for entries below).
+ */
+export function changelogTimestamp(date: string): string {
+  const match = CHANGELOG_DATE_PATTERN.exec(date);
+  if (!match) return new Date().toISOString();
+  const [, day, monthAbbr, year, hour, minute] = match;
+  const monthIndex = MONTH_ABBREVIATIONS.indexOf(monthAbbr);
+  const utcMs =
+    Date.UTC(Number(year), monthIndex, Number(day), Number(hour), Number(minute)) - IST_OFFSET_MS;
+  return new Date(utcMs).toISOString();
+}
+
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: "1.0.41",
+    date: "30 Aug 2026, 23:35 IST",
+    title: "Lighter Teal Links & Changelog Date Filters",
+    highlights: [
+      "Primary teal for text links and focus rings lightened to #23a3d1 for better contrast on the dark background \u2014 CTA gradient buttons unchanged",
+      "Admin Changelog page now has Today / This Week / This Month / Custom Range / All Time filter chips, matching the Signals page UX",
+    ],
+  },
   {
     version: "1.0.40",
     date: "30 Aug 2026, 22:45 IST",
