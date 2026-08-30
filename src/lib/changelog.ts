@@ -31,6 +31,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.39",
+    date: "30 Aug 2026, 22:35 IST",
+    title: "TGA Logo Teal Primary Buttons & Links",
+    highlights: [
+      "Primary CTA buttons, text links, and focus rings now use TGA logo teal (#1b7a9d) instead of gold — button label text switches to cream (#f5f2e8) for readability",
+      "Gold is unchanged for headline gradient text, chart colors, badges, and glass-card hover glow",
+    ],
+  },
+  {
     version: "1.0.37",
     date: "28 Aug 2026, 23:15 IST",
     title: "Self-Service Plan Upgrade/Renewal (Cashfree Autopay)",

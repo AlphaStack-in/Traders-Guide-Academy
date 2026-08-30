@@ -32,15 +32,12 @@ export default function RootLayout({
       className={`${inter.variable} ${sora.variable} dark h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        {/* Per-client brand colors — overrides the SignalFlow defaults baked into
-            globals.css so one codebase can serve multiple deployments. */}
+        {/* Per-client brand colors — overrides gold/accent tokens in globals.css
+            for multi-tenant deployments. Primary button/link teal comes from
+            globals.css and is not overridden here. */}
         <style>{`
           :root {
-            --primary: ${clientConfig.goldStart};
-            --ring: ${clientConfig.goldStart};
             --chart-1: ${clientConfig.goldStart};
-            --sidebar-primary: ${clientConfig.goldStart};
-            --sidebar-ring: ${clientConfig.goldStart};
             --accent: ${clientConfig.goldEnd};
             --chart-4: ${clientConfig.goldEnd};
             --signalflow-gold-start: ${clientConfig.goldStart};

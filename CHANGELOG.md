@@ -12,6 +12,11 @@ Each release header now includes a build timestamp (24-hour IST, matching `build
 
 ## [Unreleased]
 
+## [1.0.39] - 2026-08-30 22:35 IST
+
+### Changed
+- Primary buttons, links, and focus rings now use TGA logo teal (`#1b7a9d`) instead of gold; headline gradient text, chart colors, badges, and glass-card hover glow stay gold
+
 ## [1.0.37] - 2026-08-28 23:15 IST
 
 ### Added

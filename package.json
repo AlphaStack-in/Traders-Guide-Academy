@@ -1,6 +1,6 @@
 {
   "name": "traders-guide-academy",
-  "version": "1.0.37",
+  "version": "1.0.39",
   "private": true,
   "scripts": {
     "dev": "next dev",
