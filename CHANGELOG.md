@@ -6,11 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 **[Tech debts](./tech-debt-ledger.html)** — once deployed, also served at `/tech-debt-ledger.html`
 
-Versioning continues the semantic patch series from the SignalFlow template (`1.0.7` → `1.0.8` …). The footer and Admin Changelog page read the current version from `package.json` (now **1.0.37**).
+Versioning continues the semantic patch series from the SignalFlow template (`1.0.7` → `1.0.8` …). The footer and Admin Changelog page read the current version from `package.json` (now **1.0.42**).
 
 Each release header now includes a build timestamp (24-hour IST, matching `build-info.ts`'s `formattedBuildTime`), not just a date — this reflects the actual commit that shipped the version. While adding timestamps, two pre-existing dates were corrected to match their real shipping commit: `1.0.8` (was dated by the TGA fork commit, 3 days before the digest-email feature in that release actually shipped) and `1.0.2` (was off by one day around a just-after-midnight IST commit).
 
 ## [Unreleased]
+
+## [1.0.42] - 2026-08-31 18:20 IST
+
+### Changed
+- Headline highlight text (`.signalflow-gold-text`) now renders a light-teal gradient via new `--signalflow-text-accent-*` tokens instead of gold — hero "accuracy"/"consistency" and other highlighted headlines across the site use brand teal
+- Site meta description, footer, dashboard Share Performance message, and refer-and-earn social share messages now include "Powered by SignalFlow technology"
 
 ## [1.0.41] - 2026-08-30 23:35 IST
 

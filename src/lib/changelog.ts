@@ -58,6 +58,15 @@ export function changelogTimestamp(date: string): string {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.42",
+    date: "31 Aug 2026, 18:20 IST",
+    title: "Teal Headline Accents & SignalFlow Attribution",
+    highlights: [
+      "Headline highlight text (.signalflow-gold-text) now uses a light-teal gradient via new --signalflow-text-accent-* tokens instead of gold",
+      "Footer, dashboard Share Performance message, refer-and-earn social shares, and site meta description now include \u201cPowered by SignalFlow technology\u201d",
+    ],
+  },
+  {
     version: "1.0.41",
     date: "30 Aug 2026, 23:35 IST",
     title: "Lighter Teal Links & Changelog Date Filters",

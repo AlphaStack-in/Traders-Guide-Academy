@@ -142,7 +142,7 @@ const CLIENTS: Record<ClientId, ClientConfig> = {
     siteName: "Traders Guide Academy",
     siteNameShort: "TGA",
     siteDescription:
-      "Traders Guide Academy publishes intraday options-buying trade signals to premium subscribers, backed by transparent performance analytics.",
+      "Traders Guide Academy publishes intraday options-buying trade signals to premium subscribers, backed by transparent performance analytics. Powered by SignalFlow technology.",
     // TODO: upload real logo/favicon to public/ and point these at them.
     logoSrc: "/tga-logo.png",
     logoAlt: "Traders Guide Academy",

@@ -150,7 +150,7 @@ export function ReferEarnView({
     try {
       // Launch social intent
       const encodedMsg = encodeURIComponent(
-        `🔥 Check out our verified signal performance on ${brandName}!\n\nJoin here: ${referralLink}`
+        `🔥 Check out our verified signal performance on ${brandName}!\n\nJoin here: ${referralLink}\n\n⚡ Powered by SignalFlow technology`
       );
       if (platform === "WHATSAPP") {
         window.open(`https://api.whatsapp.com/send?text=${encodedMsg}`, "_blank", "noopener,noreferrer");

@@ -98,6 +98,14 @@
   --signalflow-primary-btn-end: #1b7a9d;
   --signalflow-primary-gradient: linear-gradient(135deg, var(--signalflow-primary-btn-start), var(--signalflow-primary-btn-end));
 
+  /* Light-teal text accent — replaces the gold gradient for headline
+     highlight words (e.g. hero "accuracy"/"consistency"). Kept as its own
+     token pair (brighter than the CTA button teal above) so highlighted
+     text stays legible against the dark background. */
+  --signalflow-text-accent-start: #23a3d1;
+  --signalflow-text-accent-end: #51bbe1;
+  --signalflow-text-accent-gradient: linear-gradient(135deg, var(--signalflow-text-accent-start), var(--signalflow-text-accent-end));
+
   /* Categorical: CE/PE are identity, not outcome — kept away from the
      win/loss (green/red) hue family so a chart never reads as "PE = bad". */
   --signalflow-ce: #3987e5;
@@ -118,8 +126,11 @@
 }
 
 @layer utilities {
+  /* Note: retains the "-gold-" class name to avoid touching the 30+ files
+     that reference it, but now renders the light-teal text-accent gradient
+     (brand color) instead of gold — see --signalflow-text-accent-gradient. */
   .signalflow-gold-text {
-    background-image: var(--signalflow-gold-gradient);
+    background-image: var(--signalflow-text-accent-gradient);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;

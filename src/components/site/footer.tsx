@@ -46,6 +46,7 @@ export function Footer() {
         <div className="flex flex-col gap-4 border-t border-white/5 pt-6 text-sm text-muted-foreground sm:flex-row sm:items-start sm:justify-between">
           <div className="flex flex-col gap-1.5 items-start">
             <p>&copy; {new Date().getFullYear()} {clientConfig.siteName}. All rights reserved.</p>
+            <p className="text-xs text-muted-foreground/70">Powered by SignalFlow technology</p>
             <BuildVersionIndicator />
           </div>
           <div className="flex gap-4">
