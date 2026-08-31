@@ -58,6 +58,14 @@ export function changelogTimestamp(date: string): string {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.45",
+    date: "31 Aug 2026, 23:05 IST",
+    title: "Teal Hero Social Icons",
+    highlights: [
+      "Home page hero social icons (WhatsApp, Instagram, Telegram, YouTube) now use brand light teal (#23a3d1) instead of gold",
+    ],
+  },
+  {
     version: "1.0.44",
     date: "31 Aug 2026, 23:03 IST",
     title: "Navbar Logo Teal Recolor",

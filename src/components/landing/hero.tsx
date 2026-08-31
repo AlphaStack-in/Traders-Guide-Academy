@@ -132,10 +132,7 @@ export function Hero() {
                 className="signalflow-glow h-32 w-28 flex-col gap-2 px-0"
               >
                 <a href={href} target="_blank" rel="noopener noreferrer">
-                  <Icon
-                    className="size-12"
-                    style={{ color: clientConfig.logoAccent ?? "var(--signalflow-gold-start)" }}
-                  />
+                  <Icon className="size-12 text-primary" />
                   <span className="text-[10px] font-normal text-muted-foreground">{label}</span>
                 </a>
               </Button>
