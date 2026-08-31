@@ -4,10 +4,10 @@ import { motion } from "framer-motion";
 import { CountUp } from "@/components/landing/count-up";
 
 const STATS = [
-  { label: "Active Students", value: 650, suffix: "+" },
-  { label: "Years of Trading Exp", value: 12, suffix: "+" },
+  { label: "Active Students", value: 1500, suffix: "+" },
+  { label: "Years of Market Exp", value: 25, suffix: "+" },
   { label: "Live Sessions Hosted", value: 250, suffix: "+" },
-  { label: "Total Beneficiaries", value: 1000, suffix: "+" },
+  { label: "Total Beneficiaries", value: 3000, suffix: "+" },
 ];
 
 export function TrustStats() {

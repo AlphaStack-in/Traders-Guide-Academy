@@ -58,6 +58,14 @@ export function changelogTimestamp(date: string): string {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.43",
+    date: "31 Aug 2026, 18:34 IST",
+    title: "Updated Home Page Trust Stats",
+    highlights: [
+      "Home page trust stats now show 1,500+ active students, 25+ years of market experience, 250+ live sessions hosted, and 3,000+ total beneficiaries",
+    ],
+  },
+  {
     version: "1.0.42",
     date: "31 Aug 2026, 18:20 IST",
     title: "Teal Headline Accents & SignalFlow Attribution",
