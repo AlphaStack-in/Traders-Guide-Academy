@@ -32,7 +32,7 @@ import {
   type SignalUpdateInput,
 } from "@/app/admin/(protected)/signals/actions";
 import { INSTRUMENTS, INSTRUMENT_LABEL, formatInstrumentLabel, type InstrumentValue } from "@/lib/instruments";
-import { computeDisplayStatus } from "@/lib/signal-metrics";
+import { calcPnlPoints, computeDisplayStatus } from "@/lib/signal-metrics";
 
 export interface ManageSignalRow {
   id: string;
@@ -137,6 +137,8 @@ function ManageSignalRowItem({ signal }: { signal: ManageSignalRow }) {
 
   const isWin = signal.pnlPercent != null && signal.pnlPercent > 0;
   const isLoss = signal.pnlPercent != null && signal.pnlPercent < 0;
+  const pnlPoints =
+    signal.sellPrice != null ? calcPnlPoints(signal.entryPrice, signal.sellPrice) : null;
   const pnlClass = isWin
     ? "text-[var(--signalflow-win)]"
     : isLoss
@@ -317,6 +319,7 @@ function ManageSignalRowItem({ signal }: { signal: ManageSignalRow }) {
           />
         </TableCell>
         <TableCell className="text-xs text-muted-foreground">Auto</TableCell>
+        <TableCell className="text-xs text-muted-foreground">Auto</TableCell>
         <TableCell colSpan={2}>
           <div className="flex items-center gap-2">
             <Button
@@ -340,7 +343,7 @@ function ManageSignalRowItem({ signal }: { signal: ManageSignalRow }) {
         </TableCell>
       </TableRow>
       <TableRow className="border-b-white/5 bg-white/[0.02] hover:bg-white/[0.02]">
-        <TableCell colSpan={10}>
+        <TableCell colSpan={11}>
           <Label className="text-xs text-muted-foreground">
             Admin Update (shown to subscribers on the Trade Log)
           </Label>
@@ -386,6 +389,9 @@ function ManageSignalRowItem({ signal }: { signal: ManageSignalRow }) {
       <TableCell className="hidden md:table-cell">{signal.targets.join(", ")}</TableCell>
       <TableCell>
         {signal.status === "OPEN" ? <CloseTradeCell signal={signal} /> : (signal.sellPrice ?? "—")}
+      </TableCell>
+      <TableCell className={cn("font-heading font-bold", pnlClass)}>
+        {pnlPoints != null ? `${pnlPoints > 0 ? "+" : ""}${pnlPoints.toFixed(1)}` : "—"}
       </TableCell>
       <TableCell className={cn("font-heading font-bold", pnlClass)}>
         {signal.pnlPercent != null
@@ -442,6 +448,7 @@ export function ManageSignalsTable({ signals }: { signals: ManageSignalRow[] }) 
               <TableHead className="hidden md:table-cell">SL</TableHead>
               <TableHead className="hidden md:table-cell">Target(s)</TableHead>
               <TableHead>Sell / Close</TableHead>
+              <TableHead>Points</TableHead>
               <TableHead>P&amp;L %</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Actions</TableHead>

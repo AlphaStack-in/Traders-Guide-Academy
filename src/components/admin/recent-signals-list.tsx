@@ -9,6 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatInstrumentLabel, type InstrumentValue } from "@/lib/instruments";
+import { calcPnlPoints } from "@/lib/signal-metrics";
 
 export interface RecentSignalItem {
   id: string;
@@ -16,6 +17,8 @@ export interface RecentSignalItem {
   optionType: "CE" | "PE";
   instrument: InstrumentValue | null;
   stockSymbol?: string | null;
+  entryPrice: number;
+  sellPrice: number | null;
   pnlPercent: number | null;
   status: "OPEN" | "TARGET_HIT" | "SL_HIT" | "CLOSED_MANUAL" | "EXPIRED";
   signalTime: string | Date;
@@ -39,6 +42,7 @@ export function RecentSignalsList({ signals }: { signals: RecentSignalItem[] }) 
             <TableHead>Instrument</TableHead>
             <TableHead>Strike</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead className="text-right">Points</TableHead>
             <TableHead className="text-right">P&amp;L %</TableHead>
           </TableRow>
         </TableHeader>
@@ -46,6 +50,8 @@ export function RecentSignalsList({ signals }: { signals: RecentSignalItem[] }) 
           {signals.map((signal) => {
             const isWin = signal.pnlPercent != null && signal.pnlPercent > 0;
             const isLoss = signal.pnlPercent != null && signal.pnlPercent < 0;
+            const pnlPoints =
+              signal.sellPrice != null ? calcPnlPoints(signal.entryPrice, signal.sellPrice) : null;
             const dotColor = isWin
               ? "bg-[var(--signalflow-win)]"
               : isLoss
@@ -79,6 +85,18 @@ export function RecentSignalsList({ signals }: { signals: RecentSignalItem[] }) 
                 </TableCell>
                 <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
                   {STATUS_LABEL[signal.status]}
+                </TableCell>
+                <TableCell
+                  className={cn(
+                    "text-right font-heading font-bold",
+                    isWin
+                      ? "text-[var(--signalflow-win)]"
+                      : isLoss
+                        ? "text-[var(--signalflow-loss)]"
+                        : "text-muted-foreground",
+                  )}
+                >
+                  {pnlPoints != null ? `${pnlPoints > 0 ? "+" : ""}${pnlPoints.toFixed(1)}` : "—"}
                 </TableCell>
                 <TableCell
                   className={cn(

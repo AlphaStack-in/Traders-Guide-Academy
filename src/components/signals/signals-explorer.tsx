@@ -21,7 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { INSTRUMENTS, INSTRUMENT_LABEL, formatInstrumentLabel, type InstrumentValue } from "@/lib/instruments";
-import { computeDisplayStatus } from "@/lib/signal-metrics";
+import { calcPnlPoints, computeDisplayStatus } from "@/lib/signal-metrics";
 import {
   computeBoundaries,
   matchesDateFilter,
@@ -62,8 +62,12 @@ export interface SignalRow {
 type OptionFilter = "ALL" | "CE" | "PE";
 type InstrumentFilter = "ALL" | InstrumentValue;
 type ResultFilter = "ALL" | "WIN" | "LOSS" | "OPEN";
-type SortColumn = "date" | "strike" | "entry" | "sl" | "pnl";
+type SortColumn = "date" | "strike" | "entry" | "sl" | "points" | "pnl";
 type SortDirection = "asc" | "desc";
+
+function pointsOf(signal: Pick<SignalRow, "entryPrice" | "sellPrice">): number | null {
+  return signal.sellPrice != null ? calcPnlPoints(signal.entryPrice, signal.sellPrice) : null;
+}
 
 function outcomeClass(pnlPercent: number | null) {
   if (pnlPercent == null) return "border-l-[var(--signalflow-gold-start)]";
@@ -82,6 +86,8 @@ function sortValue(signal: SignalRow, column: SortColumn): number {
       return signal.entryPrice;
     case "sl":
       return signal.stopLoss;
+    case "points":
+      return pointsOf(signal) ?? Number.NEGATIVE_INFINITY;
     case "pnl":
       return signal.pnlPercent ?? Number.NEGATIVE_INFINITY;
   }
@@ -300,6 +306,15 @@ export function SignalsExplorer({
                   <TableHead className="hidden lg:table-cell">Sell Price</TableHead>
                   <TableHead>
                     <SortButton
+                      label="Points"
+                      column="points"
+                      active={sortColumn === "points"}
+                      direction={sortDirection}
+                      onSort={handleSort}
+                    />
+                  </TableHead>
+                  <TableHead>
+                    <SortButton
                       label="P&L %"
                       column="pnl"
                       active={sortColumn === "pnl"}
@@ -332,6 +347,7 @@ export function SignalsExplorer({
                 {filtered.map((signal) => {
                   const isWin = signal.pnlPercent != null && signal.pnlPercent > 0;
                   const isLoss = signal.pnlPercent != null && signal.pnlPercent < 0;
+                  const pnlPoints = pointsOf(signal);
                   const pnlClass = isWin
                     ? "text-[var(--signalflow-win)]"
                     : isLoss
@@ -376,6 +392,9 @@ export function SignalsExplorer({
                       </TableCell>
                       <TableCell className="hidden lg:table-cell">
                         {signal.sellPrice ?? "—"}
+                      </TableCell>
+                      <TableCell className={cn("font-heading font-bold", pnlClass)}>
+                        {pnlPoints != null ? `${pnlPoints > 0 ? "+" : ""}${pnlPoints.toFixed(1)}` : "—"}
                       </TableCell>
                       <TableCell className={cn("font-heading font-bold", pnlClass)}>
                         {signal.pnlPercent != null

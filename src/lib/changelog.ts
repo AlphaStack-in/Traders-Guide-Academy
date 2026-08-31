@@ -58,6 +58,14 @@ export function changelogTimestamp(date: string): string {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.46",
+    date: "31 Aug 2026, 23:21 IST",
+    title: "Points Column in Signals Tables",
+    highlights: [
+      "Points column (sell price \u2212 entry price) added before P&L % in the Trade Log, admin Manage Signals table, and dashboard Recent Signals table",
+    ],
+  },
+  {
     version: "1.0.45",
     date: "31 Aug 2026, 23:05 IST",
     title: "Teal Hero Social Icons",

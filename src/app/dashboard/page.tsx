@@ -36,6 +36,8 @@ export default async function PublicDashboardPage({
     optionType: s.optionType,
     instrument: s.instrument,
     stockSymbol: s.stockSymbol,
+    entryPrice: s.entryPrice,
+    sellPrice: s.sellPrice,
     pnlPercent: s.pnlPercent,
     status: s.status,
     signalTime: s.signalTime.toISOString(),

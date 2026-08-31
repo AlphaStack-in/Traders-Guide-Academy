@@ -89,7 +89,15 @@ export function inferHitTargetLabel(targets: number[], sellPrice: number): strin
 
 export type SignalForMetrics = Pick<
   Signal,
-  "id" | "optionType" | "instrument" | "stockSymbol" | "pnlPercent" | "status" | "signalTime"
+  | "id"
+  | "optionType"
+  | "instrument"
+  | "stockSymbol"
+  | "entryPrice"
+  | "sellPrice"
+  | "pnlPercent"
+  | "status"
+  | "signalTime"
 >;
 
 export interface DashboardMetrics {
