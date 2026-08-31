@@ -58,6 +58,14 @@ export function changelogTimestamp(date: string): string {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.44",
+    date: "31 Aug 2026, 23:03 IST",
+    title: "Navbar Logo Teal Recolor",
+    highlights: [
+      "Navbar horizontal logo (tga-logo-horizontal.png) recolored to brand light teal (#23a3d1) \u2014 the updated asset was never committed despite prior pushes",
+    ],
+  },
+  {
     version: "1.0.43",
     date: "31 Aug 2026, 18:34 IST",
     title: "Updated Home Page Trust Stats",
