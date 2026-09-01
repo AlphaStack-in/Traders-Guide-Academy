@@ -58,6 +58,15 @@ export function changelogTimestamp(date: string): string {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.47",
+    date: "01 Sep 2026, 21:30 IST",
+    title: "Need New Demat Account Option",
+    highlights: [
+      "\"Need New Demat A/C\" option added to the Current Trading Broker dropdown on registration and profile",
+      "Profile page shows a WhatsApp CTA to open a new Demat account under our partner broker referral when no broker is on record or that option is selected",
+    ],
+  },
+  {
     version: "1.0.46",
     date: "31 Aug 2026, 23:21 IST",
     title: "Points Column in Signals Tables",

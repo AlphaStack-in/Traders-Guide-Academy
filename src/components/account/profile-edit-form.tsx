@@ -7,10 +7,12 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { BROKER_OPTIONS } from "@/lib/brokers";
+import { WhatsAppIcon } from "@/components/site/icons";
+import { BROKER_OPTIONS, NEEDS_DEMAT_BROKER_VALUE } from "@/lib/brokers";
 import { updateSubscriberProfile } from "@/app/account/profile/actions";
 import { cancelMySubscription } from "@/app/account/billing/actions";
 import { ContinuePremiumPanel } from "@/components/site/continue-premium-panel";
+import { clientConfig } from "@/lib/client-config";
 import type { PricingPlan } from "@/lib/client-config";
 
 interface ProfileEditFormProps {
@@ -44,6 +46,33 @@ interface ProfileEditFormProps {
    * manual/WhatsApp flow only).
    */
   autopay?: { statusLabel: string; isActive: boolean; periodEndLabel: string | null } | null;
+}
+
+/**
+ * CTA shown when a subscriber has no broker on record, or has explicitly
+ * flagged (via NEEDS_DEMAT_BROKER_VALUE in the Current Broker select) that
+ * they need one — points them at opening a Demat account under our
+ * referral. There's no self-service online referral link yet (broker
+ * partner signup is still a manual, WhatsApp-confirmed flow — same as the
+ * "Free Demat account" offer on the pricing page), so this routes to
+ * WhatsApp rather than a direct broker URL.
+ */
+function NewDematAccountCta() {
+  const brandName = clientConfig.brokerOffer?.brandName ?? "our partner broker";
+  return (
+    <div className="flex flex-col gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2.5 text-xs sm:flex-row sm:items-center sm:justify-between">
+      <p className="text-muted-foreground">
+        Don&apos;t have a Demat account yet? Open one with{" "}
+        <span className="font-semibold signalflow-gold-text">{brandName}</span> under our referral.
+      </p>
+      <Button asChild size="sm" variant="outline" className="signalflow-glow w-fit shrink-0 gap-1.5">
+        <a href={clientConfig.whatsappUrl} target="_blank" rel="noopener noreferrer">
+          <WhatsAppIcon className="h-4 w-4" />
+          Open New Demat Account
+        </a>
+      </Button>
+    </div>
+  );
 }
 
 /**
@@ -89,6 +118,11 @@ export function ProfileEditForm({
   const [currentBroker, setCurrentBroker] = useState(initialCurrentBroker ?? "");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  // No broker on record at all, or they've explicitly flagged (via the
+  // Current Broker select) that they need a Demat account.
+  const initialNeedsDemat =
+    !initialCurrentBroker || initialCurrentBroker === NEEDS_DEMAT_BROKER_VALUE;
 
   function handleCancel() {
     setName(initialName);
@@ -147,7 +181,7 @@ export function ProfileEditForm({
               <td className="py-2 pr-4 align-top text-xs text-muted-foreground">Email</td>
               <td className="py-2 font-heading font-semibold">{initialEmail}</td>
             </tr>
-            {initialCurrentBroker && (
+            {initialCurrentBroker && initialCurrentBroker !== NEEDS_DEMAT_BROKER_VALUE && (
               <tr className="border-b border-white/5">
                 <td className="py-2 pr-4 align-top text-xs text-muted-foreground">Current Broker</td>
                 <td className="py-2 font-heading font-semibold">{initialCurrentBroker}</td>
@@ -186,6 +220,8 @@ export function ProfileEditForm({
             </tr>
           </tbody>
         </table>
+
+        {initialNeedsDemat && <NewDematAccountCta />}
 
         <div className="flex flex-wrap items-center gap-2 border-t border-white/5 pt-3">
           {showUpgrade && (
@@ -285,6 +321,7 @@ export function ProfileEditForm({
             </option>
           ))}
         </select>
+        {currentBroker === NEEDS_DEMAT_BROKER_VALUE && <NewDematAccountCta />}
       </div>
 
       {error && <p className="text-sm text-[var(--signalflow-loss)]">{error}</p>}
