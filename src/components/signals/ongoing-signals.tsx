@@ -269,7 +269,7 @@ export function OngoingSignals({
             </div>
           </div>
         ) : (
-          <div className="grid gap-4 lg:grid-cols-2">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(360px,1fr))] gap-4">
             {signals.map((signal) => {
               const point = toRiskReward(signal);
               const updates = signalUpdates(signal);

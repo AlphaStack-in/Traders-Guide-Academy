@@ -592,19 +592,22 @@ export function TradeRiskRewardBar({ data }: { data: RiskRewardPoint }) {
 
   return (
     <div className="w-full">
-      <div className="relative flex h-8 text-[11px] leading-tight">
-        <div className="absolute top-0 left-0 flex flex-col items-start">
-          <span className="font-semibold text-[var(--signalflow-loss)]">SL ₹{sellSlPrice}</span>
+      {/* Labels are laid out in a plain flex row (start / center / end)
+          rather than positioned at each segment's actual zero-point
+          percentage -- that decouples label placement from the data so
+          SL/Entry/Target text can never overlap even when one segment is
+          tiny (e.g. a small stop-loss % puts the entry point near the far
+          left). The colored track below still reflects the true proportions. */}
+      <div className="flex items-start justify-between gap-2 text-[11px] leading-tight">
+        <div className="flex flex-col items-start">
+          <span className="font-semibold whitespace-nowrap text-[var(--signalflow-loss)]">SL ₹{sellSlPrice}</span>
           <span className="text-muted-foreground">{lossPercent}%</span>
         </div>
-        <div
-          className="absolute top-0 flex -translate-x-1/2 flex-col items-center whitespace-nowrap"
-          style={{ left: `${zeroPercent}%` }}
-        >
-          <span className="font-semibold signalflow-gold-text">Entry ₹{buyPrice}</span>
+        <div className="flex flex-col items-center">
+          <span className="signalflow-gold-text font-semibold whitespace-nowrap">Entry ₹{buyPrice}</span>
         </div>
-        <div className="absolute top-0 right-0 flex flex-col items-end">
-          <span className="font-semibold text-[var(--signalflow-win)]">Target ₹{sellTargetPrice}</span>
+        <div className="flex flex-col items-end">
+          <span className="font-semibold whitespace-nowrap text-[var(--signalflow-win)]">Target ₹{sellTargetPrice}</span>
           <span className="text-muted-foreground">+{gainPercent}%</span>
         </div>
       </div>
