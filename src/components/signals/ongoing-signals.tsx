@@ -158,7 +158,45 @@ export function OngoingSignals({
   );
 
   return (
-    <div className="signalflow-glass signalflow-neutral-border mb-8 rounded-2xl border p-4 sm:p-6">
+    <>
+      {/* General Updates -- broadcast messages not tied to any specific
+          signal. Kept as its own card above the Ongoing Trade panel
+          (rather than nested inside it) since these aren't trade-specific
+          and shouldn't be hidden by the panel's collapse/expand state.
+          Also the id NotificationBell's click-to-navigate jumps to. */}
+      {(editable || sortedGeneralUpdates.length > 0) && (
+        <div
+          id="admin-updates"
+          className="signalflow-glass signalflow-neutral-border mb-4 scroll-mt-24 rounded-2xl border p-4 sm:p-6"
+        >
+          <div className="mb-2 flex items-center justify-between gap-2 border-b border-white/5 pb-1.5">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+              General Updates
+            </p>
+          </div>
+
+          {editable && <GeneralUpdateComposer />}
+
+          {sortedGeneralUpdates.length > 0 ? (
+            <div className="flex max-h-[160px] flex-col gap-2 overflow-y-auto pr-1">
+              {sortedGeneralUpdates.map((u, idx) => (
+                <div key={u.id} className={cn(idx > 0 && "border-t border-white/5 pt-2")}>
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="whitespace-pre-line text-xs text-foreground/90">{u.message}</p>
+                    <p className="shrink-0 text-xs text-muted-foreground pt-0.5">
+                      {formatUpdateTime(u.createdAt)}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground">No general updates yet.</p>
+          )}
+        </div>
+      )}
+
+      <div className="signalflow-glass signalflow-neutral-border mb-8 rounded-2xl border p-4 sm:p-6">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
           <div className="flex items-center gap-2">
@@ -222,116 +260,55 @@ export function OngoingSignals({
 
       {showBody && (
         <>
-      {/* id targeted by NotificationBell's click-to-navigate — lets a
-          clicked notification jump straight to this area via #admin-updates.
-          General broadcasts (no signal attached) and each trade's own
-          messages are deliberately kept in separate cards below — a
-          message never mixes across trades, and each trade's heading is
-          shown once for its whole message list instead of repeating per
-          message. */}
-      <div id="admin-updates" className="scroll-mt-24 flex flex-col gap-4">
-        {(editable || sortedGeneralUpdates.length > 0) && (
-          <div className="rounded-xl border border-white/5 bg-black/10 p-3">
-            <div className="mb-2 flex items-center justify-between gap-2 border-b border-white/5 pb-1.5">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                General Updates
-              </p>
-            </div>
-
-            {editable && <GeneralUpdateComposer />}
-
-            {sortedGeneralUpdates.length > 0 ? (
-              <div className="flex max-h-[160px] flex-col gap-2 overflow-y-auto pr-1">
-                {sortedGeneralUpdates.map((u, idx) => (
-                  <div key={u.id} className={cn(idx > 0 && "border-t border-white/5 pt-2")}>
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="whitespace-pre-line text-xs text-foreground/90">{u.message}</p>
-                      <p className="shrink-0 text-xs text-muted-foreground pt-0.5">
-                        {formatUpdateTime(u.createdAt)}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-xs text-muted-foreground">No general updates yet.</p>
-            )}
+      {isEmpty ? (
+        <div className="rounded-xl border border-white/5 bg-black/10 p-3">
+          <div className="flex h-[100px] w-full flex-col items-center justify-center gap-1 text-center">
+            <p className="text-xs text-muted-foreground">
+              No open trades right now — a risk/reward card will appear here once a signal goes
+              live.
+            </p>
           </div>
-        )}
+        </div>
+      ) : (
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(360px,1fr))] gap-4">
+          {signals.map((signal) => {
+            const point = toRiskReward(signal);
+            return (
+              <div key={signal.id} className="rounded-xl border border-white/5 bg-black/10 p-3 sm:p-4">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-white/5 pb-2">
+                  <span className="font-heading text-sm font-bold signalflow-gold-text">
+                    {instrumentPrefix(signal)}{signal.strike} {signal.optionType}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">
+                    Since {formatSignalDate(signal.signalTime)} {formatSignalTime(signal.signalTime)}
+                  </span>
+                </div>
 
-        {isEmpty ? (
-          <div className="rounded-xl border border-white/5 bg-black/10 p-3">
-            <div className="flex h-[100px] w-full flex-col items-center justify-center gap-1 text-center">
-              <p className="text-xs text-muted-foreground">
-                No open trades right now — a risk/reward card will appear here once a signal goes
-                live.
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(360px,1fr))] gap-4">
-            {signals.map((signal) => {
-              const point = toRiskReward(signal);
-              const updates = signalUpdates(signal);
-              return (
-                <div key={signal.id} className="rounded-xl border border-white/5 bg-black/10 p-3 sm:p-4">
-                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-white/5 pb-2">
-                    <span className="font-heading text-sm font-bold signalflow-gold-text">
-                      {instrumentPrefix(signal)}{signal.strike} {signal.optionType}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground">
-                      Since {formatSignalDate(signal.signalTime)} {formatSignalTime(signal.signalTime)}
-                    </span>
-                  </div>
+                <TradeRiskRewardBar data={point} />
 
-                  <TradeRiskRewardBar data={point} />
-
-                  <div className="mt-3 grid grid-cols-2 gap-2">
-                    <div className="signalflow-glass rounded-xl border border-white/5 p-2 text-center">
-                      <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                        Potential Reward
-                      </p>
-                      <p className="mt-0.5 font-heading text-lg font-bold text-[var(--signalflow-win)]">
-                        +{point.gainPercent.toFixed(1)}%
-                      </p>
-                    </div>
-                    <div className="signalflow-glass rounded-xl border border-white/5 p-2 text-center">
-                      <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                        Potential Risk
-                      </p>
-                      <p className="mt-0.5 font-heading text-lg font-bold text-[var(--signalflow-loss)]">
-                        {point.lossPercent.toFixed(1)}%
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="mt-3 border-t border-white/5 pt-2">
-                    <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                      Updates
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <div className="signalflow-glass rounded-xl border border-white/5 p-2 text-center">
+                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                      Potential Reward
                     </p>
-                    {updates.length > 0 ? (
-                      <div className="flex max-h-[160px] flex-col gap-2 overflow-y-auto pr-1">
-                        {updates.map((u, idx) => (
-                          <div key={u.id} className={cn(idx > 0 && "border-t border-white/5 pt-2")}>
-                            <div className="flex items-start justify-between gap-2">
-                              <p className="whitespace-pre-line text-xs text-foreground/90">{u.message}</p>
-                              <p className="shrink-0 text-xs text-muted-foreground pt-0.5">
-                                {formatUpdateTime(u.createdAt)}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-xs text-muted-foreground">No updates yet for this trade.</p>
-                    )}
+                    <p className="mt-0.5 font-heading text-lg font-bold text-[var(--signalflow-win)]">
+                      +{point.gainPercent.toFixed(1)}%
+                    </p>
+                  </div>
+                  <div className="signalflow-glass rounded-xl border border-white/5 p-2 text-center">
+                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                      Potential Risk
+                    </p>
+                    <p className="mt-0.5 font-heading text-lg font-bold text-[var(--signalflow-loss)]">
+                      {point.lossPercent.toFixed(1)}%
+                    </p>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       <div className="mt-4 flex flex-col gap-4">
         {editable ? (
@@ -416,8 +393,49 @@ export function OngoingSignals({
           </div>
         )}
       </div>
+
+      {!isEmpty && (
+        <div className="mt-4 flex flex-col gap-4">
+          {/* Per-trade Updates -- placed below the trade summary table
+              (rather than inside each risk/reward card above), one heading
+              per trade so a trade's own messages stay grouped together and
+              never mix with another trade's. */}
+          {signals.map((signal) => {
+            const updates = signalUpdates(signal);
+            return (
+              <div key={signal.id} className="rounded-xl border border-white/5 bg-black/10 p-3 sm:p-4">
+                <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2 border-b border-white/5 pb-1.5">
+                  <span className="font-heading text-xs font-bold signalflow-gold-text">
+                    {instrumentPrefix(signal)}{signal.strike} {signal.optionType}
+                  </span>
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    Updates
+                  </p>
+                </div>
+                {updates.length > 0 ? (
+                  <div className="flex max-h-[160px] flex-col gap-2 overflow-y-auto pr-1">
+                    {updates.map((u, idx) => (
+                      <div key={u.id} className={cn(idx > 0 && "border-t border-white/5 pt-2")}>
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="whitespace-pre-line text-xs text-foreground/90">{u.message}</p>
+                          <p className="shrink-0 text-xs text-muted-foreground pt-0.5">
+                            {formatUpdateTime(u.createdAt)}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground">No updates yet for this trade.</p>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
         </>
       )}
     </div>
+    </>
   );
 }
