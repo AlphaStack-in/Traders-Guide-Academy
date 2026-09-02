@@ -11,6 +11,7 @@ import {
 } from "@/lib/telegram";
 import type { InstrumentValue } from "@/lib/instruments";
 import { resolveDhanContract } from "@/lib/broker/dhan-contract-resolver";
+import { publishAdminUpdate } from "@/lib/ably";
 
 export interface SignalInput {
   strike: number;
@@ -127,7 +128,7 @@ export async function createSignals(inputs: SignalInput[]) {
       await sendTelegramMessage(formatNewSignalMessage({ ...input, stockSymbol: input.stockSymbol }));
       // So a brand-new ongoing trade shows up in the notification panel
       // immediately, not only once the admin sends a status update for it.
-      await prisma.adminUpdate.create({
+      const newSignalUpdate = await prisma.adminUpdate.create({
         data: {
           signalId: signal.id,
           strike: signal.strike,
@@ -136,6 +137,7 @@ export async function createSignals(inputs: SignalInput[]) {
           message: `New signal — Entry ${input.entryPrice} | SL ${input.stopLoss} | Target ${input.targets.join(", ")}`,
         },
       });
+      await publishAdminUpdate(newSignalUpdate);
     }
   }
 
@@ -222,7 +224,7 @@ export async function updateAdminNote(id: string, adminNote: string | null) {
   });
 
   if (adminNote) {
-    await prisma.adminUpdate.create({
+    const noteUpdate = await prisma.adminUpdate.create({
       data: {
         signalId: id,
         strike: signal.strike,
@@ -231,6 +233,7 @@ export async function updateAdminNote(id: string, adminNote: string | null) {
         message: adminNote,
       },
     });
+    await publishAdminUpdate(noteUpdate);
   }
 
   revalidatePath("/admin/signals");
@@ -324,9 +327,10 @@ export async function postGeneralAdminUpdate(message: string) {
   // signalId/strike/optionType/instrument are left null on purpose — this
   // is a general note to subscribers, not tied to any specific trade (see
   // the AdminUpdate model comment in schema.prisma).
-  await prisma.adminUpdate.create({
+  const generalUpdate = await prisma.adminUpdate.create({
     data: { message: trimmed },
   });
+  await publishAdminUpdate(generalUpdate);
 
   revalidatePath("/admin/signals");
   revalidatePath("/signals");
@@ -402,7 +406,7 @@ export async function closeSignal(id: string, sellPrice: number) {
   if (status === "TARGET_HIT") {
     const targetLabel = inferHitTargetLabel(signal.targets, sellPrice);
     const pnlText = `${pnlPercent > 0 ? "+" : ""}${pnlPercent.toFixed(1)}%`;
-    await prisma.adminUpdate.create({
+    const targetHitUpdate = await prisma.adminUpdate.create({
       data: {
         signalId: id,
         strike: signal.strike,
@@ -411,6 +415,7 @@ export async function closeSignal(id: string, sellPrice: number) {
         message: `Target Hit${targetLabel ? ` (${targetLabel})` : ""} — ${pnlText} gain.`,
       },
     });
+    await publishAdminUpdate(targetHitUpdate);
   }
 
   await sendTelegramMessage(

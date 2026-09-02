@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin-auth";
 import { sendAnnouncementEmail, sendReferralInviteEmail } from "@/lib/email";
 import { hashPassword } from "@/lib/password";
+import { publishAdminUpdate } from "@/lib/ably";
 import { normalizeEmail } from "@/lib/utils";
 
 export interface SubscriberInput {
@@ -230,7 +231,8 @@ export async function sendAnnouncement(
 
   let inAppPosted: boolean | undefined;
   if (input.postInApp) {
-    await prisma.adminUpdate.create({ data: { message } });
+    const announcementUpdate = await prisma.adminUpdate.create({ data: { message } });
+    await publishAdminUpdate(announcementUpdate);
     revalidatePath("/admin/signals");
     revalidatePath("/signals");
     inAppPosted = true;

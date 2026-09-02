@@ -2,9 +2,15 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { Realtime, type Message } from "ably";
 import { Bell, ChevronDown } from "lucide-react";
 import { getRecentAdminUpdates } from "@/app/admin/(protected)/signals/actions";
 import { useSoundAlert } from "@/components/site/sound-alert-provider";
+import {
+  ADMIN_UPDATES_CHANNEL,
+  ADMIN_UPDATE_EVENT,
+  type AdminUpdatePushPayload,
+} from "@/lib/ably-shared";
 import { formatInstrumentLabel, type InstrumentValue } from "@/lib/instruments";
 import { cn, formatUpdateTime } from "@/lib/utils";
 import { getActiveOrderBroker } from "@/lib/client-config";
@@ -17,11 +23,11 @@ const CLEARED_AT_KEY = "signalflow-notifications-cleared-at";
 const READ_IDS_KEY = "signalflow-notifications-read-ids";
 const READ_IDS_CAP = 500;
 const MARK_READ_DELAY_MS = 1500;
-// Was an instant Supabase Realtime push; now a periodic poll (see
-// sound-alert-provider.tsx for the matching Signal-table poll). Kept
-// short so a freshly-posted admin message actually feels close to
-// instant instead of sitting for up to 20s.
-const POLL_INTERVAL_MS = 8_000;
+// Instant delivery now comes from the Ably subscription set up below --
+// this poll is just a reconciliation safety net for the rare case a
+// push is missed (a brief disconnect, or ABLY_API_KEY not configured
+// at all, e.g. a fresh local clone), so it can afford to be slow.
+const POLL_INTERVAL_MS = 45_000;
 
 interface UpdateItem {
   id: string;
@@ -169,13 +175,73 @@ export function NotificationBell() {
     load();
   }, [load]);
 
-  // Was an instant Supabase Realtime push (INSERT/DELETE on AdminUpdate);
-  // now a periodic poll. load() itself diffs against what it saw last time
-  // to decide whether to play a sound / auto-open the panel.
+  // load() itself diffs the polled list against what it saw last time to
+  // decide whether to play a sound / auto-open the panel — the Ably push
+  // effect below does the equivalent diff for a single incoming message.
   useEffect(() => {
     const interval = setInterval(load, POLL_INTERVAL_MS);
     return () => clearInterval(interval);
   }, [load]);
+
+  // Instant push: every admin action that creates an AdminUpdate row
+  // (see the publishAdminUpdate() call sites in signals/actions.ts and
+  // subscribers/actions.ts) also publishes it on this Ably channel. The
+  // token comes from /api/ably-auth so the real API key never reaches the
+  // browser (see src/lib/ably.ts) — if ABLY_API_KEY isn't configured that
+  // endpoint 503s, Ably's client just keeps retrying quietly in the
+  // background, and the poll above is what actually delivers updates.
+  useEffect(() => {
+    let cancelled = false;
+    const client = new Realtime({ authUrl: "/api/ably-auth", authMethod: "GET" });
+    const channel = client.channels.get(ADMIN_UPDATES_CHANNEL);
+
+    function handlePush(msg: Message) {
+      if (cancelled) return;
+      const payload = msg.data as AdminUpdatePushPayload;
+
+      // Only mark it "seen" for the poll's own diffing once that poll has
+      // actually seeded itself — otherwise a push that lands before the
+      // very first load() would make that first load wrongly treat every
+      // pre-existing update as new (see load()'s null-check above).
+      if (seenIdsRef.current !== null) {
+        seenIdsRef.current.add(payload.id);
+      }
+
+      setUpdates((prev) =>
+        prev.some((u) => u.id === payload.id)
+          ? prev
+          : [
+              {
+                id: payload.id,
+                signalId: payload.signalId,
+                strike: payload.strike,
+                optionType: payload.optionType,
+                instrument: payload.instrument as InstrumentValue | null,
+                message: payload.message,
+                createdAt: payload.createdAt,
+              },
+              ...prev,
+            ],
+      );
+
+      playUpdateAlert();
+      if (!openRef.current) {
+        setOpen(true);
+      }
+      // Keeps the server-rendered "Admin Updates" panel (OngoingSignals)
+      // in sync the instant a push arrives too — see the matching call in
+      // load() above for why that panel needs this at all.
+      router.refresh();
+    }
+
+    channel.subscribe(ADMIN_UPDATE_EVENT, handlePush);
+
+    return () => {
+      cancelled = true;
+      channel.unsubscribe(ADMIN_UPDATE_EVENT, handlePush);
+      client.close();
+    };
+  }, [playUpdateAlert, router]);
 
   // Whatever's loaded while the panel is open fades from unread to read
   // shortly after — long enough to actually notice the highlight first.
