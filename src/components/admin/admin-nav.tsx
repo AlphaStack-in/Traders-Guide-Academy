@@ -43,7 +43,7 @@ const membersLinks = [
 // change how it calls this.
 function getAdminGroupLinks(_isSuperAdmin: boolean) {
   return [
-    { href: "/admin/help", label: "Manual" },
+    { href: "/admin/help", label: "Help Manual" },
     { href: "/admin/changelog", label: "Changelog" },
     ...(clientConfig.goodwillBrokerEnabled
       ? [{ href: "/admin/goodwill-orders", label: "Order Requests" }]

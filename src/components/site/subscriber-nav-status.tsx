@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ChevronDown, Gift, LogIn, LogOut, User } from "lucide-react";
+import { ChevronDown, Gift, HelpCircle, LogIn, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -86,6 +86,12 @@ export function SubscriberNavStatus({
           <Link href="/account/refer">
             <Gift className="h-3.5 w-3.5 text-muted-foreground" />
             <span>Refer &amp; Earn</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild className="cursor-pointer gap-2">
+          <Link href="/help">
+            <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
+            <span>Help Manual</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem

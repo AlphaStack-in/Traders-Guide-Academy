@@ -6,22 +6,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 **[Tech debts](./tech-debt-ledger.html)** — once deployed, also served at `/tech-debt-ledger.html`
 
-Versioning continues the semantic patch series from the SignalFlow template (`1.0.7` → `1.0.8` …). The footer and Admin Changelog page read the current version from `package.json` (now **1.0.48**).
+Versioning continues the semantic patch series from the SignalFlow template (`1.0.7` → `1.0.8` …). The footer and Admin Changelog page read the current version from `package.json` (now **1.0.49**).
 
 Each release header now includes a build timestamp (24-hour IST, matching `build-info.ts`'s `formattedBuildTime`), not just a date — this reflects the actual commit that shipped the version. While adding timestamps, two pre-existing dates were corrected to match their real shipping commit: `1.0.8` (was dated by the TGA fork commit, 3 days before the digest-email feature in that release actually shipped) and `1.0.2` (was off by one day around a just-after-midnight IST commit).
 
 ## [Unreleased]
+
+## [1.0.49] - 2026-09-02 07:40 IST
+
+### Added
+- Help Manual link in the subscriber profile menu dropdown
+
+### Changed
+- Admin nav Admin menu item renamed from "Manual" to "Help Manual"
+
+## [1.0.48] - 2026-09-02 07:30 IST
+
+### Added
+- Help icon in the main site navbar and admin navbar — links to the subscriber manual (`/help`) and admin operator manual (`/admin/help`) respectively
 
 ### Changed
 - Dashboard Cumulative % card label shortened from "Total % Won this Batch" to "Total % Won"
 - Dashboard instrument donut chart label renamed to "Total % Won by instrument"
 - Ongoing Trades risk/reward chart switched from vertical to horizontal bars (gain extends right, risk extends left from entry)
 - Notification bell polls admin updates every 8s (was 20s), refreshes the page when new updates arrive, and clicking a notification jumps to the Admin Updates panel on Signals
-
-## [1.0.48] - 2026-09-02 07:30 IST
-
-### Added
-- Help icon in the main site navbar and admin navbar — links to the subscriber manual (`/help`) and admin operator manual (`/admin/help`) respectively
 
 ## [1.0.47] - 2026-09-01 21:30 IST
 

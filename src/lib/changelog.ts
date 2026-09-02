@@ -58,6 +58,15 @@ export function changelogTimestamp(date: string): string {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.49",
+    date: "02 Sep 2026, 07:40 IST",
+    title: "Help Manual in Profile Menu",
+    highlights: [
+      "Help Manual link added to the subscriber profile menu dropdown — opens /help",
+      "Admin nav Admin menu item renamed from \"Manual\" to \"Help Manual\"",
+    ],
+  },
+  {
     version: "1.0.48",
     date: "02 Sep 2026, 07:30 IST",
     title: "Help Icon in Navbar",
