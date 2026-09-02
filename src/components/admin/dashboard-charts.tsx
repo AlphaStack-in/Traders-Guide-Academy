@@ -14,7 +14,6 @@ import {
   Legend,
   Pie,
   PieChart,
-  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -565,35 +564,6 @@ interface RiskRewardPoint {
   lossPercent: number;
 }
 
-function RiskRewardTooltip({
-  active,
-  payload,
-}: {
-  active?: boolean;
-  payload?: { payload: RiskRewardPoint }[];
-}) {
-  if (!active || !payload || payload.length === 0) return null;
-  const point = payload[0].payload;
-  return (
-    <div
-      className="rounded-lg border border-white/10 px-3 py-2 text-xs"
-      style={{ backgroundColor: "var(--popover)", color: "var(--popover-foreground)" }}
-    >
-      <p className="mb-1.5 font-semibold">{point.label}</p>
-      <p style={{ color: "var(--muted-foreground)" }}>
-        Buy (Entry): <span style={{ color: "var(--popover-foreground)" }}>₹{point.buyPrice}</span>
-      </p>
-      <p style={{ color: "var(--signalflow-win)" }}>
-        Sell (Target): ₹{point.sellTargetPrice} ({point.gainPercent >= 0 ? "+" : ""}
-        {point.gainPercent}%)
-      </p>
-      <p style={{ color: "var(--signalflow-loss)" }}>
-        Sell (SL): ₹{point.sellSlPrice} ({point.lossPercent}%)
-      </p>
-    </div>
-  );
-}
-
 interface RiskRewardLabelProps {
   x?: number | string;
   y?: number | string;
@@ -602,183 +572,60 @@ interface RiskRewardLabelProps {
   index?: number;
 }
 
-const riskRewardAxisTick = { fontSize: 13, fill: "var(--muted-foreground)" };
+// Single-trade diverging risk/reward bar -- entry pinned at 0%, stop-loss
+// extends left (negative), best target extends right (positive). Hand-built
+// (no Recharts) rather than a stacked BarChart: this is one bar for one
+// trade shown inside that trade's own card (see OngoingSignals), so there's
+// no multi-row layout or shared axis to fight, and direct pixel control
+// means the SL/Entry/Target labels never collide -- each gets its own slot
+// (start/center/end) instead of being packed inside a thin bar segment.
+const RISK_REWARD_MIN_SEGMENT_PERCENT = 4; // keeps a lopsided ratio (e.g. -2% / +80%) visible instead of vanishing to a hairline
 
-function riskRewardLegendText(value: string) {
-  return <span style={{ color: "var(--muted-foreground)", fontSize: 13 }}>{value}</span>;
-}
-
-function makeHorizontalRiskRewardLabel(
-  data: RiskRewardPoint[],
-  priceKey: "sellTargetPrice" | "sellSlPrice",
-  pctKey: "gainPercent" | "lossPercent",
-  side: "gain" | "loss",
-) {
-  return function HorizontalRiskRewardLabel({
-    x = 0,
-    y = 0,
-    width = 0,
-    height = 0,
-    index = 0,
-  }: RiskRewardLabelProps) {
-    const point = data[index];
-    if (!point) return null;
-    const pct = point[pctKey];
-    const bx = Number(x);
-    const by = Number(y);
-    const bw = Math.abs(Number(width));
-    const bh = Number(height);
-    const midY = by + bh / 2;
-    const fitOutside = bw < 56;
-    const labelX =
-      side === "gain"
-        ? fitOutside
-          ? bx + Number(width) + 5
-          : bx + Number(width) - 5
-        : fitOutside
-          ? bx - 5
-          : bx + 5;
-    const anchor = side === "gain" ? (fitOutside ? "start" : "end") : fitOutside ? "end" : "start";
-    return (
-      <text x={labelX} y={midY} textAnchor={anchor} fontSize={12} fontWeight={700} fill="#f5f2e8">
-        <tspan x={labelX} dy={-4}>{`₹${point[priceKey]}`}</tspan>
-        <tspan x={labelX} dy={14}>{`(${pct >= 0 ? "+" : ""}${pct}%)`}</tspan>
-      </text>
-    );
-  };
-}
-
-function makeHorizontalEntryPriceLabel(data: RiskRewardPoint[]) {
-  return function HorizontalEntryPriceLabel({
-    x = 0,
-    y = 0,
-    width = 0,
-    height = 0,
-    index = 0,
-  }: RiskRewardLabelProps) {
-    const point = data[index];
-    if (!point) return null;
-    const bx = Number(x);
-    const by = Number(y);
-    const bh = Number(height);
-    return (
-      <text
-        x={bx - 6}
-        y={by + bh / 2 + 4}
-        textAnchor="end"
-        fontSize={13}
-        fontWeight={700}
-        fill="var(--signalflow-gold-start)"
-      >
-        {`Entry ₹${point.buyPrice}`}
-      </text>
-    );
-  };
-}
-
-const ONGOING_RISK_ROW_HEIGHT = 56;
-
-function OngoingRiskYAxisTick({
-  x,
-  y,
-  payload,
-  width,
-}: {
-  x?: number;
-  y?: number;
-  payload?: { value: string };
-  width?: number;
-}) {
-  const maxWidth = (width ?? 132) - 4;
-  const clipId = `ongoing-y-clip-${(payload?.value ?? "").replace(/\W+/g, "")}`;
-  return (
-    <g transform={`translate(${x},${y})`}>
-      <defs>
-        <clipPath id={clipId}>
-          <rect x={-maxWidth} y={-10} width={maxWidth} height={20} />
-        </clipPath>
-      </defs>
-      <title>{payload?.value}</title>
-      <text
-        x={0}
-        y={0}
-        dy={4}
-        textAnchor="end"
-        fontSize={12}
-        fill="var(--muted-foreground)"
-        clipPath={`url(#${clipId})`}
-      >
-        {payload?.value}
-      </text>
-    </g>
-  );
-}
-
-export function OngoingRiskRewardChart({ data }: { data: RiskRewardPoint[] }) {
-  const yAxisWidth = 132;
-  const chartHeight = Math.max(160, data.length * ONGOING_RISK_ROW_HEIGHT + 56);
+export function TradeRiskRewardBar({ data }: { data: RiskRewardPoint }) {
+  const { buyPrice, sellTargetPrice, sellSlPrice, gainPercent, lossPercent } = data;
+  const min = Math.min(lossPercent, 0);
+  const max = Math.max(gainPercent, 0);
+  const span = max - min || 1; // guards a same-price SL/target edge case, never expected in practice
+  const zeroPercent = ((0 - min) / span) * 100;
+  const riskWidthPercent = Math.max(((0 - lossPercent) / span) * 100, lossPercent < 0 ? RISK_REWARD_MIN_SEGMENT_PERCENT : 0);
+  const gainWidthPercent = Math.max(((gainPercent - 0) / span) * 100, gainPercent > 0 ? RISK_REWARD_MIN_SEGMENT_PERCENT : 0);
 
   return (
-    <ResponsiveContainer width="100%" height={chartHeight}>
-      <BarChart
-        data={data}
-        layout="vertical"
-        margin={{ top: 8, right: 16, left: 0, bottom: 4 }}
-        barCategoryGap="22%"
-      >
-        <defs>
-          <linearGradient id="riskGainFill" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="var(--signalflow-win)" stopOpacity={0.35} />
-            <stop offset="100%" stopColor="var(--signalflow-win)" stopOpacity={0.95} />
-          </linearGradient>
-          <linearGradient id="riskLossFill" x1="1" y1="0" x2="0" y2="0">
-            <stop offset="0%" stopColor="var(--signalflow-loss)" stopOpacity={0.35} />
-            <stop offset="100%" stopColor="var(--signalflow-loss)" stopOpacity={0.95} />
-          </linearGradient>
-        </defs>
-        {grid}
-        <XAxis type="number" unit="%" tick={riskRewardAxisTick} />
-        <YAxis
-          type="category"
-          dataKey="label"
-          width={yAxisWidth}
-          tick={<OngoingRiskYAxisTick width={yAxisWidth} />}
-          interval={0}
+    <div className="w-full">
+      <div className="relative flex h-8 text-[11px] leading-tight">
+        <div className="absolute top-0 left-0 flex flex-col items-start">
+          <span className="font-semibold text-[var(--signalflow-loss)]">SL ₹{sellSlPrice}</span>
+          <span className="text-muted-foreground">{lossPercent}%</span>
+        </div>
+        <div
+          className="absolute top-0 flex -translate-x-1/2 flex-col items-center whitespace-nowrap"
+          style={{ left: `${zeroPercent}%` }}
+        >
+          <span className="font-semibold signalflow-gold-text">Entry ₹{buyPrice}</span>
+        </div>
+        <div className="absolute top-0 right-0 flex flex-col items-end">
+          <span className="font-semibold text-[var(--signalflow-win)]">Target ₹{sellTargetPrice}</span>
+          <span className="text-muted-foreground">+{gainPercent}%</span>
+        </div>
+      </div>
+      <div className="relative mt-1 h-2.5 w-full rounded-full bg-white/5">
+        <div
+          className="absolute top-0 h-full rounded-l-full bg-[var(--signalflow-loss)]"
+          style={{ left: 0, width: `calc(${riskWidthPercent}% - 2px)`, minWidth: 6 }}
         />
-        <Tooltip content={<RiskRewardTooltip />} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
-        <Legend formatter={riskRewardLegendText} />
-        <ReferenceLine x={0} stroke="var(--signalflow-gold-start)" strokeDasharray="4 4" strokeWidth={1.5} />
-        <Bar
-          dataKey="gainPercent"
-          name="Potential Gain %"
-          stackId="risk"
-          fill="url(#riskGainFill)"
-          radius={[0, 3, 3, 0]}
-          isAnimationActive={false}
-        >
-          <LabelList dataKey="gainPercent" content={makeHorizontalEntryPriceLabel(data)} />
-          <LabelList
-            dataKey="gainPercent"
-            content={makeHorizontalRiskRewardLabel(data, "sellTargetPrice", "gainPercent", "gain")}
-          />
-        </Bar>
-        <Bar
-          dataKey="lossPercent"
-          name="Potential Risk %"
-          stackId="risk"
-          fill="url(#riskLossFill)"
-          radius={[3, 0, 0, 3]}
-          isAnimationActive={false}
-        >
-          <LabelList
-            dataKey="lossPercent"
-            content={makeHorizontalRiskRewardLabel(data, "sellSlPrice", "lossPercent", "loss")}
-          />
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
+        <div
+          className="absolute top-0 h-full rounded-r-full bg-[var(--signalflow-win)]"
+          style={{ left: `calc(${zeroPercent}% + 2px)`, width: `calc(${gainWidthPercent}% - 2px)`, minWidth: 6 }}
+        />
+        <div
+          className="absolute top-1/2 h-4 w-0.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--signalflow-gold-start)]"
+          style={{ left: `${zeroPercent}%` }}
+        />
+      </div>
+    </div>
   );
 }
+
 
 function makeBestWorstLabel(data: { label: string; pnlPercent: number }[]) {
   return function BestWorstLabel({

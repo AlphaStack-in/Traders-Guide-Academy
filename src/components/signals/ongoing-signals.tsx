@@ -17,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { OngoingRiskRewardChart } from "@/components/admin/dashboard-charts";
+import { TradeRiskRewardBar } from "@/components/admin/dashboard-charts";
 import { ManageSignalsTable } from "@/components/admin/manage-signals-table";
 import type { SignalRow } from "@/components/signals/signals-explorer";
 import { formatInstrumentLabel } from "@/lib/instruments";
@@ -28,15 +28,6 @@ import {
 } from "@/app/admin/(protected)/signals/actions";
 
 const ORDER_BROKER = getActiveOrderBroker();
-
-interface FeedItem {
-  id: string;
-  message: string;
-  createdAt: string;
-  // Null for a general broadcast update (not tied to a specific signal) —
-  // rendered without the instrument/strike tag those carry.
-  context: string | null;
-}
 
 // Small always-available composer for posting a general "Admin Updates"
 // message that isn't tied to any specific signal — usable even when there
@@ -107,6 +98,22 @@ function toRiskReward(signal: SignalRow) {
   };
 }
 
+// This trade's own admin updates only (falls back to the legacy single
+// adminNote field when there's no adminUpdates history yet) — newest
+// first, kept separate per signal so one trade's messages never bleed
+// into another's card.
+function signalUpdates(signal: SignalRow): AdminUpdateItem[] {
+  const updates =
+    signal.adminUpdates && signal.adminUpdates.length > 0
+      ? signal.adminUpdates
+      : signal.adminNote
+        ? [{ id: signal.id, message: signal.adminNote, createdAt: signal.adminNoteAt ?? signal.signalTime }]
+        : [];
+  return [...updates].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
+}
+
 export function OngoingSignals({
   signals,
   generalUpdates = [],
@@ -146,40 +153,7 @@ export function OngoingSignals({
     });
   }
   const isEmpty = signals.length === 0;
-  const chartData = signals.map(toRiskReward);
-  const avgGain = chartData.length
-    ? chartData.reduce((sum, d) => sum + d.gainPercent, 0) / chartData.length
-    : 0;
-  const avgLoss = chartData.length
-    ? chartData.reduce((sum, d) => sum + d.lossPercent, 0) / chartData.length
-    : 0;
-
-  // "Admin Updates" feed: general broadcast updates (no specific signal)
-  // merged with each ongoing signal's own updates/note, newest first
-  // overall — this used to be per-signal boxes only, which meant a message
-  // with no signal attached had nowhere to go.
-  const generalFeedItems: FeedItem[] = generalUpdates.map((u) => ({
-    id: u.id,
-    message: u.message,
-    createdAt: u.createdAt,
-    context: null,
-  }));
-  const perSignalFeedItems: FeedItem[] = signals.flatMap((signal) => {
-    const updates =
-      signal.adminUpdates && signal.adminUpdates.length > 0
-        ? signal.adminUpdates
-        : signal.adminNote
-          ? [{ id: signal.id, message: signal.adminNote, createdAt: signal.adminNoteAt ?? signal.signalTime }]
-          : [];
-    const context = `${instrumentPrefix(signal)}${signal.strike} ${signal.optionType}`;
-    return updates.map((u, idx) => ({
-      id: u.id || `${signal.id}-note-${idx}`,
-      message: u.message,
-      createdAt: u.createdAt,
-      context,
-    }));
-  });
-  const feedItems = [...generalFeedItems, ...perSignalFeedItems].sort(
+  const sortedGeneralUpdates = [...generalUpdates].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
 
@@ -195,11 +169,26 @@ export function OngoingSignals({
               )}
             />
             <h2 className="font-heading text-sm font-semibold">
-              {signals.length} Ongoing Trade{signals.length === 1 ? "" : "s"}
+              {isEmpty || signals.length > 1 ? (
+                <>
+                  {signals.length} Ongoing Trade{signals.length === 1 ? "" : "s"}
+                </>
+              ) : (
+                <>
+                  Ongoing Trade:{" "}
+                  <span className="signalflow-gold-text">
+                    {instrumentPrefix(signals[0])}
+                    {signals[0].strike} {signals[0].optionType}
+                  </span>{" "}
+                  · Entry @{" "}
+                  <span className="signalflow-gold-text">₹{signals[0].entryPrice}</span>
+                </>
+              )}
             </h2>
           </div>
           {!isEmpty &&
             showBody &&
+            signals.length > 1 &&
             signals.map((signal) => (
               <span
                 key={signal.id}
@@ -233,97 +222,115 @@ export function OngoingSignals({
 
       {showBody && (
         <>
-      <div className="grid gap-4 lg:grid-cols-[2fr_minmax(120px,0.7fr)_2fr]">
-        <div className="rounded-xl border border-white/5 bg-black/10 p-3 lg:flex lg:h-full lg:items-stretch">
-          {isEmpty ? (
-            <div className="flex h-[140px] w-full flex-col items-center justify-center gap-1 text-center lg:h-full">
+      {/* id targeted by NotificationBell's click-to-navigate — lets a
+          clicked notification jump straight to this area via #admin-updates.
+          General broadcasts (no signal attached) and each trade's own
+          messages are deliberately kept in separate cards below — a
+          message never mixes across trades, and each trade's heading is
+          shown once for its whole message list instead of repeating per
+          message. */}
+      <div id="admin-updates" className="scroll-mt-24 flex flex-col gap-4">
+        {(editable || sortedGeneralUpdates.length > 0) && (
+          <div className="rounded-xl border border-white/5 bg-black/10 p-3">
+            <div className="mb-2 flex items-center justify-between gap-2 border-b border-white/5 pb-1.5">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                General Updates
+              </p>
+            </div>
+
+            {editable && <GeneralUpdateComposer />}
+
+            {sortedGeneralUpdates.length > 0 ? (
+              <div className="flex max-h-[160px] flex-col gap-2 overflow-y-auto pr-1">
+                {sortedGeneralUpdates.map((u, idx) => (
+                  <div key={u.id} className={cn(idx > 0 && "border-t border-white/5 pt-2")}>
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="whitespace-pre-line text-xs text-foreground/90">{u.message}</p>
+                      <p className="shrink-0 text-xs text-muted-foreground pt-0.5">
+                        {formatUpdateTime(u.createdAt)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">No general updates yet.</p>
+            )}
+          </div>
+        )}
+
+        {isEmpty ? (
+          <div className="rounded-xl border border-white/5 bg-black/10 p-3">
+            <div className="flex h-[100px] w-full flex-col items-center justify-center gap-1 text-center">
               <p className="text-xs text-muted-foreground">
-                No open trades right now — the risk/reward chart will populate once a signal goes
+                No open trades right now — a risk/reward card will appear here once a signal goes
                 live.
               </p>
             </div>
-          ) : (
-            <div className="h-full w-full">
-              <OngoingRiskRewardChart data={chartData} />
-            </div>
-          )}
-        </div>
-
-        <div className="flex flex-col gap-3 lg:h-full">
-          <div className="signalflow-glass flex flex-1 flex-col items-center justify-center rounded-xl border border-white/5 p-3 text-center">
-            <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
-              Avg Potential Gain
-            </p>
-            <p
-              className={cn(
-                "mt-1 font-heading text-2xl font-bold",
-                isEmpty ? "text-muted-foreground" : "text-[var(--signalflow-win)]",
-              )}
-            >
-              {isEmpty ? "—" : `+${avgGain.toFixed(1)}%`}
-            </p>
           </div>
-          <div className="signalflow-glass flex flex-1 flex-col items-center justify-center rounded-xl border border-white/5 p-3 text-center">
-            <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
-              Avg Potential Risk
-            </p>
-            <p
-              className={cn(
-                "mt-1 font-heading text-2xl font-bold",
-                isEmpty ? "text-muted-foreground" : "text-[var(--signalflow-loss)]",
-              )}
-            >
-              {isEmpty ? "—" : `${avgLoss.toFixed(1)}%`}
-            </p>
-          </div>
-          <div className="signalflow-glass flex flex-1 flex-col items-center justify-center rounded-xl border border-white/5 p-3 text-center">
-            <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
-              Open Positions
-            </p>
-            <p className="mt-1 font-heading text-2xl font-bold signalflow-gold-text">{signals.length}</p>
-          </div>
-        </div>
+        ) : (
+          <div className="grid gap-4 lg:grid-cols-2">
+            {signals.map((signal) => {
+              const point = toRiskReward(signal);
+              const updates = signalUpdates(signal);
+              return (
+                <div key={signal.id} className="rounded-xl border border-white/5 bg-black/10 p-3 sm:p-4">
+                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-white/5 pb-2">
+                    <span className="font-heading text-sm font-bold signalflow-gold-text">
+                      {instrumentPrefix(signal)}{signal.strike} {signal.optionType}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground">
+                      Since {formatSignalDate(signal.signalTime)} {formatSignalTime(signal.signalTime)}
+                    </span>
+                  </div>
 
-        {/* id targeted by NotificationBell's click-to-navigate — lets a
-            clicked notification jump straight to this panel via #admin-updates */}
-        <div
-          id="admin-updates"
-          className="scroll-mt-24 rounded-xl border border-white/5 bg-black/10 p-3 lg:flex lg:h-full lg:flex-col"
-        >
-          <div className="mb-2 flex items-center justify-between gap-2 border-b border-white/5 pb-1.5">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-              Admin Updates
-            </p>
-          </div>
+                  <TradeRiskRewardBar data={point} />
 
-          {editable && <GeneralUpdateComposer />}
-
-          {feedItems.length > 0 ? (
-            <div className="max-h-[240px] overflow-y-auto pr-1 flex flex-col gap-2.5">
-              {feedItems.map((item, idx) => (
-                <div key={item.id} className={cn(idx > 0 && "border-t border-white/5 pt-2")}>
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex flex-col gap-0.5">
-                      <p className="text-[10px] font-semibold signalflow-gold-text">
-                        {item.context ?? "General"}
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    <div className="signalflow-glass rounded-xl border border-white/5 p-2 text-center">
+                      <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                        Potential Reward
                       </p>
-                      <p className="whitespace-pre-line text-xs text-foreground/90">
-                        {item.message}
+                      <p className="mt-0.5 font-heading text-lg font-bold text-[var(--signalflow-win)]">
+                        +{point.gainPercent.toFixed(1)}%
                       </p>
                     </div>
-                    <p className="shrink-0 text-xs text-muted-foreground pt-0.5">
-                      {formatUpdateTime(item.createdAt)}
+                    <div className="signalflow-glass rounded-xl border border-white/5 p-2 text-center">
+                      <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                        Potential Risk
+                      </p>
+                      <p className="mt-0.5 font-heading text-lg font-bold text-[var(--signalflow-loss)]">
+                        {point.lossPercent.toFixed(1)}%
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 border-t border-white/5 pt-2">
+                    <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      Updates
                     </p>
+                    {updates.length > 0 ? (
+                      <div className="flex max-h-[160px] flex-col gap-2 overflow-y-auto pr-1">
+                        {updates.map((u, idx) => (
+                          <div key={u.id} className={cn(idx > 0 && "border-t border-white/5 pt-2")}>
+                            <div className="flex items-start justify-between gap-2">
+                              <p className="whitespace-pre-line text-xs text-foreground/90">{u.message}</p>
+                              <p className="shrink-0 text-xs text-muted-foreground pt-0.5">
+                                {formatUpdateTime(u.createdAt)}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">No updates yet for this trade.</p>
+                    )}
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-1 w-full flex-col items-center justify-center gap-1 text-center">
-              <p className="text-xs text-muted-foreground">No admin updates yet.</p>
-            </div>
-          )}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <div className="mt-4 flex flex-col gap-4">
