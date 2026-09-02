@@ -58,6 +58,19 @@ export function changelogTimestamp(date: string): string {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.48",
+    date: "02 Sep 2026, 07:30 IST",
+    title: "Help Icon in Navbar",
+    highlights: [
+      "Help icon added to the main site navbar — opens the subscriber help manual at /help",
+      "Help icon added to the admin navbar — opens the admin operator manual at /admin/help",
+      "Dashboard Cumulative % card label shortened from \"Total % Won this Batch\" to \"Total % Won\"",
+      "Dashboard instrument donut chart label renamed to \"Total % Won by instrument\"",
+      "Ongoing Trades risk/reward chart switched from vertical to horizontal bars — potential gain extends right and potential risk extends left from the entry line",
+      "Notification bell polls admin updates every 8s (was 20s), refreshes the page when new updates arrive, and clicking a notification jumps to the Admin Updates panel on Signals",
+    ],
+  },
+  {
     version: "1.0.47",
     date: "01 Sep 2026, 21:30 IST",
     title: "Need New Demat Account Option",

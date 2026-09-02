@@ -126,7 +126,7 @@ export function DashboardContent({
                   style={{ backgroundImage: "var(--signalflow-gold-gradient)" }}
                 />
                 <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
-                  Total % Won this Batch
+                  Total % Won
                 </p>
                 <p
                   className={cn(
@@ -143,7 +143,7 @@ export function DashboardContent({
             </div>
             <div className="signalflow-glass rounded-xl border border-white/5 p-4">
               <p className="mb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
-                Total % Won
+                Total % Won by instrument
               </p>
               <InstrumentCaptureDonutChart data={metrics.instrumentCapture} />
             </div>

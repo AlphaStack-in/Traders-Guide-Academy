@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { clientConfig } from "@/lib/client-config";
+import { HelpNavLink } from "@/components/site/help-nav-link";
 import { IstClock } from "@/components/site/ist-clock";
 
 const links = [
@@ -74,6 +75,7 @@ export function AdminNav({
   return (
     <div className="flex items-center gap-3 sm:gap-4">
       <IstClock />
+      <HelpNavLink href="/admin/help" />
       <nav className="hidden items-center gap-1.5 lg:flex">
         {links.map((link) => {
           const Icon = link.icon;

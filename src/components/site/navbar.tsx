@@ -1,4 +1,5 @@
 import { NavbarLogo } from "@/components/site/navbar-logo";
+import { HelpNavLink } from "@/components/site/help-nav-link";
 import { NotificationBell } from "@/components/site/notification-bell";
 import { IndexTicker } from "@/components/site/index-ticker";
 import { SubscriberNavStatus } from "@/components/site/subscriber-nav-status";
@@ -18,6 +19,7 @@ export async function Navbar() {
         <DesktopNavigation />
         <div className="flex items-center gap-2.5 sm:gap-3">
           <IstClock />
+          <HelpNavLink href="/help" />
           <NotificationBell />
           <SubscriberNavStatus
             subscriberName={subscriber?.name ?? null}

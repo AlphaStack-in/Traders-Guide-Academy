@@ -284,7 +284,12 @@ export function OngoingSignals({
           </div>
         </div>
 
-        <div className="rounded-xl border border-white/5 bg-black/10 p-3 lg:flex lg:h-full lg:flex-col">
+        {/* id targeted by NotificationBell's click-to-navigate — lets a
+            clicked notification jump straight to this panel via #admin-updates */}
+        <div
+          id="admin-updates"
+          className="scroll-mt-24 rounded-xl border border-white/5 bg-black/10 p-3 lg:flex lg:h-full lg:flex-col"
+        >
           <div className="mb-2 flex items-center justify-between gap-2 border-b border-white/5 pb-1.5">
             <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
               Admin Updates

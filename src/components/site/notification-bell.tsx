@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { Bell, ChevronDown } from "lucide-react";
 import { getRecentAdminUpdates } from "@/app/admin/(protected)/signals/actions";
 import { useSoundAlert } from "@/components/site/sound-alert-provider";
@@ -17,8 +18,10 @@ const READ_IDS_KEY = "signalflow-notifications-read-ids";
 const READ_IDS_CAP = 500;
 const MARK_READ_DELAY_MS = 1500;
 // Was an instant Supabase Realtime push; now a periodic poll (see
-// sound-alert-provider.tsx for the matching Signal-table poll).
-const POLL_INTERVAL_MS = 20_000;
+// sound-alert-provider.tsx for the matching Signal-table poll). Kept
+// short so a freshly-posted admin message actually feels close to
+// instant instead of sitting for up to 20s.
+const POLL_INTERVAL_MS = 8_000;
 
 interface UpdateItem {
   id: string;
@@ -113,6 +116,8 @@ function signalLabel(item: UpdateItem) {
 
 export function NotificationBell() {
   const { playUpdateAlert } = useSoundAlert();
+  const router = useRouter();
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [updates, setUpdates] = useState<UpdateItem[]>([]);
   const [readIds, setReadIds] = useState<Set<string>>(new Set());
@@ -150,8 +155,13 @@ export function NotificationBell() {
       if (!openRef.current) {
         setOpen(true);
       }
+      // The "Admin Updates" panel on /signals and /admin/signals
+      // (OngoingSignals) is rendered server-side from a prop and has no
+      // poll of its own — refresh the current route so a brand-new
+      // AdminUpdate row shows up there too, not just in this dropdown.
+      router.refresh();
     }
-  }, [playUpdateAlert]);
+  }, [playUpdateAlert, router]);
 
   useEffect(() => {
     setClearedAt(localStorage.getItem(CLEARED_AT_KEY));
@@ -202,6 +212,16 @@ export function NotificationBell() {
     const next = !open;
     setOpen(next);
     if (next) load();
+  }
+
+  // Sends the user to wherever this notification actually lives — the
+  // public Trade Log's Admin Updates panel, or the admin equivalent
+  // when the bell is opened from inside /admin — since there is no
+  // dedicated per-signal detail page today.
+  function handleNotificationClick() {
+    setOpen(false);
+    const base = pathname?.startsWith("/admin") ? "/admin/signals" : "/signals";
+    router.push(`${base}#admin-updates`);
   }
 
   function handleClear() {
@@ -303,10 +323,21 @@ export function NotificationBell() {
                             : "border-primary/15 bg-primary/5",
                         )}
                       >
-                        <button
-                          type="button"
-                          onClick={() => toggleExpanded(group.signalId)}
-                          className="flex w-full items-center justify-between gap-2 text-left"
+                        {/* Clicking the notification itself navigates to
+                            where it actually lives; the chevron is its own
+                            control (stopPropagation) so it only expands the
+                            thread instead of also navigating away. */}
+                        <div
+                          role="button"
+                          tabIndex={0}
+                          onClick={handleNotificationClick}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              handleNotificationClick();
+                            }
+                          }}
+                          className="flex w-full cursor-pointer items-center justify-between gap-2 text-left"
                         >
                           <span className="flex items-center gap-1.5 font-heading font-normal signalflow-gold-text">
                             {isUnread && (
@@ -317,15 +348,25 @@ export function NotificationBell() {
                           <span className="flex shrink-0 items-center gap-1 text-[10px] text-muted-foreground">
                             {formatUpdateTime(group.latest.createdAt)}
                             {group.messages.length > 1 && (
-                              <ChevronDown
-                                className={cn(
-                                  "h-3 w-3 transition-transform",
-                                  isExpanded && "rotate-180",
-                                )}
-                              />
+                              <button
+                                type="button"
+                                aria-label={isExpanded ? "Collapse messages" : "Expand messages"}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleExpanded(group.signalId);
+                                }}
+                                className="rounded p-0.5 hover:bg-white/10"
+                              >
+                                <ChevronDown
+                                  className={cn(
+                                    "h-3 w-3 transition-transform",
+                                    isExpanded && "rotate-180",
+                                  )}
+                                />
+                              </button>
                             )}
                           </span>
-                        </button>
+                        </div>
                         {isExpanded ? (
                           <div className="mt-2 flex flex-col gap-2 border-l border-white/10 pl-2">
                             {group.messages.map((m) => (

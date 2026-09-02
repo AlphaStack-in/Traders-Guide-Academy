@@ -163,9 +163,10 @@ export default function HelpPage() {
               </p>
               <ul className="mt-2 flex flex-col gap-1.5 [&>li]:pl-4 [&>li]:-indent-4">
                 <li>
-                  • <span className="font-semibold text-foreground">Total % Won</span> and the
-                  donut chart below it show cumulative return and how it breaks down by
-                  instrument.
+                  • <span className="font-semibold text-foreground">Total % Won</span> is the
+                  headline cumulative return for the selected range;{" "}
+                  <span className="font-semibold text-foreground">Total % Won by instrument</span>{" "}
+                  breaks it down in the donut chart.
                 </li>
                 <li>
                   • <span className="font-semibold text-foreground">Win Rate</span> is the share of

@@ -602,13 +602,19 @@ interface RiskRewardLabelProps {
   index?: number;
 }
 
-function makeRiskRewardLabel(
+const riskRewardAxisTick = { fontSize: 13, fill: "var(--muted-foreground)" };
+
+function riskRewardLegendText(value: string) {
+  return <span style={{ color: "var(--muted-foreground)", fontSize: 13 }}>{value}</span>;
+}
+
+function makeHorizontalRiskRewardLabel(
   data: RiskRewardPoint[],
   priceKey: "sellTargetPrice" | "sellSlPrice",
   pctKey: "gainPercent" | "lossPercent",
-  position: "top" | "bottom",
+  side: "gain" | "loss",
 ) {
-  return function RiskRewardLabel({
+  return function HorizontalRiskRewardLabel({
     x = 0,
     y = 0,
     width = 0,
@@ -618,27 +624,32 @@ function makeRiskRewardLabel(
     const point = data[index];
     if (!point) return null;
     const pct = point[pctKey];
-    const cx = Number(x);
-    const cy = Number(y);
-    const cw = Number(width);
-    const ch = Number(height);
-    const midX = cx + cw / 2;
-    // Anchored in from the bar's far tip (away from the zero line) rather
-    // than centered — keeps the label clear of the Entry label at the zero
-    // line and stays inside the bar regardless of magnitude, instead of
-    // spilling into the X-axis category labels below the chart.
-    const baseY = position === "top" ? cy + Math.min(18, ch * 0.4) : cy + ch - Math.min(20, ch * 0.5);
+    const bx = Number(x);
+    const by = Number(y);
+    const bw = Math.abs(Number(width));
+    const bh = Number(height);
+    const midY = by + bh / 2;
+    const fitOutside = bw < 56;
+    const labelX =
+      side === "gain"
+        ? fitOutside
+          ? bx + Number(width) + 5
+          : bx + Number(width) - 5
+        : fitOutside
+          ? bx - 5
+          : bx + 5;
+    const anchor = side === "gain" ? (fitOutside ? "start" : "end") : fitOutside ? "end" : "start";
     return (
-      <text x={midX} textAnchor="middle" fontSize={12} fontWeight={700} fill="#f5f2e8">
-        <tspan x={midX} y={baseY}>{`₹${point[priceKey]}`}</tspan>
-        <tspan x={midX} y={baseY + 14}>{`(${pct >= 0 ? "+" : ""}${pct}%)`}</tspan>
+      <text x={labelX} y={midY} textAnchor={anchor} fontSize={12} fontWeight={700} fill="#f5f2e8">
+        <tspan x={labelX} dy={-4}>{`₹${point[priceKey]}`}</tspan>
+        <tspan x={labelX} dy={14}>{`(${pct >= 0 ? "+" : ""}${pct}%)`}</tspan>
       </text>
     );
   };
 }
 
-function makeEntryPriceLabel(data: RiskRewardPoint[]) {
-  return function EntryPriceLabel({
+function makeHorizontalEntryPriceLabel(data: RiskRewardPoint[]) {
+  return function HorizontalEntryPriceLabel({
     x = 0,
     y = 0,
     width = 0,
@@ -647,18 +658,14 @@ function makeEntryPriceLabel(data: RiskRewardPoint[]) {
   }: RiskRewardLabelProps) {
     const point = data[index];
     if (!point) return null;
-    const cx = Number(x);
-    const cy = Number(y);
-    const cw = Number(width);
-    const ch = Number(height);
-    // The gain bar's rect always spans from its peak down to the zero line —
-    // so y + height is exactly the zero-line pixel position for this category.
-    const zeroY = cy + ch;
+    const bx = Number(x);
+    const by = Number(y);
+    const bh = Number(height);
     return (
       <text
-        x={cx + cw / 2}
-        y={zeroY - 6}
-        textAnchor="middle"
+        x={bx - 6}
+        y={by + bh / 2 + 4}
+        textAnchor="end"
         fontSize={13}
         fontWeight={700}
         fill="var(--signalflow-gold-start)"
@@ -669,60 +676,103 @@ function makeEntryPriceLabel(data: RiskRewardPoint[]) {
   };
 }
 
-const riskRewardAxisTick = { fontSize: 13, fill: "var(--muted-foreground)" };
+const ONGOING_RISK_ROW_HEIGHT = 56;
 
-function riskRewardLegendText(value: string) {
-  return <span style={{ color: "var(--muted-foreground)", fontSize: 13 }}>{value}</span>;
+function OngoingRiskYAxisTick({
+  x,
+  y,
+  payload,
+  width,
+}: {
+  x?: number;
+  y?: number;
+  payload?: { value: string };
+  width?: number;
+}) {
+  const maxWidth = (width ?? 132) - 4;
+  const clipId = `ongoing-y-clip-${(payload?.value ?? "").replace(/\W+/g, "")}`;
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <defs>
+        <clipPath id={clipId}>
+          <rect x={-maxWidth} y={-10} width={maxWidth} height={20} />
+        </clipPath>
+      </defs>
+      <title>{payload?.value}</title>
+      <text
+        x={0}
+        y={0}
+        dy={4}
+        textAnchor="end"
+        fontSize={12}
+        fill="var(--muted-foreground)"
+        clipPath={`url(#${clipId})`}
+      >
+        {payload?.value}
+      </text>
+    </g>
+  );
 }
 
 export function OngoingRiskRewardChart({ data }: { data: RiskRewardPoint[] }) {
+  const yAxisWidth = 132;
+  const chartHeight = Math.max(160, data.length * ONGOING_RISK_ROW_HEIGHT + 56);
+
   return (
-    <ResponsiveContainer width="100%" height={340}>
+    <ResponsiveContainer width="100%" height={chartHeight}>
       <BarChart
         data={data}
-        margin={{ top: 36, right: 16, left: 0, bottom: 20 }}
-        barGap={4}
-        barCategoryGap="20%"
+        layout="vertical"
+        margin={{ top: 8, right: 16, left: 0, bottom: 4 }}
+        barCategoryGap="22%"
       >
         <defs>
-          <linearGradient id="riskGainFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--signalflow-win)" stopOpacity={0.95} />
-            <stop offset="100%" stopColor="var(--signalflow-win)" stopOpacity={0.35} />
+          <linearGradient id="riskGainFill" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="var(--signalflow-win)" stopOpacity={0.35} />
+            <stop offset="100%" stopColor="var(--signalflow-win)" stopOpacity={0.95} />
           </linearGradient>
-          <linearGradient id="riskLossFill" x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id="riskLossFill" x1="1" y1="0" x2="0" y2="0">
             <stop offset="0%" stopColor="var(--signalflow-loss)" stopOpacity={0.35} />
             <stop offset="100%" stopColor="var(--signalflow-loss)" stopOpacity={0.95} />
           </linearGradient>
         </defs>
         {grid}
-        <XAxis dataKey="label" tick={riskRewardAxisTick} />
-        <YAxis unit="%" tick={riskRewardAxisTick} />
+        <XAxis type="number" unit="%" tick={riskRewardAxisTick} />
+        <YAxis
+          type="category"
+          dataKey="label"
+          width={yAxisWidth}
+          tick={<OngoingRiskYAxisTick width={yAxisWidth} />}
+          interval={0}
+        />
         <Tooltip content={<RiskRewardTooltip />} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
         <Legend formatter={riskRewardLegendText} />
-        <ReferenceLine y={0} stroke="var(--signalflow-gold-start)" strokeDasharray="4 4" strokeWidth={1.5} />
+        <ReferenceLine x={0} stroke="var(--signalflow-gold-start)" strokeDasharray="4 4" strokeWidth={1.5} />
         <Bar
           dataKey="gainPercent"
           name="Potential Gain %"
+          stackId="risk"
           fill="url(#riskGainFill)"
-          radius={[3, 3, 0, 0]}
+          radius={[0, 3, 3, 0]}
           isAnimationActive={false}
         >
-          <LabelList dataKey="gainPercent" content={makeEntryPriceLabel(data)} />
+          <LabelList dataKey="gainPercent" content={makeHorizontalEntryPriceLabel(data)} />
           <LabelList
             dataKey="gainPercent"
-            content={makeRiskRewardLabel(data, "sellTargetPrice", "gainPercent", "top")}
+            content={makeHorizontalRiskRewardLabel(data, "sellTargetPrice", "gainPercent", "gain")}
           />
         </Bar>
         <Bar
           dataKey="lossPercent"
           name="Potential Risk %"
+          stackId="risk"
           fill="url(#riskLossFill)"
-          radius={[0, 0, 3, 3]}
+          radius={[3, 0, 0, 3]}
           isAnimationActive={false}
         >
           <LabelList
             dataKey="lossPercent"
-            content={makeRiskRewardLabel(data, "sellSlPrice", "lossPercent", "bottom")}
+            content={makeHorizontalRiskRewardLabel(data, "sellSlPrice", "lossPercent", "loss")}
           />
         </Bar>
       </BarChart>
