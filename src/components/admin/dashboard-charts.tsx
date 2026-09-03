@@ -596,7 +596,7 @@ export function TradeRiskRewardBar({ data }: { data: RiskRewardPoint }) {
 
   return (
     <div className="w-full">
-      <div className="relative h-3.5 w-full text-[10px] leading-none">
+      <div className="relative h-4 w-full text-xs leading-tight">
         <div
           className="absolute top-0 -translate-x-1/2"
           style={{ left: `${entryLeftPercent}%` }}
@@ -604,7 +604,7 @@ export function TradeRiskRewardBar({ data }: { data: RiskRewardPoint }) {
           <span className="signalflow-gold-text font-semibold whitespace-nowrap">Entry ₹{buyPrice}</span>
         </div>
       </div>
-      <div className="relative mt-0.5 h-2 w-full rounded-full bg-white/5">
+      <div className="relative mt-2 h-2.5 w-full rounded-full bg-white/5">
         <div
           className="absolute top-0 h-full rounded-l-full bg-[var(--signalflow-loss)]"
           style={{ left: 0, width: `calc(${riskWidthPercent}% - 2px)`, minWidth: 6 }}
@@ -614,11 +614,11 @@ export function TradeRiskRewardBar({ data }: { data: RiskRewardPoint }) {
           style={{ left: `calc(${zeroPercent}% + 2px)`, width: `calc(${gainWidthPercent}% - 2px)`, minWidth: 6 }}
         />
         <div
-          className="absolute top-1/2 h-3 w-0.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--signalflow-gold-start)]"
+          className="absolute top-1/2 h-4 w-0.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--signalflow-gold-start)]"
           style={{ left: `${zeroPercent}%` }}
         />
       </div>
-      <div className="mt-0.5 flex items-start justify-between gap-2 text-[10px] leading-none">
+      <div className="mt-2 flex items-start justify-between gap-2 text-xs leading-tight">
         <span className="font-semibold whitespace-nowrap text-[var(--signalflow-loss)]">
           SL ₹{sellSlPrice} <span className="text-muted-foreground">{lossPercent}%</span>
         </span>

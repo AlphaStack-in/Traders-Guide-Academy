@@ -284,11 +284,11 @@ export function OngoingSignals({
                   </span>
                 </div>
 
-                <div className="mt-2 flex items-center gap-2">
+                <div className="mt-4 flex items-center gap-4">
                   <div className="min-w-0 flex-1">
                     <TradeRiskRewardBar data={point} />
                   </div>
-                  <div className="signalflow-glass flex w-[112px] shrink-0 flex-col items-center justify-center gap-0.5 rounded-xl border border-white/5 p-2 text-center sm:w-[124px]">
+                  <div className="signalflow-glass flex w-[112px] shrink-0 flex-col items-center justify-center gap-1.5 rounded-xl border border-white/5 p-3 text-center sm:w-[124px]">
                     <p className="whitespace-nowrap text-[10px] uppercase tracking-wide text-muted-foreground">
                       Potential
                     </p>
