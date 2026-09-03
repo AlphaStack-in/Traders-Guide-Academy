@@ -58,6 +58,16 @@ export function changelogTimestamp(date: string): string {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.50",
+    date: "03 Sep 2026, 09:05 IST",
+    title: "Settings Pages for Admin and Subscribers",
+    highlights: [
+      "New admin Settings page (Profile menu → Settings) — broker connect master switch + Dhan/Goodwill picker, weekly digest email toggle, News & Market Alerts toggle, all live with no redeploy",
+      "New subscriber Settings page (Profile menu → Settings) — weekly digest email opt-in/out and notification bell alerts on/off",
+      "Site feature flags moved from hardcoded client-config.ts booleans to a live, admin-editable AppSettings database table",
+    ],
+  },
+  {
     version: "1.0.49",
     date: "02 Sep 2026, 07:40 IST",
     title: "Help Manual in Profile Menu",
