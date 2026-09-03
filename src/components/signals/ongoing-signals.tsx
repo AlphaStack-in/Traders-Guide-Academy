@@ -284,24 +284,27 @@ export function OngoingSignals({
                   </span>
                 </div>
 
-                <TradeRiskRewardBar data={point} />
-
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  <div className="signalflow-glass rounded-xl border border-white/5 p-2 text-center">
-                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                      Potential Reward
-                    </p>
-                    <p className="mt-0.5 font-heading text-lg font-bold text-[var(--signalflow-win)]">
-                      +{point.gainPercent.toFixed(1)}%
-                    </p>
+                <div className="mt-3 flex items-center gap-3">
+                  <div className="min-w-0 flex-1">
+                    <TradeRiskRewardBar data={point} />
                   </div>
-                  <div className="signalflow-glass rounded-xl border border-white/5 p-2 text-center">
-                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                      Potential Risk
-                    </p>
-                    <p className="mt-0.5 font-heading text-lg font-bold text-[var(--signalflow-loss)]">
-                      {point.lossPercent.toFixed(1)}%
-                    </p>
+                  <div className="flex w-[100px] shrink-0 flex-col gap-2 sm:w-[112px]">
+                    <div className="signalflow-glass rounded-xl border border-white/5 p-2 text-center">
+                      <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                        Potential Reward
+                      </p>
+                      <p className="mt-0.5 font-heading text-lg font-bold text-[var(--signalflow-win)]">
+                        +{point.gainPercent.toFixed(1)}%
+                      </p>
+                    </div>
+                    <div className="signalflow-glass rounded-xl border border-white/5 p-2 text-center">
+                      <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                        Potential Risk
+                      </p>
+                      <p className="mt-0.5 font-heading text-lg font-bold text-[var(--signalflow-loss)]">
+                        {point.lossPercent.toFixed(1)}%
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>

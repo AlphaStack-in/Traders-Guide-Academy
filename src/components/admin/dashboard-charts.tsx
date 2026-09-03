@@ -589,26 +589,19 @@ export function TradeRiskRewardBar({ data }: { data: RiskRewardPoint }) {
   const zeroPercent = ((0 - min) / span) * 100;
   const riskWidthPercent = Math.max(((0 - lossPercent) / span) * 100, lossPercent < 0 ? RISK_REWARD_MIN_SEGMENT_PERCENT : 0);
   const gainWidthPercent = Math.max(((gainPercent - 0) / span) * 100, gainPercent > 0 ? RISK_REWARD_MIN_SEGMENT_PERCENT : 0);
+  // Entry sits directly above its true zero-point on the track (clamped a
+  // touch off the edges purely so the label text itself never clips out of
+  // the card on an extreme same-price SL/target edge case).
+  const entryLeftPercent = Math.min(Math.max(zeroPercent, 4), 96);
 
   return (
     <div className="w-full">
-      {/* Labels are laid out in a plain flex row (start / center / end)
-          rather than positioned at each segment's actual zero-point
-          percentage -- that decouples label placement from the data so
-          SL/Entry/Target text can never overlap even when one segment is
-          tiny (e.g. a small stop-loss % puts the entry point near the far
-          left). The colored track below still reflects the true proportions. */}
-      <div className="flex items-start justify-between gap-2 text-[11px] leading-tight">
-        <div className="flex flex-col items-start">
-          <span className="font-semibold whitespace-nowrap text-[var(--signalflow-loss)]">SL ₹{sellSlPrice}</span>
-          <span className="text-muted-foreground">{lossPercent}%</span>
-        </div>
-        <div className="flex flex-col items-center">
+      <div className="relative h-4 w-full text-[11px] leading-tight">
+        <div
+          className="absolute top-0 -translate-x-1/2"
+          style={{ left: `${entryLeftPercent}%` }}
+        >
           <span className="signalflow-gold-text font-semibold whitespace-nowrap">Entry ₹{buyPrice}</span>
-        </div>
-        <div className="flex flex-col items-end">
-          <span className="font-semibold whitespace-nowrap text-[var(--signalflow-win)]">Target ₹{sellTargetPrice}</span>
-          <span className="text-muted-foreground">+{gainPercent}%</span>
         </div>
       </div>
       <div className="relative mt-1 h-2.5 w-full rounded-full bg-white/5">
@@ -624,6 +617,14 @@ export function TradeRiskRewardBar({ data }: { data: RiskRewardPoint }) {
           className="absolute top-1/2 h-4 w-0.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--signalflow-gold-start)]"
           style={{ left: `${zeroPercent}%` }}
         />
+      </div>
+      <div className="mt-1 flex items-start justify-between gap-2 text-[11px] leading-tight">
+        <span className="font-semibold whitespace-nowrap text-[var(--signalflow-loss)]">
+          SL ₹{sellSlPrice} <span className="text-muted-foreground">{lossPercent}%</span>
+        </span>
+        <span className="font-semibold whitespace-nowrap text-[var(--signalflow-win)]">
+          Target ₹{sellTargetPrice} <span className="text-muted-foreground">+{gainPercent}%</span>
+        </span>
       </div>
     </div>
   );
