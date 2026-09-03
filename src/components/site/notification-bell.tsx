@@ -13,11 +13,9 @@ import {
 } from "@/lib/ably-shared";
 import { formatInstrumentLabel, type InstrumentValue } from "@/lib/instruments";
 import { cn, formatUpdateTime } from "@/lib/utils";
-import { getActiveOrderBroker } from "@/lib/client-config";
+import type { OrderBroker } from "@/lib/client-config";
 import { PlaceOrderTrigger } from "@/components/account/place-order-trigger";
 import { OrderExpansionPanel } from "@/components/account/order-expansion-panel";
-
-const ORDER_BROKER = getActiveOrderBroker();
 
 const CLEARED_AT_KEY = "signalflow-notifications-cleared-at";
 const READ_IDS_KEY = "signalflow-notifications-read-ids";
@@ -120,7 +118,18 @@ function signalLabel(item: UpdateItem) {
   return `${label ? `${label} ` : ""}${item.strike} ${item.optionType}`;
 }
 
-export function NotificationBell() {
+export function NotificationBell({
+  activeBroker = null,
+  notificationsEnabled = true,
+}: {
+  activeBroker?: OrderBroker | null;
+  // Subscriber's own "Notification bell alerts" preference (see
+  // /account/settings) — false suppresses sound alerts, auto-open, and the
+  // instant Ably push subscription, but the bell still shows past updates
+  // when opened manually and the ~45s poll still keeps its contents fresh.
+  notificationsEnabled?: boolean;
+}) {
+  const ORDER_BROKER = activeBroker;
   const { playUpdateAlert } = useSoundAlert();
   const router = useRouter();
   const pathname = usePathname();
@@ -157,9 +166,11 @@ export function NotificationBell() {
     data.forEach((u) => seenIdsRef.current!.add(u.id));
 
     if (hasNew) {
-      playUpdateAlert();
-      if (!openRef.current) {
-        setOpen(true);
+      if (notificationsEnabled) {
+        playUpdateAlert();
+        if (!openRef.current) {
+          setOpen(true);
+        }
       }
       // The "Admin Updates" panel on /signals and /admin/signals
       // (OngoingSignals) is rendered server-side from a prop and has no
@@ -167,7 +178,7 @@ export function NotificationBell() {
       // AdminUpdate row shows up there too, not just in this dropdown.
       router.refresh();
     }
-  }, [playUpdateAlert, router]);
+  }, [playUpdateAlert, router, notificationsEnabled]);
 
   useEffect(() => {
     setClearedAt(localStorage.getItem(CLEARED_AT_KEY));
@@ -191,6 +202,10 @@ export function NotificationBell() {
   // endpoint 503s, Ably's client just keeps retrying quietly in the
   // background, and the poll above is what actually delivers updates.
   useEffect(() => {
+    // Off means no proactive alerting at all — don't even open the Ably
+    // connection. The bell still works on manual open via the poll above.
+    if (!notificationsEnabled) return;
+
     let cancelled = false;
     const client = new Realtime({ authUrl: "/api/ably-auth", authMethod: "GET" });
     const channel = client.channels.get(ADMIN_UPDATES_CHANNEL);
@@ -241,7 +256,7 @@ export function NotificationBell() {
       channel.unsubscribe(ADMIN_UPDATE_EVENT, handlePush);
       client.close();
     };
-  }, [playUpdateAlert, router]);
+  }, [playUpdateAlert, router, notificationsEnabled]);
 
   // Whatever's loaded while the panel is open fades from unread to read
   // shortly after — long enough to actually notice the highlight first.

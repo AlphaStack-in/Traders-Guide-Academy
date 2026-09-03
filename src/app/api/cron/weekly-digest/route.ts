@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { isAuthorizedCronRequest } from "@/lib/cron-auth";
 import { clientConfig } from "@/lib/client-config";
+import { getAppSettings } from "@/lib/app-settings";
 import { getResendClient, getFromAddress } from "@/lib/email";
 import {
   getISTWeekBoundary,
@@ -21,7 +22,8 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (!clientConfig.digestEnabled) {
+  const settings = await getAppSettings();
+  if (!settings.digestEnabled) {
     return NextResponse.json({
       success: true,
       skipped: "Digest is not enabled for this client.",

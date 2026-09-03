@@ -6,6 +6,7 @@ import {
   BarChart3,
   ChevronDown,
   LogOut,
+  Settings,
   Shield,
   UserRound,
   Users,
@@ -19,7 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { clientConfig } from "@/lib/client-config";
+import type { ActiveBroker } from "@/lib/app-settings";
 import { HelpNavLink } from "@/components/site/help-nav-link";
 import { IstClock } from "@/components/site/ist-clock";
 
@@ -28,24 +29,26 @@ const links = [
   { href: "/admin/signals", label: "Manage Signals", icon: Zap },
 ];
 
-const membersLinks = [
-  { href: "/admin/subscribers", label: "View Members" },
-  { href: "/admin/messages", label: "Messages" },
-  { href: "/admin/referrals", label: "Referrals" },
-  ...(clientConfig.dhanConnectEnabled
-    ? [{ href: "/admin/broker-sessions", label: "Broker Sessions" }]
-    : []),
-];
+function getMembersLinks(activeBroker: ActiveBroker) {
+  return [
+    { href: "/admin/subscribers", label: "View Members" },
+    { href: "/admin/messages", label: "Messages" },
+    { href: "/admin/referrals", label: "Referrals" },
+    ...(activeBroker === "dhan"
+      ? [{ href: "/admin/broker-sessions", label: "Broker Sessions" }]
+      : []),
+  ];
+}
 
 // isSuperAdmin no longer changes this list — TGA has a single hardcoded
 // admin account now, so there's no "Admin Users" management page to link to.
 // The param is kept (always true) so the protected layout doesn't need to
 // change how it calls this.
-function getAdminGroupLinks(_isSuperAdmin: boolean) {
+function getAdminGroupLinks(_isSuperAdmin: boolean, activeBroker: ActiveBroker) {
   return [
     { href: "/admin/help", label: "Help Manual" },
     { href: "/admin/changelog", label: "Changelog" },
-    ...(clientConfig.goodwillBrokerEnabled
+    ...(activeBroker === "goodwill"
       ? [{ href: "/admin/goodwill-orders", label: "Order Requests" }]
       : []),
   ];
@@ -54,14 +57,17 @@ function getAdminGroupLinks(_isSuperAdmin: boolean) {
 export function AdminNav({
   isSuperAdmin = false,
   adminEmail = null,
+  activeBroker = null,
 }: {
   isSuperAdmin?: boolean;
   adminEmail?: string | null;
+  activeBroker?: ActiveBroker;
 }) {
   const pathname = usePathname();
   const router = useRouter();
   const username = adminEmail ? adminEmail.split("@")[0] : null;
-  const adminGroupLinks = getAdminGroupLinks(isSuperAdmin);
+  const membersLinks = getMembersLinks(activeBroker);
+  const adminGroupLinks = getAdminGroupLinks(isSuperAdmin, activeBroker);
 
   async function handleLogout() {
     await fetch("/admin/logout", { method: "POST" });
@@ -173,6 +179,12 @@ export function AdminNav({
             <ChevronDown className="h-3.5 w-3.5" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-44">
+            <DropdownMenuItem asChild className="cursor-pointer gap-2">
+              <Link href="/admin/settings">
+                <Settings className="h-3.5 w-3.5 text-muted-foreground" />
+                <span>Settings</span>
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuItem
               onClick={handleLogout}
               className="cursor-pointer gap-2 text-xs font-medium text-destructive focus:text-destructive"
@@ -195,9 +207,19 @@ export function AdminNav({
   );
 }
 
-export function AdminMobileNav({ isSuperAdmin = false }: { isSuperAdmin?: boolean }) {
+export function AdminMobileNav({
+  isSuperAdmin = false,
+  activeBroker = null,
+}: {
+  isSuperAdmin?: boolean;
+  activeBroker?: ActiveBroker;
+}) {
   const pathname = usePathname();
-  const allLinks = [...links, ...membersLinks, ...getAdminGroupLinks(isSuperAdmin)];
+  const allLinks = [
+    ...links,
+    ...getMembersLinks(activeBroker),
+    ...getAdminGroupLinks(isSuperAdmin, activeBroker),
+  ];
 
   return (
     <nav className="flex items-center gap-2 overflow-x-auto border-t border-white/5 px-4 py-2 lg:hidden">

@@ -70,8 +70,17 @@ export function formatFullTimestamp(date: string | Date) {
 }
 
 // Dynamic runtime join URL resolver — a client with its own external
-// broker-hosted join page (goodwillBrokerEnabled) uses that instead of this
-// app's own domain, to avoid cross-client leaks.
+// broker-hosted join page uses that instead of this app's own domain, to
+// avoid cross-client leaks.
+//
+// KNOWN GAP: this still reads the static clientConfig.goodwillBrokerEnabled
+// rather than the live, admin-editable broker setting (src/lib/app-settings.ts)
+// that everywhere else now uses — this function is called from client-side
+// code (see the `typeof window` check below) and can't do an async DB read.
+// If Goodwill is ever turned on live from /admin/settings without also
+// flipping this static flag in code, referral join links here won't follow.
+// Low priority while TGA ships with broker-connect off by default; worth
+// fixing (e.g. via a small public settings endpoint) before relying on it.
 export function getClientJoinUrl(referralToken?: string | null): string {
   if (clientConfig.goodwillBrokerEnabled) {
     return "https://gwcindia.in/register";

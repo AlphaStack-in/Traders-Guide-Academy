@@ -7,6 +7,7 @@ import { ProfileEditForm } from "@/components/account/profile-edit-form";
 import { getCurrentSubscriber } from "@/lib/subscriber-auth";
 import { prisma } from "@/lib/prisma";
 import { clientConfig, type PricingPlan } from "@/lib/client-config";
+import { getActiveBroker } from "@/lib/app-settings";
 import { formatDateOnly, formatFullTimestamp } from "@/lib/utils";
 import type { SubscriptionStatus } from "@prisma/client";
 
@@ -31,12 +32,14 @@ export default async function ProfilePage() {
     redirect("/login?redirectTo=/account/profile");
   }
 
-  const connection = clientConfig.dhanConnectEnabled
-    ? await prisma.brokerConnection.findUnique({
-        where: { subscriberId: subscriber.id },
-        select: { dhanClientId: true, dhanClientName: true, status: true, tokenExpiresAt: true },
-      })
-    : null;
+  const activeBroker = await getActiveBroker();
+  const connection =
+    activeBroker === "dhan"
+      ? await prisma.brokerConnection.findUnique({
+          where: { subscriberId: subscriber.id },
+          select: { dhanClientId: true, dhanClientName: true, status: true, tokenExpiresAt: true },
+        })
+      : null;
 
   // Most recent self-service Subscription on record (see
   // prisma/schema.prisma) — null for a subscriber who has never used the
@@ -143,7 +146,7 @@ export default async function ProfilePage() {
           </div>
         </div>
 
-        {clientConfig.dhanConnectEnabled && (
+        {activeBroker === "dhan" && (
           <div className="signalflow-glass signalflow-gold-border rounded-2xl border p-5">
             <h2 className="font-heading text-lg font-bold">
               Broker <span className="signalflow-gold-text">Connect</span>

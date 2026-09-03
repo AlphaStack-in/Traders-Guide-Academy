@@ -15,6 +15,7 @@ import {
   type RangePreset,
   type SignalsDateFilter,
 } from "@/lib/date-filter";
+import { getActiveBroker } from "@/lib/app-settings";
 
 async function getSignals() {
   return prisma.signal.findMany({ orderBy: { signalTime: "desc" } });
@@ -39,6 +40,7 @@ export default async function SignalsPage({
   const allIds = signals.map((s) => s.id);
   const adminUpdatesMap = await getAdminUpdatesForSignals(allIds);
   const generalUpdates = await getGeneralAdminUpdates();
+  const activeBroker = await getActiveBroker();
   const rows: SignalRow[] = signals.map((s) => {
     const updates = adminUpdatesMap[s.id] ?? [];
     return {
@@ -87,7 +89,7 @@ export default async function SignalsPage({
           </div>
         </div>
 
-        <OngoingSignals signals={ongoing} generalUpdates={generalUpdates} />
+        <OngoingSignals signals={ongoing} generalUpdates={generalUpdates} activeBroker={activeBroker} />
         <SignalsExplorer signals={rows} initialFilter={initialFilter} />
       </main>
       <Footer />

@@ -105,8 +105,13 @@ model Subscriber {
   googleId              String?                @unique
   // Whether the subscriber has opted out of the weekly performance digest
   // email. Defaults to false (opted in). Set to true via the HMAC-signed
-  // unsubscribe link in the digest email footer.
+  // unsubscribe link in the digest email footer, or from the subscriber's
+  // own Settings page (src/app/account/settings).
   emailDigestOptOut     Boolean                @default(false)
+  // Whether this subscriber wants instant notification-bell alerts (Ably
+  // push for admin updates / signal events). Defaults to true (opted in).
+  // Toggled from the subscriber's own Settings page.
+  notificationsEnabled  Boolean                @default(true)
   brokerConnection      BrokerConnection?
   orderAuditLogs        OrderAuditLog[]
   goodwillOrderRequests GoodwillOrderRequest[]
@@ -601,4 +606,30 @@ model WebhookEvent {
   processedAt DateTime @default(now())
 
   @@unique([provider, eventId])
+}
+
+// Single-row table (fixed id "singleton") holding site-wide feature toggles
+// that used to be hardcoded booleans in src/lib/client-config.ts and needed
+// a code change + redeploy to flip. Now editable live from the admin
+// Settings page (src/app/admin/(protected)/settings) — see
+// src/lib/app-settings.ts for the read/write helpers and caching.
+model AppSettings {
+  id                   String   @id @default("singleton")
+  // Gates the weekly performance digest email cron
+  // (src/app/api/cron/weekly-digest/route.ts).
+  digestEnabled        Boolean  @default(false)
+  // Gates the home-page News & Market Alerts panel (src/app/page.tsx).
+  newsAlertsEnabled    Boolean  @default(false)
+  // Master switch for broker order-placement from signals. When false,
+  // activeBroker is ignored and no broker features render regardless of
+  // its value.
+  brokerConnectEnabled Boolean  @default(false)
+  // Which broker's connect/order-placement flow is live. "dhan" | "goodwill"
+  // today; extend with more values as more brokers are wired up. Null when
+  // no broker has been chosen yet. At most one broker is ever active at a
+  // time — see getActiveBroker() in src/lib/app-settings.ts.
+  activeBroker         String?
+  updatedAt            DateTime @updatedAt
+  // Admin email that made the last change, for a lightweight audit trail.
+  updatedBy            String?
 }

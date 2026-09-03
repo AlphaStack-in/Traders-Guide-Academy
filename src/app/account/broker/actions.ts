@@ -3,7 +3,7 @@
 import { requireSubscriber } from "@/lib/subscriber-auth";
 import { prisma } from "@/lib/prisma";
 import { encryptSecret } from "@/lib/broker/crypto";
-import { clientConfig } from "@/lib/client-config";
+import { getActiveBroker } from "@/lib/app-settings";
 
 interface DhanProfile {
   dhanClientId: string;
@@ -30,7 +30,8 @@ export async function connectDhanPersonalToken(input: {
   dhanClientId: string;
   accessToken: string;
 }): Promise<{ success: boolean; error?: string }> {
-  if (!clientConfig.dhanConnectEnabled) {
+  const activeBroker = await getActiveBroker();
+  if (activeBroker !== "dhan") {
     return { success: false, error: "Broker connect isn't available on this platform." };
   }
 
@@ -100,7 +101,8 @@ export async function connectDhanPersonalToken(input: {
 }
 
 export async function disconnectDhan(): Promise<{ success: boolean; error?: string }> {
-  if (!clientConfig.dhanConnectEnabled) {
+  const activeBroker = await getActiveBroker();
+  if (activeBroker !== "dhan") {
     return { success: false, error: "Broker connect isn't available on this platform." };
   }
 
@@ -112,7 +114,8 @@ export async function disconnectDhan(): Promise<{ success: boolean; error?: stri
 }
 
 export async function getBrokerConnectionStatus() {
-  if (!clientConfig.dhanConnectEnabled) return null;
+  const activeBroker = await getActiveBroker();
+  if (activeBroker !== "dhan") return null;
 
   const subscriber = await requireSubscriber();
 

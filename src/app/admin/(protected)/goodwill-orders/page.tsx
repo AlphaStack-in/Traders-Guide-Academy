@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { clientConfig } from "@/lib/client-config";
+import { getActiveBroker } from "@/lib/app-settings";
 import {
   GoodwillOrderRequestsTable,
   type GoodwillOrderRequestRow,
@@ -9,7 +9,8 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function AdminGoodwillOrdersPage() {
-  if (!clientConfig.goodwillBrokerEnabled) {
+  const activeBroker = await getActiveBroker();
+  if (activeBroker !== "goodwill") {
     redirect("/admin/dashboard");
   }
 

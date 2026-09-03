@@ -21,13 +21,11 @@ import { TradeRiskRewardBar } from "@/components/admin/dashboard-charts";
 import { ManageSignalsTable } from "@/components/admin/manage-signals-table";
 import type { SignalRow } from "@/components/signals/signals-explorer";
 import { formatInstrumentLabel } from "@/lib/instruments";
-import { getActiveOrderBroker } from "@/lib/client-config";
+import type { OrderBroker } from "@/lib/client-config";
 import {
   postGeneralAdminUpdate,
   type AdminUpdateItem,
 } from "@/app/admin/(protected)/signals/actions";
-
-const ORDER_BROKER = getActiveOrderBroker();
 
 // Small always-available composer for posting a general "Admin Updates"
 // message that isn't tied to any specific signal — usable even when there
@@ -120,6 +118,7 @@ export function OngoingSignals({
   editable = false,
   collapsible = false,
   defaultOpen = true,
+  activeBroker = null,
 }: {
   signals: SignalRow[];
   // Broadcast admin updates not tied to any specific signal (see
@@ -129,7 +128,9 @@ export function OngoingSignals({
   editable?: boolean;
   collapsible?: boolean;
   defaultOpen?: boolean;
+  activeBroker?: OrderBroker | null;
 }) {
+  const ORDER_BROKER = activeBroker;
   const [open, setOpen] = useState(defaultOpen);
   // Same "re-sync when defaultOpen actually flips" pattern as
   // AddSignalSection — see that file for why. Here it's what makes this

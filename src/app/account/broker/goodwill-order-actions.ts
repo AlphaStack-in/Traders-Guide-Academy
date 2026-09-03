@@ -2,7 +2,7 @@
 
 import { requireSubscriber } from "@/lib/subscriber-auth";
 import { prisma } from "@/lib/prisma";
-import { clientConfig } from "@/lib/client-config";
+import { getActiveBroker } from "@/lib/app-settings";
 import type { InstrumentValue } from "@/lib/instruments";
 
 // Goodwill's own "Place Order" flow — Goodwill's broker is GIGAPRO, not
@@ -29,7 +29,8 @@ export interface GoodwillOrderContext {
 // minus any broker-connection check — Goodwill has no personal-token
 // connect step, so the button is actionable purely off the signal itself.
 export async function getGoodwillOrderContext(signalId: string): Promise<GoodwillOrderContext> {
-  if (!clientConfig.goodwillBrokerEnabled) {
+  const activeBroker = await getActiveBroker();
+  if (activeBroker !== "goodwill") {
     return { signal: null };
   }
 
@@ -76,7 +77,8 @@ export interface GoodwillOrderExpansionDetails {
 export async function getGoodwillOrderExpansionDetails(
   signalId: string,
 ): Promise<GoodwillOrderExpansionDetails> {
-  if (!clientConfig.goodwillBrokerEnabled) {
+  const activeBroker = await getActiveBroker();
+  if (activeBroker !== "goodwill") {
     return {
       entryPrice: 0,
       lotSize: 1,
@@ -109,7 +111,8 @@ export async function requestGoodwillOrderConfirmation(
   lots: number,
   productType: GoodwillProductType = "INTRADAY",
 ): Promise<GoodwillOrderRequestResult> {
-  if (!clientConfig.goodwillBrokerEnabled) {
+  const activeBroker = await getActiveBroker();
+  if (activeBroker !== "goodwill") {
     return { success: false, error: "Order requests aren't available on this platform." };
   }
 

@@ -7,10 +7,12 @@ import { AdminNavLink } from "@/components/site/admin-nav-link";
 import { DesktopNavigation, MobileNavigation } from "@/components/site/main-navigation";
 import { IstClock } from "@/components/site/ist-clock";
 import { getCurrentSubscriber, getHasRegisteredBrowser } from "@/lib/subscriber-auth";
+import { getActiveBroker } from "@/lib/app-settings";
 
 export async function Navbar() {
   const subscriber = await getCurrentSubscriber();
   const hasRegistered = await getHasRegisteredBrowser();
+  const activeBroker = await getActiveBroker();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-white/5 signalflow-glass">
@@ -20,7 +22,10 @@ export async function Navbar() {
         <div className="flex items-center gap-2.5 sm:gap-3">
           <IstClock />
           <HelpNavLink href="/help" />
-          <NotificationBell />
+          <NotificationBell
+            activeBroker={activeBroker}
+            notificationsEnabled={subscriber?.notificationsEnabled ?? true}
+          />
           <SubscriberNavStatus
             subscriberName={subscriber?.name ?? null}
             hasRegistered={hasRegistered}

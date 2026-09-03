@@ -279,11 +279,9 @@ export const clientConfig: ClientConfig = CLIENTS[CLIENT_ID];
 
 export type OrderBroker = "dhan" | "goodwill";
 
-// Single source of truth for which broker's order-placement UI this
-// deployment shows, since the two flags are meant to be mutually exclusive
-// (each client has at most one broker wired up at a time).
-export function getActiveOrderBroker(): OrderBroker | null {
-  if (clientConfig.dhanConnectEnabled) return "dhan";
-  if (clientConfig.goodwillBrokerEnabled) return "goodwill";
-  return null;
-}
+// Live control has moved to the admin-editable AppSettings table — see
+// getActiveBroker() in src/lib/app-settings.ts. dhanConnectEnabled /
+// goodwillBrokerEnabled / digestEnabled / newsAlertsEnabled below are only
+// consulted once, as the seed default for a fresh deployment's first
+// AppSettings row (before any admin has visited /admin/settings) — they no
+// longer gate anything directly.

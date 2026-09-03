@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { clientConfig } from "@/lib/client-config";
+import { getActiveBroker } from "@/lib/app-settings";
 import {
   BrokerSessionsTable,
   type BrokerSessionRow,
@@ -10,7 +10,8 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function AdminBrokerSessionsPage() {
-  if (!clientConfig.dhanConnectEnabled) {
+  const activeBroker = await getActiveBroker();
+  if (activeBroker !== "dhan") {
     redirect("/admin/dashboard");
   }
 

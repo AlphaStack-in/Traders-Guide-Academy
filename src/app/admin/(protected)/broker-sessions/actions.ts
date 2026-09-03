@@ -3,10 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin-auth";
-import { clientConfig } from "@/lib/client-config";
+import { getActiveBroker } from "@/lib/app-settings";
 
 export async function revokeBrokerConnection(subscriberId: string) {
-  if (!clientConfig.dhanConnectEnabled) {
+  const activeBroker = await getActiveBroker();
+  if (activeBroker !== "dhan") {
     return { success: false, error: "Broker connect isn't available on this platform." };
   }
 

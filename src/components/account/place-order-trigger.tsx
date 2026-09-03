@@ -15,7 +15,8 @@ import type { OrderBroker } from "@/lib/client-config";
 // brokerType picks which backend this checks — Dhan's (broker-connect
 // gated) or Goodwill's (no connect step, just signal actionability). A
 // deployment only ever has one broker enabled at a time (see
-// getActiveOrderBroker), so this never mixes the two.
+// getActiveBroker() in src/lib/app-settings.ts), so this never mixes
+// the two.
 export function PlaceOrderTrigger({
   signalId,
   brokerType,

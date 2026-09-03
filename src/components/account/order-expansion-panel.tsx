@@ -42,7 +42,8 @@ interface PanelDetails {
 //
 // brokerType branches which server actions this calls — Dhan's (real order
 // placement, broker-connect gated) or Goodwill's (placeholder request log,
-// no connect step). Never both at once; see getActiveOrderBroker.
+// no connect step). Never both at once; see getActiveBroker() in
+// src/lib/app-settings.ts.
 export function OrderExpansionPanel({
   signalId,
   brokerType,

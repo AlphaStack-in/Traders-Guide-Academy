@@ -1,20 +1,22 @@
 import Link from "next/link";
 import { TocSidebar, type TocEntry } from "@/components/site/toc-sidebar";
 import { LegalSection as Section } from "@/components/site/legal-section";
-import { clientConfig } from "@/lib/client-config";
+import { getAppSettings } from "@/lib/app-settings";
 
 // Admin operator manual — auth is inherited from
 // src/app/admin/(protected)/layout.tsx, same as every other page in this
-// route group. Deliberately scoped to what's actually wired up in this
-// deployment right now: Broker Sessions / Order Requests only render in the
-// nav when dhanConnectEnabled / goodwillBrokerEnabled are true, which they
-// aren't for TGA, so they get one short note instead of a full walkthrough.
+// route group. Broker Sessions / Order Requests only render in the nav
+// once a broker is turned on from /admin/settings — this page reads the
+// live values so the note below always matches what's actually on.
 // A couple of gaps found while writing this are called out explicitly
 // (Announcement button, subscriber password reset) rather than described as
 // if they work, since they don't yet — see each section for specifics.
-export default function AdminHelpPage() {
-  const goodwillEnabled = clientConfig.goodwillBrokerEnabled;
-  const dhanConnectEnabled = clientConfig.dhanConnectEnabled;
+export default async function AdminHelpPage() {
+  const settings = await getAppSettings();
+  const goodwillEnabled = settings.activeBroker === "goodwill";
+  const dhanConnectEnabled = settings.activeBroker === "dhan";
+  const digestEnabled = settings.digestEnabled;
+  const newsAlertsEnabled = settings.newsAlertsEnabled;
 
   const SECTIONS: TocEntry[] = [
     { id: "logging-in", label: "Logging in" },
@@ -265,29 +267,29 @@ EXPIRY 18th aug`}
             </p>
           </Section>
 
-          <Section id="inactive-features" title="Features present but not active for TGA">
+          <Section id="inactive-features" title="Features controlled from Settings">
             <p>
-              A few nav items and pages only appear once a feature flag in{" "}
-              <span className="font-mono">client-config.ts</span> is turned on — right now, for
-              TGA, none of them are:
+              A few nav items and pages only appear once their toggle is turned on from{" "}
+              <Link href="/admin/settings" className="text-primary underline underline-offset-2">
+                Settings
+              </Link>{" "}
+              (Profile menu → Settings) — no code change or redeploy needed. Current state:
             </p>
             <ul className="mt-2 flex flex-col gap-1.5 [&>li]:pl-4 [&>li]:-indent-4">
               <li>
                 • <span className="font-semibold text-foreground">Broker Sessions</span> (Dhan
-                broker-connect) — gated behind{" "}
-                <span className="font-mono">dhanConnectEnabled</span>, currently{" "}
-                {dhanConnectEnabled ? "on" : "off"}.
+                broker-connect) — currently {dhanConnectEnabled ? "on" : "off"}.
               </li>
               <li>
                 • <span className="font-semibold text-foreground">Order Requests</span> (Goodwill
-                order placement) — gated behind{" "}
-                <span className="font-mono">goodwillBrokerEnabled</span>, currently{" "}
-                {goodwillEnabled ? "on" : "off"}.
+                order placement) — currently {goodwillEnabled ? "on" : "off"}.
               </li>
               <li>
-                • The weekly performance digest email and the home-page News &amp; Market Alerts
-                panel are similarly switched off (<span className="font-mono">digestEnabled</span>,{" "}
-                <span className="font-mono">newsAlertsEnabled</span>).
+                • Weekly performance digest email — currently {digestEnabled ? "on" : "off"}.
+              </li>
+              <li>
+                • Home-page News &amp; Market Alerts panel — currently{" "}
+                {newsAlertsEnabled ? "on" : "off"}.
               </li>
             </ul>
             <p className="mt-2">

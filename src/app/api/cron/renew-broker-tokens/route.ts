@@ -3,7 +3,7 @@ import { isAuthorizedCronRequest } from "@/lib/cron-auth";
 import { prisma } from "@/lib/prisma";
 import { decryptSecret, encryptSecret } from "@/lib/broker/crypto";
 import { renewDhanToken } from "@/lib/broker/dhan-client";
-import { clientConfig } from "@/lib/client-config";
+import { getActiveBroker } from "@/lib/app-settings";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -23,7 +23,8 @@ interface RenewTokenResponseBody {
 // their renewal actually fails (lapsed token, Dhan rejection, etc.), not on
 // a blanket daily basis.
 export async function GET(request: Request) {
-  if (!clientConfig.dhanConnectEnabled) {
+  const activeBroker = await getActiveBroker();
+  if (activeBroker !== "dhan") {
     return NextResponse.json({ success: true, skipped: "Dhan connect not enabled for this client." });
   }
 

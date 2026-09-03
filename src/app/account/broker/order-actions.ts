@@ -6,7 +6,7 @@ import { decryptSecret } from "@/lib/broker/crypto";
 import { resolveDhanContract } from "@/lib/broker/dhan-contract-resolver";
 import { placeDhanOrder, getDhanFundLimit } from "@/lib/broker/dhan-client";
 import { formatInstrumentLabel, type InstrumentValue } from "@/lib/instruments";
-import { clientConfig } from "@/lib/client-config";
+import { getActiveBroker } from "@/lib/app-settings";
 
 export type SignalBrokerStatus = "NOT_CONNECTED" | "EXPIRED" | "REVOKED" | "ACTIVE";
 export type DhanProductType = "INTRADAY" | "MARGIN";
@@ -28,7 +28,8 @@ export interface SignalOrderContext {
 // Called by the notification panel to decide, per signal, whether to show
 // the inline order form, a "Connect now" CTA, or nothing at all.
 export async function getSignalOrderContext(signalId: string): Promise<SignalOrderContext> {
-  if (!clientConfig.dhanConnectEnabled) {
+  const activeBroker = await getActiveBroker();
+  if (activeBroker !== "dhan") {
     return { brokerStatus: "NOT_CONNECTED", signal: null };
   }
 
@@ -93,7 +94,8 @@ export interface OrderExpansionDetails {
 // a real call to Dhan's /v2/fundlimit), unlike the lightweight
 // getSignalOrderContext check above.
 export async function getOrderExpansionDetails(signalId: string): Promise<OrderExpansionDetails> {
-  if (!clientConfig.dhanConnectEnabled) {
+  const activeBroker = await getActiveBroker();
+  if (activeBroker !== "dhan") {
     return {
       brokerStatus: "NOT_CONNECTED",
       entryPrice: 0,
@@ -174,7 +176,8 @@ export async function placeOrderForSignal(
   lotSize: number,
   productType: DhanProductType = "INTRADAY",
 ): Promise<PlaceOrderResult> {
-  if (!clientConfig.dhanConnectEnabled) {
+  const activeBroker = await getActiveBroker();
+  if (activeBroker !== "dhan") {
     return { success: false, error: "Broker connect isn't available on this platform." };
   }
 

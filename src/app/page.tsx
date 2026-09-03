@@ -7,9 +7,11 @@ import { Testimonials } from "@/components/landing/testimonials";
 import { Pricing } from "@/components/landing/pricing";
 import { NewsAlertsSection } from "@/components/news/news-alerts-section";
 import { InstagramGrid } from "@/components/landing/instagram-grid";
-import { clientConfig } from "@/lib/client-config";
+import { getAppSettings } from "@/lib/app-settings";
 
-export default function Home() {
+export default async function Home() {
+  const settings = await getAppSettings();
+
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
@@ -19,7 +21,7 @@ export default function Home() {
         <HowItWorks />
         <Testimonials />
         <Pricing />
-        {clientConfig.newsAlertsEnabled && (
+        {settings.newsAlertsEnabled && (
           <section className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
             <NewsAlertsSection />
           </section>

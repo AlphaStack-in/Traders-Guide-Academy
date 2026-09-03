@@ -13,6 +13,7 @@ import {
   getAdminUpdatesForSignals,
   getGeneralAdminUpdates,
 } from "@/app/admin/(protected)/signals/actions";
+import { getActiveBroker } from "@/lib/app-settings";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +41,7 @@ export default async function ManageSignalsPage({
   ).sort();
   const adminUpdatesMap = await getAdminUpdatesForSignals(allIds);
   const generalUpdates = await getGeneralAdminUpdates();
+  const activeBroker = await getActiveBroker();
 
   const rows: ManageSignalRow[] = signals.map((s) => {
     const updates = adminUpdatesMap[s.id] ?? [];
@@ -95,6 +97,7 @@ export default async function ManageSignalsPage({
       <OngoingSignals
         signals={ongoing}
         generalUpdates={generalUpdates}
+        activeBroker={activeBroker}
         editable
         collapsible
         defaultOpen={ongoing.length > 0}
