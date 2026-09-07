@@ -2,8 +2,12 @@ import { Suspense } from "react";
 import { Navbar } from "@/components/site/navbar";
 import { Footer } from "@/components/site/footer";
 import { RegisterForm } from "@/components/register/register-form";
+import { getGooglePendingSignup } from "@/lib/subscriber-auth";
 
-export default function RegisterPage() {
+export default async function RegisterPage() {
+  const pendingGoogle = await getGooglePendingSignup();
+  const googlePrefill = pendingGoogle ? { name: pendingGoogle.name, email: pendingGoogle.email } : null;
+
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
@@ -18,7 +22,7 @@ export default function RegisterPage() {
           </p>
           <div className="mt-6">
             <Suspense fallback={null}>
-              <RegisterForm />
+              <RegisterForm googlePrefill={googlePrefill} />
             </Suspense>
           </div>
         </div>

@@ -16,8 +16,6 @@ const ERROR_MESSAGES: Record<string, string> = {
   google_denied: "Google sign-in was cancelled.",
   google_auth_failed: "Something went wrong signing in with Google. Please try again.",
   google_email_unverified: "That Google account's email isn't verified.",
-  google_no_account:
-    "No premium subscriber account matches that Google email. Register first, or log in below with your password.",
 };
 
 export function SubscriberLoginForm() {

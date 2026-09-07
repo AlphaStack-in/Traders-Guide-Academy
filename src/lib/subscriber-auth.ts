@@ -17,13 +17,18 @@
  * Google sign-in (src/lib/google-oauth.ts + src/app/api/auth/google/) is an
  * additional, optional way to reach this same session: it looks up an
  * existing Subscriber by Subscriber.googleId or verified email and calls
- * createSubscriberSession() below exactly as loginSubscriber() does. It
- * never creates a subscriber on its own — registration still needs a phone
- * number Google doesn't provide.
+ * createSubscriberSession() below exactly as loginSubscriber() does. When no
+ * existing subscriber matches, it can't create one outright — registration
+ * still needs a phone number Google doesn't provide — so it instead hands
+ * off to /register via the signed "pending signup" cookie read by
+ * getGooglePendingSignup() below, which prefills name/email and lets
+ * registerSubscriber() (src/app/register/actions.ts) attach the googleId
+ * once the subscriber finishes registering.
  */
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { createSessionToken, verifySessionToken } from "@/lib/session-cookie";
+import { GOOGLE_PENDING_SIGNUP_COOKIE, type GooglePendingSignupPayload } from "@/lib/google-oauth";
 
 export const SUBSCRIBER_SESSION_COOKIE = "subscriber_session";
 const SUBSCRIBER_SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30; // 30 days
@@ -72,6 +77,24 @@ export async function setRegisteredBrowserCookie(): Promise<void> {
 export async function getHasRegisteredBrowser(): Promise<boolean> {
   const cookieStore = await cookies();
   return cookieStore.get(SUBSCRIBER_REGISTERED_COOKIE)?.value === "1";
+}
+
+/**
+ * Verified Google identity awaiting registration, set by
+ * src/app/api/auth/google/callback/route.ts when the Google account didn't
+ * match an existing subscriber. Read by /register to prefill the form and
+ * by registerSubscriber() to authoritatively attach googleId — the register
+ * form itself never sends googleId, since that would let a client forge it.
+ */
+export async function getGooglePendingSignup(): Promise<GooglePendingSignupPayload | null> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(GOOGLE_PENDING_SIGNUP_COOKIE)?.value;
+  return verifySessionToken<GooglePendingSignupPayload>(token);
+}
+
+export async function clearGooglePendingSignup(): Promise<void> {
+  const cookieStore = await cookies();
+  cookieStore.delete(GOOGLE_PENDING_SIGNUP_COOKIE);
 }
 
 export async function getCurrentSubscriber() {

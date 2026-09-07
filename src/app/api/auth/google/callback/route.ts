@@ -2,13 +2,16 @@ import { NextResponse, type NextRequest } from "next/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { normalizeEmail } from "@/lib/utils";
-import { verifySessionToken } from "@/lib/session-cookie";
+import { createSessionToken, verifySessionToken } from "@/lib/session-cookie";
 import { createAdminSession } from "@/lib/admin-rbac";
 import { createSubscriberSession } from "@/lib/subscriber-auth";
 import {
   GOOGLE_OAUTH_FLOW_COOKIE,
+  GOOGLE_PENDING_SIGNUP_COOKIE,
+  GOOGLE_PENDING_SIGNUP_MAX_AGE_SECONDS,
   exchangeGoogleCode,
   type GoogleOAuthFlowPayload,
+  type GooglePendingSignupPayload,
   type GoogleOAuthRole,
 } from "@/lib/google-oauth";
 
@@ -23,12 +26,15 @@ import {
  *     No schema change needed; this is just an alternate credential for the
  *     same env-var-defined identity password login already grants.
  *
- *   - subscriber: Google only ever authenticates an *existing* subscriber
- *     (matched by Subscriber.googleId, or by verified email on first use,
- *     which backfills googleId). It never creates a new subscriber, because
- *     registration also collects a phone number Google doesn't provide —
- *     see src/app/register/actions.ts. A Google account with no matching
- *     subscriber is sent back to /login with an explanatory error.
+ *   - subscriber: Google authenticates an *existing* subscriber (matched by
+ *     Subscriber.googleId, or by verified email on first use, which
+ *     backfills googleId). When no subscriber matches, this can't create one
+ *     outright — registration also collects a phone number Google doesn't
+ *     provide (see src/app/register/actions.ts) — so instead it hands the
+ *     verified Google identity to /register via a short-lived signed cookie
+ *     (GOOGLE_PENDING_SIGNUP_COOKIE), which prefills name/email and lets the
+ *     subscriber finish signing up (phone + plan) without retyping either or
+ *     setting a password.
  */
 
 function fail(request: NextRequest, loginPage: string, errorCode: string): NextResponse {
@@ -99,7 +105,22 @@ export async function GET(request: NextRequest) {
   }
 
   if (!subscriber) {
-    return fail(request, "/login", "google_no_account");
+    const pendingPayload: Omit<GooglePendingSignupPayload, "exp"> = {
+      googleId: googleUser.sub,
+      email,
+      name: googleUser.name ?? "",
+    };
+    const pendingToken = await createSessionToken(pendingPayload, GOOGLE_PENDING_SIGNUP_MAX_AGE_SECONDS);
+    const response = NextResponse.redirect(new URL("/register?google=1", request.url));
+    response.cookies.set(GOOGLE_PENDING_SIGNUP_COOKIE, pendingToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: GOOGLE_PENDING_SIGNUP_MAX_AGE_SECONDS,
+    });
+    response.cookies.delete(GOOGLE_OAUTH_FLOW_COOKIE);
+    return response;
   }
 
   await createSubscriberSession(subscriber.id);

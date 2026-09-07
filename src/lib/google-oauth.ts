@@ -12,12 +12,38 @@
  * Telegram/Resend elsewhere in this app being silently skipped when unset.
  * Nothing here gates the build (see scripts/check-build-health.ts) and
  * password login for admin + subscribers is unaffected either way.
+ *
+ * Subscriber sign-up via Google: a Google account with no matching
+ * subscriber is no longer a dead end — the callback route redirects to
+ * /register with a signed "pending signup" cookie (see
+ * GOOGLE_PENDING_SIGNUP_COOKIE below) so the register form can prefill
+ * name/email and skip requiring a password. Phone number and plan still
+ * have to be entered by hand, since Google doesn't provide either.
  */
 
 export type GoogleOAuthRole = "admin" | "subscriber";
 
 export const GOOGLE_OAUTH_FLOW_COOKIE = "google_oauth_flow";
 export const GOOGLE_OAUTH_FLOW_MAX_AGE_SECONDS = 600; // 10 minutes
+
+/**
+ * Set by the callback route when a Google sign-in (role=subscriber) doesn't
+ * match an existing subscriber. Carries the *verified* Google identity
+ * (HMAC-signed, same as the flow cookie above) across the redirect to
+ * /register so the register form can prefill name/email and skip requiring
+ * a password — without trusting anything the client could tamper with via
+ * URL params. Consumed by getGooglePendingSignup()/clearGooglePendingSignup()
+ * in src/lib/subscriber-auth.ts.
+ */
+export const GOOGLE_PENDING_SIGNUP_COOKIE = "google_pending_signup";
+export const GOOGLE_PENDING_SIGNUP_MAX_AGE_SECONDS = 600; // 10 minutes
+
+export interface GooglePendingSignupPayload {
+  googleId: string;
+  email: string;
+  name: string;
+  exp: number;
+}
 
 export interface GoogleOAuthFlowPayload {
   role: GoogleOAuthRole;

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { WhatsAppIcon } from "@/components/site/icons";
 import { PaymentDetailsCard } from "@/components/account/payment-details-card";
+import { GoogleSignInButton } from "@/components/auth/google-signin-button";
 import { BROKER_OPTIONS } from "@/lib/brokers";
 import { clientConfig, type PricingPlan } from "@/lib/client-config";
 import { registerSubscriber } from "@/app/register/actions";
@@ -21,15 +22,27 @@ function resolveInitialPlanId(requested: string | null, plans: PricingPlan[]): P
   return plans.find((p) => p.highlight)?.id ?? plans[0].id;
 }
 
-export function RegisterForm() {
+interface RegisterFormProps {
+  // Set when the visitor arrived here via "Continue with Google" and no
+  // subscriber matched their Google account yet (see
+  // src/app/api/auth/google/callback/route.ts and getGooglePendingSignup()
+  // in src/lib/subscriber-auth.ts). The email is locked to the verified
+  // Google address and the password fields become optional — the server
+  // action re-derives googleId itself from the signed cookie, this prop is
+  // display-only.
+  googlePrefill?: { name: string; email: string } | null;
+}
+
+export function RegisterForm({ googlePrefill }: RegisterFormProps = {}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const invitationToken = searchParams.get("ref") || searchParams.get("token") || null;
   const plans = clientConfig.pricingPlans;
+  const isGoogleSignup = Boolean(googlePrefill);
 
-  const [name, setName] = useState("");
+  const [name, setName] = useState(googlePrefill?.name ?? "");
   const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(googlePrefill?.email ?? "");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -48,13 +61,19 @@ export function RegisterForm() {
     e.preventDefault();
     setError(null);
 
-    if (password.length < MIN_PASSWORD_LENGTH) {
-      setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError("Passwords don't match.");
-      return;
+    // Google signups can skip setting a password entirely (they always have
+    // the Google button to log back in) — but if they do type one, it still
+    // has to meet the same bar as a password-only signup.
+    const skippingPassword = isGoogleSignup && password.length === 0 && confirmPassword.length === 0;
+    if (!skippingPassword) {
+      if (password.length < MIN_PASSWORD_LENGTH) {
+        setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
+        return;
+      }
+      if (password !== confirmPassword) {
+        setError("Passwords don't match.");
+        return;
+      }
     }
 
     startTransition(async () => {
@@ -108,6 +127,13 @@ export function RegisterForm() {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      {isGoogleSignup && (
+        <div className="rounded-lg border border-primary/30 bg-primary/10 p-3 text-xs text-muted-foreground">
+          Signing up with your Google account (<span className="font-semibold text-foreground">{googlePrefill?.email}</span>).
+          Just fill in the rest to finish — you can log back in with the Google button any time.
+        </div>
+      )}
+
       <div className="flex flex-col gap-1.5">
         <Label>Choose Your Plan</Label>
         <div className="grid grid-cols-3 gap-2">
@@ -160,25 +186,31 @@ export function RegisterForm() {
           id="email"
           type="email"
           required
+          readOnly={isGoogleSignup}
           autoComplete="email"
           placeholder="you@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          className={isGoogleSignup ? "opacity-70" : undefined}
         />
         <p className="text-xs text-muted-foreground/70">
-          You&apos;ll use this to log in later, so make sure it&apos;s correct.
+          {isGoogleSignup
+            ? "Locked to your verified Google email."
+            : "You'll use this to log in later, so make sure it's correct."}
         </p>
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password">{isGoogleSignup ? "Password (optional)" : "Password"}</Label>
         <div className="relative">
           <Input
             id="password"
             type={showPassword ? "text" : "password"}
-            required
+            required={!isGoogleSignup}
             autoComplete="new-password"
-            placeholder={`At least ${MIN_PASSWORD_LENGTH} characters`}
+            placeholder={
+              isGoogleSignup ? "Leave blank to only log in with Google" : `At least ${MIN_PASSWORD_LENGTH} characters`
+            }
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="pr-10"
@@ -199,12 +231,22 @@ export function RegisterForm() {
         <Input
           id="confirmPassword"
           type={showPassword ? "text" : "password"}
-          required
+          required={!isGoogleSignup}
           autoComplete="new-password"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
         />
       </div>
+
+      {!isGoogleSignup && (
+        <>
+          <div className="relative my-1 text-center text-xs text-muted-foreground">
+            <div className="absolute inset-x-0 top-1/2 border-t border-white/10" />
+            <span className="relative bg-background px-2">or</span>
+          </div>
+          <GoogleSignInButton role="subscriber" label="Sign up with Google" />
+        </>
+      )}
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="currentBroker">Current Trading Broker</Label>

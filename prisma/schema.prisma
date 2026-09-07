@@ -96,12 +96,12 @@ model Subscriber {
   // directly from the admin panel (e.g. for a subscriber who forgets theirs)
   // — there is still no self-service password-reset-by-email flow.
   passwordHash          String?
-  // Google account id (the OAuth "sub" claim), set the first time a
-  // subscriber signs in with Google and their verified Google email
-  // matches an existing account (see src/app/api/auth/google/callback).
-  // Google sign-in only ever authenticates an *existing* subscriber this
-  // way — it never creates one, since registration also needs a phone
-  // number Google doesn't provide (see src/app/register/actions.ts).
+  // Google account id (the OAuth "sub" claim). Set either when an existing
+  // subscriber's verified Google email matches their account (see
+  // src/app/api/auth/google/callback), or when a subscriber completes
+  // registration after arriving from Google sign-in with no existing match
+  // (see src/app/register/actions.ts, which reads the signed pending-signup
+  // cookie rather than trusting a client-supplied googleId).
   googleId              String?                @unique
   // Whether the subscriber has opted out of the weekly performance digest
   // email. Defaults to false (opted in). Set to true via the HMAC-signed

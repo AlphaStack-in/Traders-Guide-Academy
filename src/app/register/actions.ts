@@ -2,7 +2,12 @@
 
 import { prisma } from "@/lib/prisma";
 import { clientConfig } from "@/lib/client-config";
-import { createSubscriberSession, setRegisteredBrowserCookie } from "@/lib/subscriber-auth";
+import {
+  clearGooglePendingSignup,
+  createSubscriberSession,
+  getGooglePendingSignup,
+  setRegisteredBrowserCookie,
+} from "@/lib/subscriber-auth";
 import { hashPassword } from "@/lib/password";
 import { normalizeEmail } from "@/lib/utils";
 import type { BillingCycle } from "@prisma/client";
@@ -61,7 +66,19 @@ export async function registerSubscriber(input: RegisterInput) {
     return { success: false, error: "A valid email is required — you'll use it to log in." };
   }
 
-  if (password.length < MIN_PASSWORD_LENGTH) {
+  // A verified Google identity (set by the OAuth callback when no existing
+  // subscriber matched — see src/lib/subscriber-auth.ts) is only trusted if
+  // its email matches what was actually submitted here; the client never
+  // sends googleId itself; that would let it be forged. When it matches, the
+  // subscriber can always log back in via the Google button, so a password
+  // becomes optional here rather than required.
+  const pendingGoogle = await getGooglePendingSignup();
+  const googleId = pendingGoogle && normalizeEmail(pendingGoogle.email) === email ? pendingGoogle.googleId : null;
+
+  if (password.length > 0 && password.length < MIN_PASSWORD_LENGTH) {
+    return { success: false, error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters.` };
+  }
+  if (!googleId && password.length === 0) {
     return { success: false, error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters.` };
   }
 
@@ -73,7 +90,7 @@ export async function registerSubscriber(input: RegisterInput) {
     where: { email: { equals: email, mode: "insensitive" } },
   });
 
-  const passwordHash = hashPassword(password);
+  const passwordHash = password ? hashPassword(password) : null;
 
   if (token) {
     const invitedSubscriber = await prisma.subscriber.findUnique({
@@ -102,6 +119,7 @@ export async function registerSubscriber(input: RegisterInput) {
             batchNumber: batchNumber || invitedSubscriber.batchNumber,
             referralStatus: "JOINED",
             invitationToken: null,
+            googleId: googleId ?? invitedSubscriber.googleId,
           },
         });
       } catch (err: any) {
@@ -111,10 +129,17 @@ export async function registerSubscriber(input: RegisterInput) {
             error: "That email is already registered. Try logging in instead.",
           };
         }
+        if (err.code === "P2002" && err.meta?.target?.includes?.("googleId")) {
+          return {
+            success: false,
+            error: "That Google account is already linked to another subscriber.",
+          };
+        }
         throw err;
       }
       await setRegisteredBrowserCookie();
       await createSubscriberSession(subscriber.id);
+      if (googleId) await clearGooglePendingSignup();
       return { success: true };
     }
   }
@@ -139,6 +164,7 @@ export async function registerSubscriber(input: RegisterInput) {
         billingCycle,
         batchNumber,
         referralStatus: "NOT_JOINED",
+        googleId,
       },
     });
   } catch (err: any) {
@@ -148,10 +174,17 @@ export async function registerSubscriber(input: RegisterInput) {
         error: "That email is already registered. Try logging in instead.",
       };
     }
+    if (err.code === "P2002" && err.meta?.target?.includes?.("googleId")) {
+      return {
+        success: false,
+        error: "That Google account is already linked to another subscriber.",
+      };
+    }
     throw err;
   }
 
   await setRegisteredBrowserCookie();
   await createSubscriberSession(subscriber.id);
+  if (googleId) await clearGooglePendingSignup();
   return { success: true };
 }
