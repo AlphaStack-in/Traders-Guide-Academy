@@ -6,12 +6,11 @@ import { SubscriberNavStatus } from "@/components/site/subscriber-nav-status";
 import { AdminNavLink } from "@/components/site/admin-nav-link";
 import { DesktopNavigation, MobileNavigation } from "@/components/site/main-navigation";
 import { IstClock } from "@/components/site/ist-clock";
-import { getCurrentSubscriber, getHasRegisteredBrowser } from "@/lib/subscriber-auth";
+import { getCurrentSubscriber } from "@/lib/subscriber-auth";
 import { getActiveBroker } from "@/lib/app-settings";
 
 export async function Navbar() {
   const subscriber = await getCurrentSubscriber();
-  const hasRegistered = await getHasRegisteredBrowser();
   const activeBroker = await getActiveBroker();
 
   return (
@@ -26,10 +25,7 @@ export async function Navbar() {
             activeBroker={activeBroker}
             notificationsEnabled={subscriber?.notificationsEnabled ?? true}
           />
-          <SubscriberNavStatus
-            subscriberName={subscriber?.name ?? null}
-            hasRegistered={hasRegistered}
-          />
+          <SubscriberNavStatus subscriberName={subscriber?.name ?? null} />
           <AdminNavLink />
         </div>
       </div>

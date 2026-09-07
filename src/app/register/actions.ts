@@ -2,12 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { clientConfig } from "@/lib/client-config";
-import {
-  clearGooglePendingSignup,
-  createSubscriberSession,
-  getGooglePendingSignup,
-  setRegisteredBrowserCookie,
-} from "@/lib/subscriber-auth";
+import { clearGooglePendingSignup, createSubscriberSession, getGooglePendingSignup } from "@/lib/subscriber-auth";
 import { hashPassword } from "@/lib/password";
 import { normalizeEmail } from "@/lib/utils";
 import type { BillingCycle } from "@prisma/client";
@@ -137,7 +132,6 @@ export async function registerSubscriber(input: RegisterInput) {
         }
         throw err;
       }
-      await setRegisteredBrowserCookie();
       await createSubscriberSession(subscriber.id);
       if (googleId) await clearGooglePendingSignup();
       return { success: true };
@@ -183,7 +177,6 @@ export async function registerSubscriber(input: RegisterInput) {
     throw err;
   }
 
-  await setRegisteredBrowserCookie();
   await createSubscriberSession(subscriber.id);
   if (googleId) await clearGooglePendingSignup();
   return { success: true };

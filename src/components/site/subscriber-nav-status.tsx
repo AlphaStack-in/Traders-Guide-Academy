@@ -12,40 +12,31 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
-export function SubscriberNavStatus({
-  subscriberName,
-  hasRegistered,
-}: {
-  subscriberName: string | null;
-  hasRegistered: boolean;
-}) {
+export function SubscriberNavStatus({ subscriberName }: { subscriberName: string | null }) {
   const router = useRouter();
   const pathname = usePathname();
 
   if (!subscriberName) {
-    if (!hasRegistered) {
-      return (
+    const isLoginActive = pathname.startsWith("/login");
+    return (
+      <div className="flex items-center gap-1.5 sm:gap-2">
+        <Link
+          href="/login"
+          aria-current={isLoginActive ? "page" : undefined}
+          className={cn(
+            "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all sm:inline-flex",
+            isLoginActive
+              ? "border border-primary/40 bg-primary/10 text-primary signalflow-glow font-semibold"
+              : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
+          )}
+        >
+          <LogIn className="h-3.5 w-3.5 text-primary" />
+          <span>Login</span>
+        </Link>
         <Button asChild size="sm" className="signalflow-glow signalflow-btn-gradient text-xs font-semibold">
           <Link href="/register">Register Premium</Link>
         </Button>
-      );
-    }
-
-    const isLoginActive = pathname.startsWith("/login");
-    return (
-      <Link
-        href="/login"
-        aria-current={isLoginActive ? "page" : undefined}
-        className={cn(
-          "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all sm:inline-flex",
-          isLoginActive
-            ? "border border-primary/40 bg-primary/10 text-primary signalflow-glow font-semibold"
-            : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
-        )}
-      >
-        <LogIn className="h-3.5 w-3.5 text-primary" />
-        <span>Login</span>
-      </Link>
+      </div>
     );
   }
 
