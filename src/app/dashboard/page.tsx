@@ -54,7 +54,7 @@ export default async function PublicDashboardPage({
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">
               Live performance analytics computed from every signal we&apos;ve published — no
-              login required, same numbers our admin sees.
+              login required, same numbers our admin sees. testing dev
             </p>
           </div>
           <div className="flex items-center gap-2">
