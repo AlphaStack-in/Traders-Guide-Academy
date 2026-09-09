@@ -86,6 +86,7 @@ function makeSignal(overrides: Partial<Signal> = {}): Signal {
     confidence: "HIGH",
     parserName: "SIGNALFLOW",
     parserVersion: "1.0.0",
+    stockSymbol: null,
     ...overrides,
   };
 }

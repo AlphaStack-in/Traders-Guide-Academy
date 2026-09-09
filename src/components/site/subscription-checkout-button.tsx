@@ -7,20 +7,6 @@ import { Button } from "@/components/ui/button";
 import { createSubscriptionCheckout } from "@/app/account/billing/actions";
 import { cn } from "@/lib/utils";
 
-// Minimal shape of the bits of the Cashfree JS SDK's `window.Cashfree`
-// global this component actually uses.
-interface CashfreeCheckoutInstance {
-  subscriptionsCheckout(options: {
-    subsSessionId: string;
-    redirectTarget?: "_self" | "_blank" | "_top";
-  }): Promise<{ error?: { message: string } }>;
-}
-declare global {
-  interface Window {
-    Cashfree?: (options: { mode: "sandbox" | "production" }) => CashfreeCheckoutInstance;
-  }
-}
-
 const CHECKOUT_SCRIPT_SRC = "https://sdk.cashfree.com/js/v3/cashfree.js";
 let scriptLoadPromise: Promise<void> | null = null;
 
