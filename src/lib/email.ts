@@ -191,3 +191,69 @@ export async function sendContactReplyEmail({
     return { success: false, error: errorMessage };
   }
 }
+
+export interface SendProductPurchaseEmailParams {
+  toEmail: string;
+  memberName: string;
+  productName: string;
+  /** Plain-text/HTML-safe delivery details — e.g. a download link, an
+   * indicator file, or PMS/membership onboarding instructions. Rendered
+   * with white-space preserved, same convention as the other templates
+   * here. */
+  deliveryDetails: string;
+}
+
+/**
+ * Sent automatically once a /products purchase is confirmed (free product
+ * claimed immediately, paid product on the Cashfree ORDER_PAID webhook —
+ * see src/lib/product-fulfillment.ts). For Indicators/PMS/Membership this
+ * is one of two automated channels (this email + an internal Telegram ops
+ * alert); a "Continue via WhatsApp" link is also shown to the buyer in the
+ * UI, but that link is a manual click-to-chat handoff, not a second
+ * automated send — there is no automated WhatsApp Business API integration
+ * in this codebase (every other WhatsApp reference here is the same manual
+ * wa.me link pattern as continue-premium-panel.tsx).
+ */
+export async function sendProductPurchaseEmail({
+  toEmail,
+  memberName,
+  productName,
+  deliveryDetails,
+}: SendProductPurchaseEmailParams): Promise<{ success: boolean; error?: string }> {
+  const resend = getResendClient();
+
+  if (!resend) {
+    console.log(`[Dev Email Simulation] Product purchase email sent to ${toEmail} for "${productName}"`);
+    console.log(`[Dev Email Simulation] Delivery details: ${deliveryDetails}`);
+    return { success: true };
+  }
+
+  try {
+    const fromAddress = getFromAddress();
+
+    const { error } = await resend.emails.send({
+      from: fromAddress,
+      to: [toEmail],
+      subject: `Your ${productName} purchase — ${clientConfig.siteName}`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; background-color: #0B0B0D; color: #F3F4F6; padding: 32px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+          <h2 style="color: #F0C949; margin-top: 0;">Thanks for your purchase, ${memberName}!</h2>
+          <p>Your purchase of <strong>${productName}</strong> is confirmed.</p>
+          <div style="margin: 24px 0; padding: 16px; border-left: 2px solid rgba(240,201,73,0.4); white-space: pre-line;">${deliveryDetails}</div>
+          <p style="font-size: 12px; color: #9CA3AF;">Questions about this order? Reply to this email or reach us on WhatsApp from your account.</p>
+        </div>
+      `,
+    });
+
+    if (error) {
+      console.error("Resend API error (product purchase):", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : "Failed to send product purchase email.";
+    console.error("Error sending product purchase email:", err);
+    return { success: false, error: errorMessage };
+  }
+}

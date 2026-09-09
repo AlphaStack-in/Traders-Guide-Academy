@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, Home, Mail, Zap } from "lucide-react";
+import { BarChart3, Home, Mail, ShoppingBag, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const navLinks = [
   { href: "/", label: "Home", icon: Home },
   { href: "/dashboard", label: "Dashboard", icon: BarChart3 },
   { href: "/signals", label: "Signals", icon: Zap },
+  { href: "/products", label: "Products", icon: ShoppingBag },
   { href: "/contact", label: "Contact", icon: Mail },
 ];
 
