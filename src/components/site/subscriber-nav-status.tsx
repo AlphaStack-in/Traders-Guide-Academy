@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ChevronDown, Gift, HelpCircle, LogIn, LogOut, Settings, User } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,9 +32,6 @@ export function SubscriberNavStatus({ subscriberName }: { subscriberName: string
           <LogIn className="h-3.5 w-3.5 text-primary" />
           <span>Login</span>
         </Link>
-        <Button asChild size="sm" className="signalflow-glow signalflow-btn-gradient text-xs font-semibold">
-          <Link href="/register">Register Premium</Link>
-        </Button>
       </div>
     );
   }
