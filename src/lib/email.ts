@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import nodemailer from "nodemailer";
 import { clientConfig } from "@/lib/client-config";
 
 // Shared Resend client -- returns null when RESEND_API_KEY is unset,
@@ -190,6 +191,122 @@ export async function sendContactReplyEmail({
     console.error("Error sending contact reply email:", err);
     return { success: false, error: errorMessage };
   }
+}
+
+// SMTP transport for the info@alphastack.in mailbox (hosting-provider email,
+// not Resend) -- used only for the admin alert emails below. Returns null
+// when unconfigured, triggering dev-simulation (console logging) in callers.
+function getAdminMailboxTransport() {
+  const host = process.env.SMTP_HOST;
+  const port = process.env.SMTP_PORT;
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASSWORD;
+  if (!host || !port || !user || !pass) return null;
+
+  return nodemailer.createTransport({
+    host,
+    port: Number(port),
+    secure: Number(port) === 465,
+    auth: { user, pass },
+  });
+}
+
+/**
+ * Admin-facing "someone submitted X" alert, shared by the contact form and
+ * the referral form (see sendContactMessageAdminAlert / sendReferralAdminAlert
+ * below). Recipient is ADMIN_EMAIL (the same single admin account used for
+ * admin login). Sent via SMTP from the info@alphastack.in mailbox directly
+ * (SMTP_HOST/SMTP_PORT/SMTP_USER/SMTP_PASSWORD) rather than through Resend,
+ * which every other email in this file uses.
+ */
+async function sendAdminAlertEmail({
+  subject,
+  html,
+}: {
+  subject: string;
+  html: string;
+}): Promise<{ success: boolean; error?: string }> {
+  const adminEmail = process.env.ADMIN_EMAIL;
+  if (!adminEmail) {
+    console.error("ADMIN_EMAIL is not set; cannot send admin alert email.");
+    return { success: false, error: "ADMIN_EMAIL is not configured." };
+  }
+
+  const transport = getAdminMailboxTransport();
+
+  if (!transport) {
+    console.log(`[Dev Email Simulation] Admin alert "${subject}" sent to ${adminEmail}`);
+    return { success: true };
+  }
+
+  try {
+    await transport.sendMail({
+      from: `"${clientConfig.siteName}" <${process.env.SMTP_USER}>`,
+      to: adminEmail,
+      subject,
+      html,
+    });
+
+    return { success: true };
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : "Failed to send admin alert email.";
+    console.error("Error sending admin alert email:", err);
+    return { success: false, error: errorMessage };
+  }
+}
+
+export interface SendContactMessageAdminAlertParams {
+  name: string;
+  phone: string;
+  email: string | null;
+  message: string;
+}
+
+/** Fired from submitContactMessage (contact/actions.ts) right after the message is saved. */
+export async function sendContactMessageAdminAlert({
+  name,
+  phone,
+  email,
+  message,
+}: SendContactMessageAdminAlertParams): Promise<{ success: boolean; error?: string }> {
+  return sendAdminAlertEmail({
+    subject: `New contact message from ${name}`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; background-color: #0B0B0D; color: #F3F4F6; padding: 32px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+        <h2 style="color: #F0C949; margin-top: 0;">New Contact Message</h2>
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Phone:</strong> ${phone}</p>
+        <p><strong>Email:</strong> ${email || "Not provided"}</p>
+        <div style="margin-top: 16px; padding: 16px; border-left: 2px solid rgba(240,201,73,0.4); white-space: pre-line;">${message}</div>
+      </div>
+    `,
+  });
+}
+
+export interface SendReferralAdminAlertParams {
+  referrerName: string;
+  referrerPhone: string;
+  referredName: string;
+  referredPhone: string;
+}
+
+/** Fired from submitReferral (contact/actions.ts) right after the referral is saved. */
+export async function sendReferralAdminAlert({
+  referrerName,
+  referrerPhone,
+  referredName,
+  referredPhone,
+}: SendReferralAdminAlertParams): Promise<{ success: boolean; error?: string }> {
+  return sendAdminAlertEmail({
+    subject: `New referral from ${referrerName}`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; background-color: #0B0B0D; color: #F3F4F6; padding: 32px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+        <h2 style="color: #F0C949; margin-top: 0;">New Referral</h2>
+        <p><strong>Referrer:</strong> ${referrerName} (${referrerPhone})</p>
+        <p><strong>Referred:</strong> ${referredName} (${referredPhone})</p>
+      </div>
+    `,
+  });
 }
 
 export interface SendProductPurchaseEmailParams {

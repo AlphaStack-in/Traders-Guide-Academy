@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { sendContactMessageAdminAlert, sendReferralAdminAlert } from "@/lib/email";
 
 export interface ReferralInput {
   referrerName: string;
@@ -22,6 +23,8 @@ export async function submitReferral(input: ReferralInput) {
   await prisma.referral.create({
     data: { referrerName, referrerPhone, referredName, referredPhone },
   });
+
+  await sendReferralAdminAlert({ referrerName, referrerPhone, referredName, referredPhone });
 
   return { success: true };
 }
@@ -68,6 +71,8 @@ export async function submitContactMessage(input: ContactMessageInput) {
   await prisma.contactMessage.create({
     data: { name, phone, email: email || null, message },
   });
+
+  await sendContactMessageAdminAlert({ name, phone, email: email || null, message });
 
   return { success: true };
 }
