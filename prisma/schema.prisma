@@ -120,6 +120,7 @@ model Subscriber {
   digestSendLogs        DigestSendLog[]
   subscriptions         Subscription[]
   payments              Payment[]
+  productPurchases      ProductPurchase[]
 }
 
 enum ReferralStatus {
@@ -588,6 +589,83 @@ enum PaymentStatus {
   CAPTURED
   FAILED
   REFUNDED
+}
+
+enum ProductCategory {
+  COURSE
+  INDICATOR
+  EBOOK
+  PMS
+  MEMBERSHIP
+}
+
+// Standalone catalog of one-time-purchase products (courses, indicators,
+// e-books, PMS and membership plans) migrated from the Graphy store
+// (https://tradersguideacademy.graphy.com/s/store/courses) — see
+// prisma/seed-products.ts for the real catalog data. Independent of the
+// recurring Subscription/Payment models above — a product purchase is a
+// one-time Cashfree Orders API charge, not a recurring UPI Autopay mandate.
+model Product {
+  id                   String            @id @default(uuid())
+  slug                 String            @unique
+  name                 String
+  category             ProductCategory
+  // Short card/list-row copy (the two-line description on the catalog row).
+  description          String
+  // Longer copy for the /products/[slug] detail page.
+  longDescription      String
+  priceInPaise         Int
+  // Strikethrough "original" price shown alongside a discounted price.
+  // Null when there's nothing to strike through.
+  originalPriceInPaise Int?
+  rating               Float?
+  ratingCount          Int?
+  // Falls back to a category icon (see product-row.tsx) when null — Graphy
+  // didn't expose real product images via the store page.
+  imageUrl             String?
+  // Drives the gold-bordered featured band at the top of the catalog page.
+  // At most one product should be true at a time (not DB-enforced).
+  isFeatured           Boolean           @default(false)
+  isActive             Boolean           @default(true)
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  purchases            ProductPurchase[]
+
+  @@index([category])
+  @@index([isActive])
+}
+
+// One-time purchase of a Product via Cashfree's Orders API (see
+// src/lib/cashfree-orders.ts) — separate from Payment/Subscription above,
+// which only ever cover the recurring signals-membership Autopay flow.
+// Reuses the existing PaymentStatus enum rather than inventing a new one.
+model ProductPurchase {
+  id                String        @id @default(uuid())
+  subscriberId      String
+  subscriber        Subscriber    @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+  productId         String
+  product           Product       @relation(fields: [productId], references: [id])
+  provider          String        @default("cashfree")
+  // Our own order_id sent to Cashfree at creation (Cashfree's Orders API
+  // has no separate pre-created Order template — everything is inline on
+  // the create call, same pattern as Subscription.providerSubscriptionId)
+  // — this is what the webhook handler looks purchases up by, since
+  // Cashfree's own cf_order_id isn't known until after creation. Null for
+  // a free product claimed with no Cashfree order at all.
+  providerOrderId   String?       @unique
+  providerPaymentId String?       @unique
+  amountInPaise     Int
+  status            PaymentStatus
+  // True once fulfillment (email + internal ops alert) has actually been
+  // sent for this purchase — guards against sending it twice if the
+  // webhook redelivers after CAPTURED is already set.
+  fulfilledAt       DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@index([subscriberId])
+  @@index([productId])
+  @@index([status])
 }
 
 // Idempotency log for incoming Cashfree webhook deliveries — Cashfree

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { cashfreeWebhookEventId, verifyCashfreeWebhookSignature } from "@/lib/cashfree";
 import { sendTelegramMessage } from "@/lib/telegram";
+import { fulfillProductPurchase } from "@/lib/product-fulfillment";
 import type { SubscriptionStatus } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -62,6 +63,41 @@ interface CashfreeWebhookBody {
     payment_amount?: number;
     failureReason?: string | null;
   };
+}
+
+// One-time Orders API payment webhook — a *different* Cashfree product
+// from the subscription entities above (see src/lib/cashfree-orders.ts).
+// Cashfree's documented event type for a completed one-time payment is
+// "PAYMENT_SUCCESS_WEBHOOK" (envelope: { type, data: { order, payment } });
+// like the subscription entities above, this wasn't inspectable against a
+// real sandbox event while building this — verify the exact field nesting
+// against a real test event and adjust extractOrderPaymentEntity if it
+// differs.
+interface CashfreeOrderEntity {
+  order_id: string;
+  order_amount?: number;
+  order_status?: string;
+}
+interface CashfreeOrderPaymentEntity {
+  cf_payment_id?: string | number;
+  payment_status?: string;
+  payment_amount?: number;
+  payment_message?: string | null;
+}
+interface CashfreeOrderWebhookBody {
+  type: string;
+  event_time?: string;
+  data: {
+    order?: CashfreeOrderEntity;
+    payment?: CashfreeOrderPaymentEntity;
+  };
+}
+
+function extractOrderEntities(
+  body: CashfreeOrderWebhookBody,
+): { order: CashfreeOrderEntity; payment: CashfreeOrderPaymentEntity } | null {
+  if (!body.data.order?.order_id) return null;
+  return { order: body.data.order, payment: body.data.payment ?? {} };
 }
 
 function extractSubscriptionEntity(body: CashfreeWebhookBody): CashfreeSubscriptionEntity | null {
@@ -133,6 +169,29 @@ async function recordPaymentFromEntity(entity: CashfreePaymentEntity) {
   return subscription;
 }
 
+async function recordOrderPaymentFromEntity(
+  entity: { order: CashfreeOrderEntity; payment: CashfreeOrderPaymentEntity },
+  eventType: string,
+) {
+  const { order, payment } = entity;
+
+  const purchase = await prisma.productPurchase.findUnique({ where: { providerOrderId: order.order_id } });
+  if (!purchase) return null; // Not one we created (or a stale/manual test event) — nothing to update.
+
+  const status: "CAPTURED" | "FAILED" =
+    eventType === "PAYMENT_SUCCESS_WEBHOOK" || payment.payment_status === "SUCCESS" ? "CAPTURED" : "FAILED";
+
+  return prisma.productPurchase.update({
+    where: { id: purchase.id },
+    data: {
+      status,
+      providerPaymentId:
+        payment.cf_payment_id != null ? String(payment.cf_payment_id) : purchase.providerPaymentId,
+    },
+    include: { product: true, subscriber: true },
+  });
+}
+
 export async function POST(request: Request) {
   const rawBody = await request.text();
   const signature = request.headers.get("x-webhook-signature");
@@ -142,7 +201,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
-  let body: CashfreeWebhookBody;
+  let body: CashfreeWebhookBody & { data: CashfreeWebhookBody["data"] & { order?: CashfreeOrderEntity } };
   try {
     body = JSON.parse(rawBody);
   } catch {
@@ -179,6 +238,20 @@ export async function POST(request: Request) {
       } else if (updated.status === "CANCELLED") {
         await sendTelegramMessage(
           `🔕 Autopay cancelled for ${updated.subscriber.name} (${updated.subscriber.phone}).`,
+        );
+      }
+    }
+  }
+
+  const orderEntities = extractOrderEntities(body);
+  if (orderEntities && (body.type === "PAYMENT_SUCCESS_WEBHOOK" || body.type === "PAYMENT_FAILED_WEBHOOK")) {
+    const purchase = await recordOrderPaymentFromEntity(orderEntities, body.type);
+    if (purchase) {
+      if (purchase.status === "CAPTURED") {
+        await fulfillProductPurchase(purchase.id);
+      } else {
+        await sendTelegramMessage(
+          `❌ Product payment failed for ${purchase.subscriber.name} (${purchase.subscriber.phone}): "${purchase.product.name}".`,
         );
       }
     }
