@@ -44,7 +44,7 @@ export default async function PublicDashboardPage({
   }));
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col md:pl-64">
       <Navbar />
       <main className="mx-auto flex-1 w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="mb-8 flex items-start justify-between gap-4">

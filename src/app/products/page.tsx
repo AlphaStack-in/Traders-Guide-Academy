@@ -13,7 +13,7 @@ export default async function ProductsPage() {
   const [products, subscriber] = await Promise.all([getActiveProducts(), getCurrentSubscriber()]);
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col md:pl-64">
       <Navbar />
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10 sm:px-6 lg:px-8">
         <div className="mb-8">

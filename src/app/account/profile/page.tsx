@@ -96,7 +96,7 @@ export default async function ProfilePage() {
   const showUpgrade = currentTierIndex !== TIER_ORDER.length - 1;
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col md:pl-64">
       <Navbar />
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-4 py-12 sm:px-6">
         <h1 className="font-heading text-2xl font-bold">

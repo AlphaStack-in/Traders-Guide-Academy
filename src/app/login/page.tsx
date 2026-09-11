@@ -5,7 +5,7 @@ import { SubscriberLoginForm } from "@/components/auth/subscriber-login-form";
 
 export default function SubscriberLoginPage() {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col md:pl-64">
       <Navbar />
       <main className="mx-auto flex flex-1 w-full max-w-md flex-col items-center justify-center px-4 py-16 sm:px-6">
         <div className="signalflow-glass signalflow-gold-border w-full rounded-2xl p-8">

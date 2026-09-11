@@ -58,6 +58,14 @@ export function changelogTimestamp(date: string): string {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.55",
+    date: "11 Sep 2026, 08:25 IST",
+    title: "Left Sidebar Navigation",
+    highlights: [
+      "Site and admin navigation moved from a top navbar to a left sidebar; mobile uses a hamburger drawer",
+    ],
+  },
+  {
     version: "1.0.54",
     date: "11 Sep 2026, 07:32 IST",
     title: "Products Panel on Home Page",

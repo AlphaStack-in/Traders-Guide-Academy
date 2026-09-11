@@ -70,7 +70,7 @@ export default async function SignalsPage({
   const ongoing = rows.filter((r) => r.status === "OPEN");
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col md:pl-64">
       <Navbar />
       <main className="mx-auto flex-1 w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8 flex flex-col gap-8">
         <div className="flex items-start justify-between gap-4">
