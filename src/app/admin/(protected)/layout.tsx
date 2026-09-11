@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { AdminSidebar } from "@/components/admin/admin-nav";
+import { AdminSidebar, AdminTopBar } from "@/components/admin/admin-nav";
 import { BuildVersionIndicator } from "@/components/site/build-version-indicator";
 import { requireAdmin } from "@/lib/admin-auth";
 import { clientConfig } from "@/lib/client-config";
@@ -25,7 +25,8 @@ export default async function AdminProtectedLayout({
 
   return (
     <div className="flex min-h-screen flex-col md:pl-64">
-      <AdminSidebar isSuperAdmin={isSuperAdmin} adminEmail={adminEmail} activeBroker={activeBroker} />
+      <AdminSidebar isSuperAdmin={isSuperAdmin} activeBroker={activeBroker} />
+      <AdminTopBar adminEmail={adminEmail} />
       <main className="mx-auto flex-1 w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {children}
       </main>

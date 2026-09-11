@@ -120,35 +120,25 @@ function AdminSubLink({
 }
 
 /**
- * Left-side navigation for the /admin/* protected area — replaces the old
- * horizontal top AdminNav + AdminMobileNav pair. A single <aside> is
+ * Left-side navigation for the /admin/* protected area. A single <aside> is
  * rendered: fixed and always visible on desktop (md+), slid off-canvas as a
- * hamburger drawer on mobile. The Members/Admin dropdown groups from the old
- * top bar become static, always-expanded sections (a better fit for a
- * sidebar than nested dropdowns).
+ * hamburger drawer on mobile. Holds only the nav links (Dashboard/Manage
+ * Signals/News & Alerts + the Members/Admin link groups) — the clock, help
+ * link and admin account/logout menu now live in AdminTopBar above <main>
+ * instead (see below), rendered alongside this in the protected layout.
  */
 export function AdminSidebar({
   isSuperAdmin = false,
-  adminEmail = null,
   activeBroker = null,
 }: {
   isSuperAdmin?: boolean;
-  adminEmail?: string | null;
   activeBroker?: ActiveBroker;
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
-  const router = useRouter();
-  const username = adminEmail ? adminEmail.split("@")[0] : null;
   const membersLinks = getMembersLinks(activeBroker);
   const adminGroupLinks = getAdminGroupLinks(isSuperAdmin, activeBroker);
   const close = () => setOpen(false);
-
-  async function handleLogout() {
-    await fetch("/admin/logout", { method: "POST" });
-    router.push("/admin/login");
-    router.refresh();
-  }
 
   return (
     <>
@@ -224,50 +214,69 @@ export function AdminSidebar({
             </div>
           </div>
         </div>
-
-        <div className="border-t border-white/5 p-3">
-          <div className="mb-3 flex items-center justify-between gap-2">
-            <IstClock />
-            <HelpNavLink href="/admin/help" />
-          </div>
-          {username ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                aria-label={`${username}'s account menu`}
-                className="flex w-full items-center gap-2 rounded-lg border border-primary/40 bg-primary/10 px-2.5 py-2 text-xs font-semibold text-primary outline-none transition-colors hover:border-primary/70"
-              >
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary">
-                  <UserRound className="h-3.5 w-3.5" />
-                </span>
-                <span className="flex-1 truncate text-left capitalize">{username}</span>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-52">
-                <DropdownMenuItem asChild className="cursor-pointer gap-2">
-                  <Link href="/admin/settings">
-                    <Settings className="h-3.5 w-3.5 text-muted-foreground" />
-                    <span>Settings</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={handleLogout}
-                  className="cursor-pointer gap-2 text-xs font-medium text-destructive focus:text-destructive"
-                >
-                  <LogOut className="h-3.5 w-3.5" />
-                  <span>Logout</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            // Defensive fallback only — the protected admin layout redirects to
-            // /admin/login before AdminSidebar ever renders without an
-            // adminEmail, so this shouldn't be reachable in practice.
-            <Button variant="outline" size="sm" onClick={handleLogout} className="w-full gap-1.5 text-xs font-medium">
-              <LogOut className="h-3.5 w-3.5 text-muted-foreground" />
-              <span>Logout</span>
-            </Button>
-          )}
-        </div>
       </aside>
     </>
+  );
+}
+
+/**
+ * Top utility bar for the /admin/* protected area — the clock, help link and
+ * admin account/logout menu that used to live at the bottom of AdminSidebar.
+ * Rendered by the protected layout as a plain-flow sibling of AdminSidebar,
+ * so it sits inside the `md:pl-64` wrapper and is automatically clear of the
+ * fixed sidebar on desktop (full-width on mobile, where the sidebar collapses
+ * into its own drawer) — no fixed positioning of its own needed.
+ */
+export function AdminTopBar({ adminEmail = null }: { adminEmail?: string | null }) {
+  const router = useRouter();
+  const username = adminEmail ? adminEmail.split("@")[0] : null;
+
+  async function handleLogout() {
+    await fetch("/admin/logout", { method: "POST" });
+    router.push("/admin/login");
+    router.refresh();
+  }
+
+  return (
+    <div className="flex flex-wrap items-center justify-end gap-2 border-b border-white/5 signalflow-glass px-4 py-2.5 sm:px-6 lg:px-8">
+      <IstClock />
+      <HelpNavLink href="/admin/help" />
+      {username ? (
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            aria-label={`${username}'s account menu`}
+            className="flex shrink-0 items-center gap-2 rounded-lg border border-primary/40 bg-primary/10 px-2.5 py-2 text-xs font-semibold text-primary outline-none transition-colors hover:border-primary/70"
+          >
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary">
+              <UserRound className="h-3.5 w-3.5" />
+            </span>
+            <span className="max-w-[120px] truncate capitalize">{username}</span>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-52">
+            <DropdownMenuItem asChild className="cursor-pointer gap-2">
+              <Link href="/admin/settings">
+                <Settings className="h-3.5 w-3.5 text-muted-foreground" />
+                <span>Settings</span>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={handleLogout}
+              className="cursor-pointer gap-2 text-xs font-medium text-destructive focus:text-destructive"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+              <span>Logout</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ) : (
+        // Defensive fallback only — the protected admin layout redirects to
+        // /admin/login before AdminTopBar ever renders without an adminEmail,
+        // so this shouldn't be reachable in practice.
+        <Button variant="outline" size="sm" onClick={handleLogout} className="gap-1.5 text-xs font-medium">
+          <LogOut className="h-3.5 w-3.5 text-muted-foreground" />
+          <span>Logout</span>
+        </Button>
+      )}
+    </div>
   );
 }

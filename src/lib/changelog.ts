@@ -58,6 +58,14 @@ export function changelogTimestamp(date: string): string {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.56",
+    date: "11 Sep 2026, 16:10 IST",
+    title: "Sidebar + Top Utility Bar Split",
+    highlights: [
+      "Navigation split into a menu-only left sidebar and a top utility bar on both the public site and admin panel — clock, help, notifications, account/register, and admin controls moved to the top bar",
+    ],
+  },
+  {
     version: "1.0.55",
     date: "11 Sep 2026, 08:25 IST",
     title: "Left Sidebar Navigation",
