@@ -58,6 +58,15 @@ export function changelogTimestamp(date: string): string {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.57",
+    date: "11 Sep 2026, 16:32 IST",
+    title: "Notification Z-Index + Products Marquee",
+    highlights: [
+      "Notification bell dropdown could render behind page content — SiteTopBar and AdminTopBar now establish their own stacking context (relative z-30)",
+      "Home page Explore Our Products panel matches the Testimonials marquee — no surrounding card, full-bleed scroll, larger poster thumbnails, scroll speed matched to Testimonials pace",
+    ],
+  },
+  {
     version: "1.0.56",
     date: "11 Sep 2026, 16:10 IST",
     title: "Sidebar + Top Utility Bar Split",

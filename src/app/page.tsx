@@ -29,11 +29,7 @@ export default async function Home() {
             <NewsAlertsSection />
           </section>
         )}
-        {settings.productsScrollEnabled && (
-          <section className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-            <ProductsScrollSection products={products} />
-          </section>
-        )}
+        {settings.productsScrollEnabled && <ProductsScrollSection products={products} />}
         <InstagramGrid />
       </main>
       <Footer />
