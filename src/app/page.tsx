@@ -6,11 +6,14 @@ import { HowItWorks } from "@/components/landing/how-it-works";
 import { Testimonials } from "@/components/landing/testimonials";
 import { Pricing } from "@/components/landing/pricing";
 import { NewsAlertsSection } from "@/components/news/news-alerts-section";
+import { ProductsScrollSection } from "@/components/products/products-scroll-section";
 import { InstagramGrid } from "@/components/landing/instagram-grid";
 import { getAppSettings } from "@/lib/app-settings";
+import { getActiveProducts } from "@/lib/products";
 
 export default async function Home() {
   const settings = await getAppSettings();
+  const products = settings.productsScrollEnabled ? await getActiveProducts() : [];
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -24,6 +27,11 @@ export default async function Home() {
         {settings.newsAlertsEnabled && (
           <section className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
             <NewsAlertsSection />
+          </section>
+        )}
+        {settings.productsScrollEnabled && (
+          <section className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+            <ProductsScrollSection products={products} />
           </section>
         )}
         <InstagramGrid />

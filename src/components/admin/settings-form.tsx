@@ -156,6 +156,18 @@ export function AdminSettingsForm({ initial }: AdminSettingsFormProps) {
               )
             }
           />
+          <ToggleRow
+            title="Products scroll panel"
+            description="Shows a horizontally-scrolling Products panel on the home page — tap a thumbnail to go straight to that product's page."
+            checked={settings.productsScrollEnabled}
+            disabled={isPending}
+            onCheckedChange={(checked) =>
+              persist(
+                { productsScrollEnabled: checked },
+                checked ? "Products scroll panel enabled." : "Products scroll panel disabled.",
+              )
+            }
+          />
         </div>
       </section>
     </div>

@@ -714,6 +714,10 @@ model AppSettings {
   digestEnabled        Boolean  @default(false)
   // Gates the home-page News & Market Alerts panel (src/app/page.tsx).
   newsAlertsEnabled    Boolean  @default(false)
+  // Gates the home-page horizontally-scrolling Products panel — a
+  // thumbnail-strip companion to the News & Market Alerts panel above (see
+  // src/components/products/products-scroll-section.tsx).
+  productsScrollEnabled Boolean @default(false)
   // Master switch for broker order-placement from signals. When false,
   // activeBroker is ignored and no broker features render regardless of
   // its value.
