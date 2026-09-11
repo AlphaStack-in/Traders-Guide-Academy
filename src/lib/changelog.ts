@@ -58,6 +58,14 @@ export function changelogTimestamp(date: string): string {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.54",
+    date: "11 Sep 2026, 07:32 IST",
+    title: "Products Panel on Home Page",
+    highlights: [
+      "Home page Products panel — horizontally scrolling catalog strip with links to each product page, toggled from Admin → Settings (off by default)",
+    ],
+  },
+  {
     version: "1.0.53",
     date: "11 Sep 2026, 06:50 IST",
     title: "News & Alerts Posters",
