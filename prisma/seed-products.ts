@@ -140,9 +140,18 @@ const PRODUCTS: SeedProduct[] = [
     slug: "portfolio-management-service",
     name: "Portfolio Management Service",
     category: "PMS",
-    description: "Our flagship managed portfolio service — hands-on portfolio construction and ongoing review.",
+    // Copy summarized from the client's own "Invest Together, Grow Together"
+    // PMS marketing graphic — a disciplined group-investment plan, not a
+    // discretionary account-by-account PMS. The "we bear any loss" / "min.
+    // 15% return" / "20% profit-share commission" lines are the client's own
+    // existing marketing claims, transcribed as-is; flag these to legal/
+    // compliance before this goes live, since a guaranteed-return promise is
+    // exactly the kind of language SEBI scrutinizes (see the site's own FAQ
+    // disclaimers on this).
+    description:
+      "A 50-member group investment plan — ₹30,000 per member builds a ₹15,00,000 pool, professionally traded toward a ₹1 crore target.",
     longDescription:
-      "Our flagship Portfolio Management Service — hands-on portfolio construction, position sizing and ongoing review, for members who want a managed approach rather than trading signals alone. Onboarding details are shared directly with the buyer after purchase.",
+      "A disciplined group investment approach backed by strategy, technology and experience. 50 like-minded investors form one group, each contributing ₹30,000 (₹15,00,000 total capital). We trade the pooled fund using proven strategies, advanced indicators and real market experience, reinvesting profits to compound growth faster. The target is to grow the fund to ₹1,00,00,000 as quickly as possible — once reached, the full amount is divided among all members.\n\nIncludes free access to a 1-year mentorship program, all premium indicators, important study notes, and live support and guidance, plus a like-minded trading community.\n\nRisk cover: if there is any loss, we bear it. Minimum return guarantee: even if the ₹1 crore target isn't reached, members get a minimum 15% return in year 1. Profit share: after profits are distributed to the group, a 20% commission is taken.",
     priceInPaise: 3000000,
     isFeatured: true,
   },

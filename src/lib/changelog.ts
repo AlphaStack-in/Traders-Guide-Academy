@@ -58,6 +58,14 @@ export function changelogTimestamp(date: string): string {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.51",
+    date: "11 Sep 2026, 06:11 IST",
+    title: "PMS Product Copy Update",
+    highlights: [
+      "Portfolio Management Service description and feature bullets updated with real plan details from the client's marketing graphic — 50-member group pool, mentorship inclusions, risk cover, minimum return guarantee, and profit-share terms",
+    ],
+  },
+  {
     version: "1.0.50",
     date: "03 Sep 2026, 09:05 IST",
     title: "Settings Pages for Admin and Subscribers",

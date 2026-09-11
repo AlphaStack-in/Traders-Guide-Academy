@@ -27,7 +27,11 @@ const CATEGORY_FEATURES: Record<Product["category"], string[]> = {
   COURSE: ["Lifetime access to recorded modules", "Practical, example-driven lessons"],
   INDICATOR: ["Installs on your own charting platform", "Ongoing updates included"],
   EBOOK: ["Instant download after enrolling", "Reference material you keep"],
-  PMS: ["Hands-on portfolio construction", "Ongoing review and rebalancing", "Direct onboarding call"],
+  PMS: [
+    "₹30,000 contribution joins a 50-member group (₹15,00,000 pooled capital)",
+    "Free 1-year mentorship, premium indicators & study notes",
+    "Loss covered by us, plus a minimum 15% return guaranteed in year 1",
+  ],
   MEMBERSHIP: ["Priority access and updates", "Direct onboarding after purchase"],
 };
 
