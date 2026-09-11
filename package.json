@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "tsx scripts/check-build-health.ts",
+    "prebuild": "tsx scripts/check-build-health.ts && tsx scripts/migrate-if-production.ts",
+    "db:migrate:prod": "tsx scripts/migrate-if-production.ts",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
