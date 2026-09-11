@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Write",
+      "Edit",
+      "Glob",
+      "Grep",
+      "Agent",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git status*)",
+      "Bash(git add*)",
+      "Bash(npm test*)",
+      "Bash(npm run*)",
+      "Bash(npm audit*)",
+      "Bash(npx tsc*)",
+      "Bash(npx *)",
+      "Bash(pytest*)",
+      "Bash(python -m pytest*)",
+      "Bash(go test*)",
+      "Bash(go mod*)",
+      "Bash(govulncheck*)",
+      "Bash(bundle exec rspec*)",
+      "Bash(bundle audit*)",
+      "Bash(pip-audit*)",
+      "Bash(cargo test*)",
+      "Bash(cargo audit*)"
+    ]
+  }
+}
