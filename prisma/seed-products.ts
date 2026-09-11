@@ -24,6 +24,12 @@ interface SeedProduct {
   rating?: number;
   ratingCount?: number;
   isFeatured?: boolean;
+  // Real promo poster from public/posters/ (see prisma/seed-posters.ts,
+  // which these same files were copied in for) — only set for the few
+  // products with actual marketing art today. Left unset everywhere else;
+  // the home-page products marquee and catalog fall back to a category
+  // icon box when this is null.
+  imageUrl?: string;
 }
 
 const PRODUCTS: SeedProduct[] = [
@@ -60,6 +66,7 @@ const PRODUCTS: SeedProduct[] = [
     priceInPaise: 0,
     rating: 5.0,
     ratingCount: 24,
+    imageUrl: "/posters/webinar-option-hedging-2026-08-29.jpeg",
   },
   {
     slug: "technical-analysis-on-index",
@@ -100,6 +107,7 @@ const PRODUCTS: SeedProduct[] = [
     longDescription:
       "A ready-to-use signal indicator you install on your own charting platform — flags potential entry/exit points directly on the chart for quick reference during the trading session.",
     priceInPaise: 100000,
+    imageUrl: "/posters/update-ready-made-signal-indicator-2026-09-08.jpeg",
   },
   {
     slug: "indicator-and-ready-made-signal",
@@ -154,6 +162,7 @@ const PRODUCTS: SeedProduct[] = [
       "A disciplined group investment approach backed by strategy, technology and experience. 50 like-minded investors form one group, each contributing ₹30,000 (₹15,00,000 total capital). We trade the pooled fund using proven strategies, advanced indicators and real market experience, reinvesting profits to compound growth faster. The target is to grow the fund to ₹1,00,00,000 as quickly as possible — once reached, the full amount is divided among all members.\n\nIncludes free access to a 1-year mentorship program, all premium indicators, important study notes, and live support and guidance, plus a like-minded trading community.\n\nRisk cover: if there is any loss, we bear it. Minimum return guarantee: even if the ₹1 crore target isn't reached, members get a minimum 15% return in year 1. Profit share: after profits are distributed to the group, a 20% commission is taken.",
     priceInPaise: 3000000,
     isFeatured: true,
+    imageUrl: "/posters/pms-portfolio-management-system-2026-09-10.jpeg",
   },
   {
     slug: "alfa-venture-credit-link",
