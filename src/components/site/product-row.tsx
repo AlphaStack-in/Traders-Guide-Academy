@@ -98,15 +98,29 @@ export function ProductRow({
         className="flex w-full cursor-pointer items-center gap-6 px-5 py-8 text-left"
       >
         <div
-          className="flex h-[120px] w-[120px] shrink-0 items-center justify-center rounded-xl"
+          className="flex h-[120px] w-[120px] shrink-0 items-center justify-center overflow-hidden rounded-xl"
           style={{
-            background: `color-mix(in oklab, var(${meta.colorVar}) 16%, transparent)`,
+            background: product.imageUrl
+              ? undefined
+              : `color-mix(in oklab, var(${meta.colorVar}) 16%, transparent)`,
           }}
         >
-          <Icon
-            style={{ color: `var(${meta.colorVar})`, width: iconSize, height: iconSize }}
-            strokeWidth={1.5}
-          />
+          {product.imageUrl ? (
+            // Plain <img>, not next/image — a poster's imageUrl backfilled
+            // here (see News & Alerts admin actions) can be a base64 data:
+            // URL, which next/image's optimizer can't process.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={product.imageUrl}
+              alt={product.name}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <Icon
+              style={{ color: `var(${meta.colorVar})`, width: iconSize, height: iconSize }}
+              strokeWidth={1.5}
+            />
+          )}
         </div>
 
         <div className="min-w-0 flex-1">

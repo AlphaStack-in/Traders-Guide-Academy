@@ -439,6 +439,22 @@ model NewsAlert {
   affectedInstruments String[]  @default([])
   source              String?
   sourceUrl           String?
+  // Optional poster/graphic shown with this alert (e.g. a live-webinar
+  // promo poster) — either a same-origin path under /public (used for the
+  // initial seeded posters, see prisma/seed-posters.ts) or a base64 data
+  // URL (used when an admin uploads/pastes an image directly from the
+  // News & Alerts admin page, same convention as Signal.chartImageUrl).
+  // Null for a plain text-only news/market alert.
+  imageUrl            String?
+  // When set, the poster links to /products/{productSlug} instead of just
+  // expanding in place — e.g. the "Option Hedging Strategy" and "PMS"
+  // posters promote a real catalog entry (see prisma/seed-products.ts) that
+  // a visitor should be able to view/buy. Not a DB foreign key (same
+  // reasoning as OrderAuditLog.signalId — Product and NewsAlert are
+  // independently managed, and a poster should still render even if its
+  // linked product is later renamed/removed) — validate against
+  // Product.slug at the point of use instead.
+  productSlug         String?
   publishedAt         DateTime  @default(now())
   expiresAt           DateTime?
   isBreaking          Boolean   @default(false)

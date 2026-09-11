@@ -53,6 +53,18 @@ export default async function ProductDetailPage({
           <StarRating rating={product.rating} count={product.ratingCount} className="mt-2" />
         )}
 
+        {product.imageUrl && (
+          // Plain <img>, not next/image — a poster's imageUrl backfilled
+          // here (see News & Alerts admin actions) can be a base64 data:
+          // URL, which next/image's optimizer can't process.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={product.imageUrl}
+            alt={product.name}
+            className="signalflow-glow mt-6 max-h-96 w-full rounded-2xl border border-white/10 object-contain bg-black/40"
+          />
+        )}
+
         <p className="mt-4 text-base leading-relaxed text-muted-foreground">{product.longDescription}</p>
 
         <div className="signalflow-glass mt-6 flex flex-col gap-4 rounded-2xl border border-white/10 p-6 sm:flex-row sm:items-center sm:justify-between">

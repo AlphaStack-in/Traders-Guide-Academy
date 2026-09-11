@@ -6,11 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 **[Tech debts](./tech-debt-ledger.html)** — once deployed, also served at `/tech-debt-ledger.html`
 
-Versioning continues the semantic patch series from the SignalFlow template (`1.0.7` → `1.0.8` …). The footer and Admin Changelog page read the current version from `package.json` (now **1.0.52**).
+Versioning continues the semantic patch series from the SignalFlow template (`1.0.7` → `1.0.8` …). The footer and Admin Changelog page read the current version from `package.json` (now **1.0.53**).
 
 Each release header now includes a build timestamp (24-hour IST, matching `build-info.ts`'s `formattedBuildTime`), not just a date — this reflects the actual commit that shipped the version. While adding timestamps, two pre-existing dates were corrected to match their real shipping commit: `1.0.8` (was dated by the TGA fork commit, 3 days before the digest-email feature in that release actually shipped) and `1.0.2` (was off by one day around a just-after-midnight IST commit).
 
 ## [Unreleased]
+
+## [1.0.53] - 2026-09-11 06:50 IST
+
+### Added
+- Admin News & Alerts page — add, toggle, and delete poster entries with optional product link; 11 WhatsApp promo posters seeded (4 active, linked to catalog products)
+- News & Alerts panel now shows poster images with a "View & Buy" link when a product is linked
+- Product catalog rows and detail pages now display `imageUrl` thumbnails (previously stored but never shown)
+
+### Changed
+- Server Actions body size limit raised to 6 MB so admin poster uploads (base64 JPEGs) are not rejected
 
 ## [1.0.52] - 2026-09-11 06:28 IST
 

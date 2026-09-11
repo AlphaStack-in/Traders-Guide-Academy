@@ -1,6 +1,6 @@
 {
   "name": "traders-guide-academy",
-  "version": "1.0.52",
+  "version": "1.0.53",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -10,6 +10,7 @@
     "lint": "eslint",
     "postinstall": "prisma generate",
     "db:seed": "tsx prisma/seed.ts",
+    "db:seed:posters": "tsx prisma/seed-posters.ts",
     "db:migrate": "prisma migrate deploy",
     "hash-password": "tsx scripts/hash-password.ts",
     "test": "vitest run"

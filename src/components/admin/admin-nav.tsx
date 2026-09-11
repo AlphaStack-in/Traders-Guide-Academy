@@ -6,6 +6,7 @@ import {
   BarChart3,
   ChevronDown,
   LogOut,
+  Newspaper,
   Settings,
   Shield,
   UserRound,
@@ -27,6 +28,7 @@ import { IstClock } from "@/components/site/ist-clock";
 const links = [
   { href: "/admin/dashboard", label: "Dashboard", icon: BarChart3 },
   { href: "/admin/signals", label: "Manage Signals", icon: Zap },
+  { href: "/admin/news-alerts", label: "News & Alerts", icon: Newspaper },
 ];
 
 function getMembersLinks(activeBroker: ActiveBroker) {

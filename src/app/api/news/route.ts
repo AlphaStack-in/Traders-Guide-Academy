@@ -16,6 +16,13 @@ const newsAlertSchema = z
     affectedInstruments: z.array(z.string().trim().min(1).max(80)).max(20).optional(),
     source: z.string().trim().max(200).nullable().optional(),
     sourceUrl: z.string().trim().url().max(2_000).nullable().optional(),
+    // Either a same-origin /public path or a base64 data: URL — not a plain
+    // url() check since data: URLs aren't valid per the WHATWG URL schema
+    // zod's .url() enforces.
+    imageUrl: z.string().trim().min(1).max(8_000_000).nullable().optional(),
+    // Slug of a /products catalog entry this poster promotes — see
+    // NewsAlert.productSlug in schema.prisma.
+    productSlug: z.string().trim().min(1).max(200).nullable().optional(),
     isBreaking: z.boolean().optional(),
   })
   .strict();
@@ -101,6 +108,8 @@ export async function POST(request: Request) {
       affectedInstruments,
       source,
       sourceUrl,
+      imageUrl,
+      productSlug,
       isBreaking,
     } = parsed.data;
 
@@ -115,6 +124,8 @@ export async function POST(request: Request) {
         affectedInstruments: Array.isArray(affectedInstruments) ? affectedInstruments : [],
         source,
         sourceUrl,
+        imageUrl,
+        productSlug,
         isBreaking: Boolean(isBreaking),
         isActive: true,
       },
