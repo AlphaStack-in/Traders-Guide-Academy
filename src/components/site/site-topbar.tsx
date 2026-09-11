@@ -31,7 +31,10 @@ export function SiteTopBar({
   adminLink,
 }: SiteTopBarProps) {
   return (
-    <div className="flex flex-wrap items-center justify-end gap-2 border-b border-white/5 signalflow-glass px-4 py-2.5 sm:px-6 lg:px-8">
+    // relative z-30: gives this bar its own stacking context so its dropdown
+    // reliably paints above <main> content — see the matching note on
+    // AdminTopBar in admin-nav.tsx.
+    <div className="relative z-30 flex flex-wrap items-center justify-end gap-2 border-b border-white/5 signalflow-glass px-4 py-2.5 sm:px-6 lg:px-8">
       <IstClock />
       <HelpNavLink href="/help" />
       <NotificationBell activeBroker={activeBroker} notificationsEnabled={notificationsEnabled} />
