@@ -20,11 +20,18 @@ export function isLinkActive(href: string, pathname: string): boolean {
   return pathname.startsWith(href);
 }
 
-export function DesktopNavigation() {
+/**
+ * Vertical nav-link list rendered inside the left sidebar (see
+ * site-sidebar.tsx). A single instance is mounted — the same aside element
+ * is reused as the persistent desktop sidebar and the mobile drawer — so
+ * `onNavigate` (used to close the drawer on mobile after a tap) is the only
+ * thing that varies by context.
+ */
+export function SidebarNavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
 
   return (
-    <nav className="hidden items-center gap-1.5 md:flex">
+    <nav className="flex flex-col gap-1">
       {navLinks.map((link) => {
         const Icon = link.icon;
         const active = isLinkActive(link.href, pathname);
@@ -32,44 +39,16 @@ export function DesktopNavigation() {
           <Link
             key={link.href}
             href={link.href}
+            onClick={onNavigate}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "flex items-center gap-2 px-3 py-1.5 text-sm font-medium transition-colors",
+              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
               active
-                ? "text-primary font-semibold"
-                : "text-muted-foreground hover:text-foreground"
+                ? "bg-primary/10 text-primary font-semibold"
+                : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
             )}
           >
-            <Icon className={cn("h-4 w-4", active ? "text-primary" : "text-muted-foreground")} />
-            <span>{link.label}</span>
-          </Link>
-        );
-      })}
-    </nav>
-  );
-}
-
-export function MobileNavigation() {
-  const pathname = usePathname();
-
-  return (
-    <nav className="flex items-center gap-2 overflow-x-auto border-t border-white/5 px-4 py-2 md:hidden">
-      {navLinks.map((link) => {
-        const Icon = link.icon;
-        const active = isLinkActive(link.href, pathname);
-        return (
-          <Link
-            key={link.href}
-            href={link.href}
-            aria-current={active ? "page" : undefined}
-            className={cn(
-              "flex shrink-0 items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors",
-              active
-                ? "text-primary font-semibold"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <Icon className={cn("h-3.5 w-3.5", active ? "text-primary" : "text-muted-foreground")} />
+            <Icon className={cn("h-4 w-4 shrink-0", active ? "text-primary" : "text-muted-foreground")} />
             <span>{link.label}</span>
           </Link>
         );

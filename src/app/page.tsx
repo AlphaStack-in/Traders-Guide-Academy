@@ -16,7 +16,7 @@ export default async function Home() {
   const products = settings.productsScrollEnabled ? await getActiveProducts() : [];
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col md:pl-64">
       <Navbar />
       <main className="flex-1">
         <Hero />
