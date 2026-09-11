@@ -123,6 +123,11 @@ export interface ClientConfig {
   digestEnabled: boolean;
   // Gates the home-page News & Market Alerts panel.
   newsAlertsEnabled: boolean;
+  // Gates the home-page horizontally-scrolling Products panel (a
+  // thumbnail-strip companion to the News & Market Alerts panel above —
+  // clicking a thumbnail goes straight to that product's /products/[slug]
+  // page, no inline expand step).
+  productsScrollEnabled: boolean;
   batchInfo: BatchInfo;
   pricingPlans: PricingPlan[];
   paymentInfo: PaymentInfo;
@@ -178,6 +183,7 @@ const CLIENTS: Record<ClientId, ClientConfig> = {
     goodwillBrokerEnabled: false,
     digestEnabled: false,
     newsAlertsEnabled: false,
+    productsScrollEnabled: false,
     batchInfo: {
       batchNumber: 1,
       zoomTimings: ["9:00 AM - 11:30 AM", "2:00 PM - 3:30 PM"],

@@ -20,6 +20,7 @@ export type ActiveBroker = "dhan" | "goodwill" | null;
 export interface AppSettingsData {
   digestEnabled: boolean;
   newsAlertsEnabled: boolean;
+  productsScrollEnabled: boolean;
   brokerConnectEnabled: boolean;
   activeBroker: ActiveBroker;
 }
@@ -38,6 +39,7 @@ function defaultSettings(): AppSettingsData {
   return {
     digestEnabled: clientConfig.digestEnabled,
     newsAlertsEnabled: clientConfig.newsAlertsEnabled,
+    productsScrollEnabled: clientConfig.productsScrollEnabled,
     brokerConnectEnabled: activeBroker !== null,
     activeBroker,
   };
@@ -49,6 +51,7 @@ export async function getAppSettings(): Promise<AppSettingsData> {
   return {
     digestEnabled: row.digestEnabled,
     newsAlertsEnabled: row.newsAlertsEnabled,
+    productsScrollEnabled: row.productsScrollEnabled,
     brokerConnectEnabled: row.brokerConnectEnabled,
     activeBroker: (row.activeBroker as ActiveBroker) ?? null,
   };
@@ -80,6 +83,7 @@ export async function updateAppSettings(
       id: SETTINGS_ID,
       digestEnabled: merged.digestEnabled,
       newsAlertsEnabled: merged.newsAlertsEnabled,
+      productsScrollEnabled: merged.productsScrollEnabled,
       brokerConnectEnabled: merged.brokerConnectEnabled,
       activeBroker: merged.activeBroker,
       updatedBy: updatedBy ?? null,
@@ -87,6 +91,7 @@ export async function updateAppSettings(
     update: {
       digestEnabled: merged.digestEnabled,
       newsAlertsEnabled: merged.newsAlertsEnabled,
+      productsScrollEnabled: merged.productsScrollEnabled,
       brokerConnectEnabled: merged.brokerConnectEnabled,
       activeBroker: merged.activeBroker,
       updatedBy: updatedBy ?? null,
@@ -95,6 +100,7 @@ export async function updateAppSettings(
   return {
     digestEnabled: row.digestEnabled,
     newsAlertsEnabled: row.newsAlertsEnabled,
+    productsScrollEnabled: row.productsScrollEnabled,
     brokerConnectEnabled: row.brokerConnectEnabled,
     activeBroker: (row.activeBroker as ActiveBroker) ?? null,
   };
