@@ -6,6 +6,7 @@ import type { Product } from "@prisma/client";
 import { ChevronDown, GraduationCap, LineChart, BookOpen, Briefcase, Crown, Check } from "lucide-react";
 import { StarRating } from "@/components/site/star-rating";
 import { ProductCheckoutButton } from "@/components/site/product-checkout-button";
+import { Button } from "@/components/ui/button";
 import { PRODUCT_CATEGORY_LABELS, formatPriceInPaise } from "@/lib/products";
 import { cn } from "@/lib/utils";
 
@@ -43,7 +44,7 @@ const CATEGORY_FEATURES: Record<Product["category"], string[]> = {
  * thumbnail and two-line description, per the approved mockup.
  *
  * The row itself is a div (role="button"), not a real <button> — the price
- * button and "View Details" link inside it are real interactive elements,
+ * button and "View Details" button inside it are real interactive elements,
  * and nesting a button/link inside a button is invalid HTML. Both stop
  * propagation so clicking them doesn't also toggle the row, per the
  * approved spec.
@@ -130,9 +131,9 @@ export function ProductRow({
           </p>
         </div>
 
-        <div className="flex w-[140px] shrink-0 flex-col items-end gap-1.5" onClick={stopPropagation}>
+        <div className="flex w-[140px] shrink-0 flex-col items-stretch gap-2" onClick={stopPropagation}>
           {product.originalPriceInPaise != null && (
-            <span className="text-xs text-muted-foreground line-through">
+            <span className="text-right text-xs text-muted-foreground line-through">
               {formatPriceInPaise(product.originalPriceInPaise)}
             </span>
           )}
@@ -143,12 +144,14 @@ export function ProductRow({
             className="w-full"
             style={{ fontSize: product.isFeatured ? "18px" : "16px", fontWeight: 700 }}
           />
-          <Link
-            href={`/products/${product.slug}`}
-            className="text-xs text-primary underline underline-offset-2"
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="signalflow-glow w-full border-white/10 bg-white/[0.03] text-xs font-semibold"
           >
-            View Details
-          </Link>
+            <Link href={`/products/${product.slug}`}>View Details</Link>
+          </Button>
         </div>
 
         <ChevronDown

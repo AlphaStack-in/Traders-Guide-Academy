@@ -58,6 +58,14 @@ export function changelogTimestamp(date: string): string {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.52",
+    date: "11 Sep 2026, 06:28 IST",
+    title: "View Details Button on Product Rows",
+    highlights: [
+      "Products catalog rows — \"View Details\" is now a full-width outline button below the buy button instead of an underlined text link",
+    ],
+  },
+  {
     version: "1.0.51",
     date: "11 Sep 2026, 06:11 IST",
     title: "PMS Product Copy Update",
