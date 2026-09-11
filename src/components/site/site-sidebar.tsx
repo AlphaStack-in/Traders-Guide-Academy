@@ -1,42 +1,21 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { NavbarLogo } from "@/components/site/navbar-logo";
 import { SidebarNavLinks } from "@/components/site/main-navigation";
-import { HelpNavLink } from "@/components/site/help-nav-link";
-import { NotificationBell } from "@/components/site/notification-bell";
-import { SubscriberNavStatus } from "@/components/site/subscriber-nav-status";
-import { IstClock } from "@/components/site/ist-clock";
 import { IndexTicker } from "@/components/site/index-ticker";
 import { cn } from "@/lib/utils";
-import type { ActiveBroker } from "@/lib/app-settings";
-
-interface SiteSidebarProps {
-  subscriberName: string | null;
-  hasRegistered: boolean;
-  notificationsEnabled: boolean;
-  activeBroker: ActiveBroker;
-  /** Rendered server-side (AdminNavLink resolves admin auth) and passed down. */
-  adminLink: ReactNode;
-}
 
 /**
- * Left-side navigation for the public/subscriber site — replaces the old
- * horizontal top Navbar. Renders a single <aside>: fixed and always visible
- * on desktop (md+), and slid off-canvas as a hamburger drawer on mobile.
- * Only one instance of each stateful child (NotificationBell in particular,
- * which opens its own realtime/poll connection) is ever mounted — the aside
- * is shared between the "desktop" and "mobile drawer" presentations rather
- * than duplicated, to avoid doubling up those connections.
+ * Left-side navigation for the public/subscriber site — a single <aside>:
+ * fixed and always visible on desktop (md+), slid off-canvas as a hamburger
+ * drawer on mobile. Holds only the page nav links (Home/Dashboard/Signals/
+ * Products/Contact) — the clock, help, notifications, register/account and
+ * admin-portal controls now live in SiteTopBar above <main> instead (see
+ * site-topbar.tsx), rendered by Navbar alongside this component.
  */
-export function SiteSidebar({
-  subscriberName,
-  hasRegistered,
-  notificationsEnabled,
-  activeBroker,
-  adminLink,
-}: SiteSidebarProps) {
+export function SiteSidebar() {
   const [open, setOpen] = useState(false);
 
   return (
@@ -84,21 +63,6 @@ export function SiteSidebar({
 
         <div className="flex-1 overflow-y-auto px-3 py-4">
           <SidebarNavLinks onNavigate={() => setOpen(false)} />
-        </div>
-
-        <div className="flex flex-col gap-3 border-t border-white/5 p-3">
-          <div className="flex items-center justify-between gap-2">
-            <IstClock />
-            <HelpNavLink href="/help" />
-          </div>
-          <div className="flex items-center gap-2">
-            <NotificationBell
-              activeBroker={activeBroker}
-              notificationsEnabled={notificationsEnabled}
-            />
-            <SubscriberNavStatus subscriberName={subscriberName} hasRegistered={hasRegistered} />
-          </div>
-          {adminLink}
         </div>
       </aside>
 
