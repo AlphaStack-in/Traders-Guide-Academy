@@ -60,7 +60,7 @@ export function InstagramGrid() {
                   className="object-cover transition-transform duration-300 group-hover:scale-105"
                 />
               </div>
-              <p className="signalflow-glass px-2.5 py-2 text-xs font-medium text-foreground">
+              <p className="signalflow-glass line-clamp-2 px-2.5 py-2 text-xs font-medium text-foreground">
                 {item.label}
               </p>
             </a>

@@ -271,9 +271,55 @@ const CLIENTS: Record<ClientId, ClientConfig> = {
         quote: "Good risk management focus — they always remind capital protection first.",
       },
     ],
-    // Leave empty, or add clearly-labeled placeholders, until real reels are
-    // supplied.
-    instagramThumbnails: [],
+    reelsSourceLabel: "YouTube",
+    instagramThumbnails: [
+      {
+        thumbnailUrl: "https://i.ytimg.com/vi/0DrSPO0QJNo/hqdefault.jpg",
+        videoUrl: "https://www.youtube.com/watch?v=0DrSPO0QJNo",
+        label: "Gold Strategy Result Date 25/08/26!! Target done",
+      },
+      {
+        thumbnailUrl: "https://i.ytimg.com/vi/ZwMhvuHQ7Io/hqdefault.jpg",
+        videoUrl: "https://www.youtube.com/watch?v=ZwMhvuHQ7Io",
+        label:
+          "26- 29 December Weekly Pre Market Video| Bank Nifty & Nifty| Will Market fall from here?",
+      },
+      {
+        thumbnailUrl: "https://i.ytimg.com/vi/BemPToic4ZE/hqdefault.jpg",
+        videoUrl: "https://www.youtube.com/watch?v=BemPToic4ZE",
+        label:
+          "18- 22 December Weekly Pre Market Video| Bank Nifty & Nifty| Will Market fall from here?",
+      },
+      {
+        thumbnailUrl: "https://i.ytimg.com/vi/dGC6VCuo8Ho/hqdefault.jpg",
+        videoUrl: "https://www.youtube.com/watch?v=dGC6VCuo8Ho",
+        label:
+          "11-15 December Weekly Pre Market Video| Bank Nifty & Nifty| Will Market fall from here?",
+      },
+      {
+        thumbnailUrl: "https://i.ytimg.com/vi/GVlJ-2oxVP0/hqdefault.jpg",
+        videoUrl: "https://www.youtube.com/watch?v=GVlJ-2oxVP0",
+        label:
+          "Nifty Pre Market Analysis For 16th March 2022 || Nifty Analysis #niftyanalysis #niftyprediction",
+      },
+      {
+        thumbnailUrl: "https://i.ytimg.com/vi/0pxy0o2rWgE/hqdefault.jpg",
+        videoUrl: "https://www.youtube.com/watch?v=0pxy0o2rWgE",
+        label:
+          "Nifty Weekly Analysis || Weekly View For Nifty For 21st Feb Week #niftyanalysis #niftytomorrow",
+      },
+      {
+        thumbnailUrl: "https://i.ytimg.com/vi/9NVGimOx2qU/hqdefault.jpg",
+        videoUrl: "https://www.youtube.com/watch?v=9NVGimOx2qU",
+        label:
+          "Pre Market Analysis Nifty || 11th Feb 2022 || Traders Guide #Nifty #PreMarketAnalysis",
+      },
+      {
+        thumbnailUrl: "https://i.ytimg.com/vi/Z1PFczKPd8E/hqdefault.jpg",
+        videoUrl: "https://www.youtube.com/watch?v=Z1PFczKPd8E",
+        label: "Banknifty Rectangle Breakout Trade setup/ #banknifty #tradersguide",
+      },
+    ],
   },
 };
 
