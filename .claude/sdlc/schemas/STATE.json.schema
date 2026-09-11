@@ -1,0 +1,206 @@
+# STATE.json Schema Reference
+
+**Version:** 2.0.0
+**Purpose:** Machine-readable state written by the orchestrator at every phase transition.
+**Location:** `docs/{issue-name}/STATE.json`
+**Owner:** SDLC Orchestrator only. Agents and skills do NOT write STATE.json.
+
+---
+
+## Schema
+
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SDLC Workflow State v2",
+  "type": "object",
+  "required": [
+    "schema_version", "issue_name", "current_phase", "phase_status",
+    "review_iteration", "failing_experts", "created_at", "updated_at",
+    "artifacts", "metadata"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Must be 2.0.0 for expert team workflow"
+    },
+    "issue_name": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "minLength": 1,
+      "maxLength": 50
+    },
+    "current_phase": {
+      "type": "string",
+      "enum": [
+        "research", "architecture", "planning", "implementation",
+        "review", "fix", "documentation", "complete", "blocked"
+      ]
+    },
+    "phase_status": {
+      "type": "string",
+      "enum": ["pending", "in_progress", "complete", "failed"]
+    },
+    "review_iteration": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 3
+    },
+    "failing_experts": {
+      "type": "array",
+      "description": "Experts that returned NEEDS_FIX — only these re-review in fix loop",
+      "items": {
+        "type": "string",
+        "enum": ["security", "qa", "sre"]
+      }
+    },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "artifacts": {
+      "type": "object",
+      "properties": {
+        "RESEARCH.md":            { "type": "string", "enum": ["pending", "complete"] },
+        "ADR.md":                 { "type": "string", "enum": ["pending", "complete"] },
+        "PLAN.md":                { "type": "string", "enum": ["pending", "complete"] },
+        "IMPLEMENTATION.md":      { "type": "string", "enum": ["pending", "complete"] },
+        "SECURITY.md":            { "type": "string", "enum": ["pending", "complete"] },
+        "QA.md":                  { "type": "string", "enum": ["pending", "complete"] },
+        "SRE.md":                 { "type": "string", "enum": ["pending", "complete"] },
+        "REVIEW.md":              { "type": "string", "enum": ["pending", "complete"] },
+        "PRODUCTION_READINESS.md":{ "type": "string", "enum": ["pending", "complete"] },
+        "STATUS.md":              { "type": "string", "enum": ["pending", "in_progress", "complete"] }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["description", "risk_level"],
+      "properties": {
+        "description": { "type": "string" },
+        "risk_level":  { "type": "string", "enum": ["Unknown", "Low", "Medium", "High"] }
+      }
+    }
+  }
+}
+```
+
+---
+
+## Lifecycle Examples
+
+### Workflow Start
+
+```json
+{
+  "schema_version": "2.0.0",
+  "issue_name": "add-oauth-login",
+  "current_phase": "research",
+  "phase_status": "pending",
+  "review_iteration": 0,
+  "failing_experts": [],
+  "created_at": "2026-01-12T10:00:00Z",
+  "updated_at": "2026-01-12T10:00:00Z",
+  "artifacts": {
+    "RESEARCH.md": "pending", "ADR.md": "pending", "PLAN.md": "pending",
+    "IMPLEMENTATION.md": "pending", "SECURITY.md": "pending", "QA.md": "pending",
+    "SRE.md": "pending", "REVIEW.md": "pending",
+    "PRODUCTION_READINESS.md": "pending", "STATUS.md": "pending"
+  },
+  "metadata": { "description": "Add OAuth2 login with Google", "risk_level": "Unknown" }
+}
+```
+
+### After Architecture Phase
+
+```json
+{
+  "schema_version": "2.0.0",
+  "issue_name": "add-oauth-login",
+  "current_phase": "planning",
+  "phase_status": "pending",
+  "review_iteration": 0,
+  "failing_experts": [],
+  "created_at": "2026-01-12T10:00:00Z",
+  "updated_at": "2026-01-12T11:00:00Z",
+  "artifacts": {
+    "RESEARCH.md": "complete", "ADR.md": "complete", "PLAN.md": "pending",
+    "IMPLEMENTATION.md": "pending", "SECURITY.md": "pending", "QA.md": "pending",
+    "SRE.md": "pending", "REVIEW.md": "pending",
+    "PRODUCTION_READINESS.md": "pending", "STATUS.md": "in_progress"
+  },
+  "metadata": { "description": "Add OAuth2 login with Google", "risk_level": "Medium" }
+}
+```
+
+### After Parallel Review — QA Failed
+
+```json
+{
+  "schema_version": "2.0.0",
+  "issue_name": "add-oauth-login",
+  "current_phase": "fix",
+  "phase_status": "in_progress",
+  "review_iteration": 1,
+  "failing_experts": ["qa"],
+  "created_at": "2026-01-12T10:00:00Z",
+  "updated_at": "2026-01-12T16:00:00Z",
+  "artifacts": {
+    "RESEARCH.md": "complete", "ADR.md": "complete", "PLAN.md": "complete",
+    "IMPLEMENTATION.md": "complete", "SECURITY.md": "complete", "QA.md": "complete",
+    "SRE.md": "complete", "REVIEW.md": "complete",
+    "PRODUCTION_READINESS.md": "pending", "STATUS.md": "in_progress"
+  },
+  "metadata": { "description": "Add OAuth2 login with Google", "risk_level": "Medium" }
+}
+```
+
+### Complete
+
+```json
+{
+  "schema_version": "2.0.0",
+  "issue_name": "add-oauth-login",
+  "current_phase": "complete",
+  "phase_status": "complete",
+  "review_iteration": 1,
+  "failing_experts": [],
+  "created_at": "2026-01-12T10:00:00Z",
+  "updated_at": "2026-01-12T17:00:00Z",
+  "artifacts": {
+    "RESEARCH.md": "complete", "ADR.md": "complete", "PLAN.md": "complete",
+    "IMPLEMENTATION.md": "complete", "SECURITY.md": "complete", "QA.md": "complete",
+    "SRE.md": "complete", "REVIEW.md": "complete",
+    "PRODUCTION_READINESS.md": "complete", "STATUS.md": "complete"
+  },
+  "metadata": { "description": "Add OAuth2 login with Google", "risk_level": "Medium" }
+}
+```
+
+---
+
+## Phase Transitions
+
+```
+research → architecture → planning → implementation → review → documentation → complete
+                                                          ↓
+                                                        fix (review_iteration 1-3)
+                                                    (only failing_experts re-review)
+                                                          ↓
+                                                        review
+                                                          ↓ (if still failing at 3)
+                                                        blocked
+```
+
+### Resume Mapping
+
+| current_phase | Action |
+|--------------|--------|
+| `research` | Spawn Research Agent |
+| `architecture` | Spawn Architecture Agent |
+| `planning` | Spawn Planning Agent |
+| `implementation` | Spawn Implementation Agent |
+| `review` | Spawn all three review agents (parallel) |
+| `fix` | Spawn Fix Agent, then re-spawn `failing_experts` agents |
+| `documentation` | Spawn Tech Writer Agent |
+| `complete` | Report complete |
+| `blocked` | Report blocked, show REVIEW.md |
