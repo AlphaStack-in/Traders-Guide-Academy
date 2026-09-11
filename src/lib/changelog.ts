@@ -58,6 +58,17 @@ export function changelogTimestamp(date: string): string {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.53",
+    date: "11 Sep 2026, 06:50 IST",
+    title: "News & Alerts Posters",
+    highlights: [
+      "Admin News & Alerts page — add, toggle, and delete poster entries with optional product link; 11 WhatsApp promo posters seeded (4 active, linked to catalog products)",
+      "News & Alerts panel shows poster images with a \"View & Buy\" link when a product is linked",
+      "Product catalog rows and detail pages now display imageUrl thumbnails (previously stored but never shown)",
+      "Server Actions body size limit raised to 6 MB so admin poster uploads are not rejected",
+    ],
+  },
+  {
     version: "1.0.52",
     date: "11 Sep 2026, 06:28 IST",
     title: "View Details Button on Product Rows",

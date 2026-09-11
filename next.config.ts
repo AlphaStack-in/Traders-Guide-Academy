@@ -48,6 +48,18 @@ const nextConfig: NextConfig = {
     remotePatterns: [{ protocol: "https", hostname: "i.ytimg.com" }],
   },
 
+  // Server Actions default to a 1MB request body, which chart-image-uploader
+  // (base64 data: URLs pasted/uploaded straight into a Server Action, no
+  // separate blob-storage upload step — see Signal.chartImageUrl and the
+  // News & Alerts admin form's poster field) can exceed for a typical
+  // phone-camera or WhatsApp-exported JPEG. Raised so those uploads don't
+  // get silently rejected.
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "6mb",
+    },
+  },
+
   /**
    * Build-time metadata baked into the JS bundle via webpack DefinePlugin.
    * These are resolved ONCE when `next build` (or `next dev`) runs.

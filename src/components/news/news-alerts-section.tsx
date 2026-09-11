@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { AlertTriangle, Globe, Newspaper, Zap, ExternalLink, ChevronDown, ChevronUp, ShieldAlert, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { AlertTriangle, Globe, Newspaper, Zap, ExternalLink, ChevronDown, ChevronUp, ShieldAlert, ShoppingBag } from "lucide-react";
 
 import { clientConfig } from "@/lib/client-config";
 
@@ -17,6 +17,13 @@ export interface NewsAlertItem {
   affectedInstruments?: string[];
   source?: string | null;
   sourceUrl?: string | null;
+  // Optional poster/graphic (e.g. a live-webinar promo poster) shown above
+  // the title — a same-origin /public path or a base64 data: URL. Absent
+  // for a plain text-only news/market alert.
+  imageUrl?: string | null;
+  // When set, this poster promotes a real /products/{slug} catalog entry —
+  // the poster becomes a link there instead of only expanding in place.
+  productSlug?: string | null;
   publishedAt: string;
   isBreaking?: boolean;
 }
@@ -125,6 +132,31 @@ export function NewsAlertsSection() {
                 onClick={() => setExpandedId(isExpanded ? null : item.id)}
                 className="p-4 cursor-pointer flex flex-col gap-2"
               >
+                {item.imageUrl && (
+                  <div className="relative">
+                    {/* Plain <img>, not next/image — imageUrl can be a
+                        base64 data: URL (admin-pasted poster), which
+                        next/image's optimizer can't process, same reasoning
+                        as ChartImageUploader's preview. */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={item.imageUrl}
+                      alt={item.title}
+                      className="max-h-56 w-full rounded-lg border border-white/10 object-contain bg-black/40"
+                    />
+                    {item.productSlug && (
+                      <Link
+                        href={`/products/${item.productSlug}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="signalflow-btn-gradient absolute bottom-2 right-2 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold text-black shadow-lg"
+                      >
+                        <ShoppingBag className="h-3.5 w-3.5" />
+                        View &amp; Buy
+                      </Link>
+                    )}
+                  </div>
+                )}
+
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex flex-wrap items-center gap-2">
                     {getSeverityBadge(item.severity, item.isBreaking)}
@@ -188,7 +220,7 @@ export function NewsAlertsSection() {
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 text-xs text-primary hover:underline w-fit mt-1"
                     >
-                      <span>Read official source document</span>
+                      <span>{item.imageUrl ? "Register / join link" : "Read official source document"}</span>
                       <ExternalLink className="h-3 w-3" />
                     </a>
                   )}
