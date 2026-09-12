@@ -242,7 +242,7 @@ export function ManualSignalForm({ prefilledValues, onSaved, usedStockSymbols = 
         <h3 className="text-left text-xs font-bold uppercase tracking-wide text-muted-foreground/90 border-b border-white/10 pb-2">
           Trade Setup
         </h3>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div className="flex flex-col gap-1.5">
             <span className={fieldLabelClass}>Strike</span>
             <Input
@@ -287,7 +287,7 @@ export function ManualSignalForm({ prefilledValues, onSaved, usedStockSymbols = 
           </div>
 
           {form.category === "STOCK" && (
-            <div className="flex flex-col gap-1.5 col-span-2 sm:col-span-4">
+            <div className="flex flex-col gap-1.5 sm:col-span-2 lg:col-span-3">
               <span className={fieldLabelClass}>Stock Symbol</span>
               <Combobox
                 value={form.stockSymbol}
