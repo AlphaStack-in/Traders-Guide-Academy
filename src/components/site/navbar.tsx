@@ -11,10 +11,9 @@ export async function Navbar() {
 
   return (
     <>
-      <SiteSidebar />
+      <SiteSidebar subscriberName={subscriber?.name ?? null} hasRegistered={hasRegistered} />
       <SiteTopBar
         subscriberName={subscriber?.name ?? null}
-        hasRegistered={hasRegistered}
         notificationsEnabled={subscriber?.notificationsEnabled ?? true}
         activeBroker={activeBroker}
         adminLink={<AdminNavLink />}
