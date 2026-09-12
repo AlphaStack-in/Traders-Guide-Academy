@@ -32,6 +32,7 @@ import {
   type SignalUpdateInput,
 } from "@/app/admin/(protected)/signals/actions";
 import { INSTRUMENTS, INSTRUMENT_LABEL, formatInstrumentLabel, type InstrumentValue } from "@/lib/instruments";
+import { SETUP_TYPES, SETUP_TYPE_LABEL, type SetupTypeValue } from "@/lib/setup-types";
 import { calcPnlPoints, computeDisplayStatus } from "@/lib/signal-metrics";
 
 export interface ManageSignalRow {
@@ -56,6 +57,7 @@ export interface ManageSignalRow {
   contextTags?: string[];
   confidence?: string | null;
   parserName?: string | null;
+  setupType?: SetupTypeValue | null;
 }
 
 function CloseTradeCell({ signal }: { signal: ManageSignalRow }) {
@@ -105,6 +107,11 @@ interface EditDraft {
   sellPrice: string;
   signalTime: string;
   adminNote: string;
+  // Radix Select can't take an empty-string item value, so an unset/never-
+  // classified signal (older signals predate this field) uses this
+  // sentinel in the draft rather than "" or null — converted back to null
+  // on save.
+  setupType: SetupTypeValue | "UNSET";
 }
 
 function toDatetimeLocal(iso: string) {
@@ -125,6 +132,7 @@ function toDraft(signal: ManageSignalRow): EditDraft {
     sellPrice: signal.sellPrice != null ? String(signal.sellPrice) : "",
     signalTime: toDatetimeLocal(signal.signalTime),
     adminNote: signal.adminNote ?? "",
+    setupType: signal.setupType ?? "UNSET",
   };
 }
 
@@ -194,6 +202,7 @@ function ManageSignalRowItem({ signal }: { signal: ManageSignalRow }) {
       sellPrice,
       signalTime,
       adminNote: draft.adminNote.trim() === "" ? null : draft.adminNote.trim(),
+      setupType: draft.setupType === "UNSET" ? null : draft.setupType,
     };
 
     startSaving(async () => {
@@ -286,6 +295,24 @@ function ManageSignalRowItem({ signal }: { signal: ManageSignalRow }) {
           </div>
         </TableCell>
         <TableCell className="hidden sm:table-cell">
+          <Select
+            value={draft.setupType}
+            onValueChange={(v) => setDraft((d) => ({ ...d, setupType: v as SetupTypeValue | "UNSET" }))}
+          >
+            <SelectTrigger size="sm" className="h-8 w-[130px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="UNSET">Not set</SelectItem>
+              {SETUP_TYPES.map((t) => (
+                <SelectItem key={t} value={t}>
+                  {SETUP_TYPE_LABEL[t]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </TableCell>
+        <TableCell className="hidden sm:table-cell">
           <Input
             value={draft.entryPrice}
             onChange={(e) => setDraft((d) => ({ ...d, entryPrice: e.target.value }))}
@@ -343,7 +370,7 @@ function ManageSignalRowItem({ signal }: { signal: ManageSignalRow }) {
         </TableCell>
       </TableRow>
       <TableRow className="border-b-white/5 bg-white/[0.02] hover:bg-white/[0.02]">
-        <TableCell colSpan={11}>
+        <TableCell colSpan={12}>
           <Label className="text-xs text-muted-foreground">
             Admin Update (shown to subscribers on the Trade Log)
           </Label>
@@ -383,6 +410,9 @@ function ManageSignalRowItem({ signal }: { signal: ManageSignalRow }) {
             {signal.optionType}
           </Badge>
         </div>
+      </TableCell>
+      <TableCell className="hidden whitespace-nowrap text-xs text-muted-foreground sm:table-cell">
+        {signal.setupType ? SETUP_TYPE_LABEL[signal.setupType] : "—"}
       </TableCell>
       <TableCell className="hidden sm:table-cell">{signal.entryPrice}</TableCell>
       <TableCell className="hidden md:table-cell">{signal.stopLoss}</TableCell>
@@ -444,6 +474,7 @@ export function ManageSignalsTable({ signals }: { signals: ManageSignalRow[] }) 
               <TableHead className="hidden sm:table-cell">Date</TableHead>
               <TableHead>Instrument</TableHead>
               <TableHead>Strike</TableHead>
+              <TableHead className="hidden sm:table-cell">Setup</TableHead>
               <TableHead className="hidden sm:table-cell">Entry</TableHead>
               <TableHead className="hidden md:table-cell">SL</TableHead>
               <TableHead className="hidden md:table-cell">Target(s)</TableHead>

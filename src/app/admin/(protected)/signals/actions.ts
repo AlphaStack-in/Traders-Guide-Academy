@@ -10,6 +10,7 @@ import {
   sendTelegramMessage,
 } from "@/lib/telegram";
 import type { InstrumentValue } from "@/lib/instruments";
+import type { SetupTypeValue } from "@/lib/setup-types";
 import { resolveDhanContract } from "@/lib/broker/dhan-contract-resolver";
 import { publishAdminUpdate } from "@/lib/ably";
 
@@ -38,6 +39,9 @@ export interface SignalInput {
   // real ticker lives here and is also offered back as an "already used"
   // suggestion.
   stockSymbol?: string | null;
+  // Trade setup classification (ORB, Breakout, Breakdown, Reversal,
+  // Continuation, etc.) — see Signal.setupType in schema.prisma.
+  setupType?: SetupTypeValue | null;
 }
 
 function toSignalCreateData(input: SignalInput) {
@@ -73,6 +77,7 @@ function toSignalCreateData(input: SignalInput) {
     confidence: input.confidence ?? "HIGH",
     parserName: input.parserName ?? "SIGNALFLOW",
     stockSymbol: input.stockSymbol ?? null,
+    setupType: input.setupType ?? null,
   };
 }
 
@@ -162,6 +167,7 @@ export interface SignalUpdateInput {
   sellPrice: number | null;
   signalTime: Date;
   adminNote: string | null;
+  setupType?: SetupTypeValue | null;
 }
 
 export async function updateSignal(id: string, input: SignalUpdateInput) {
@@ -194,6 +200,7 @@ export async function updateSignal(id: string, input: SignalUpdateInput) {
       sellPrice: input.sellPrice,
       signalTime: input.signalTime,
       adminNote: input.adminNote,
+      setupType: input.setupType ?? null,
       pnlPercent,
       status,
       closedTime: input.sellPrice != null ? (signal.closedTime ?? new Date()) : null,

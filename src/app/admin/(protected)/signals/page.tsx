@@ -67,6 +67,7 @@ export default async function ManageSignalsPage({
       contextTags: s.contextTags,
       confidence: s.confidence,
       parserName: s.parserName,
+      setupType: s.setupType,
     };
   });
 

@@ -58,6 +58,15 @@ export function changelogTimestamp(date: string): string {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.58",
+    date: "12 Sep 2026, 18:32 IST",
+    title: "Setup Type + Ongoing Trade Cards",
+    highlights: [
+      "Signal Setup Type (ORB, Breakout, Breakdown, Reversal, Continuation, Trend Following, Range Bound, Scalp, News Based, Other) — admin picks at manual entry (default Other); editable in Manage Signals; shown in Trade Log and on Ongoing Trade cards",
+      "Ongoing Trade panel — one full-width card per open signal with risk/reward and that trade’s Updates thread merged (stacked vertically, not a side-by-side grid)",
+    ],
+  },
+  {
     version: "1.0.57",
     date: "11 Sep 2026, 16:32 IST",
     title: "Notification Z-Index + Products Marquee",

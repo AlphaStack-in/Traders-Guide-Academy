@@ -21,6 +21,7 @@ import { TradeRiskRewardBar } from "@/components/admin/dashboard-charts";
 import { ManageSignalsTable } from "@/components/admin/manage-signals-table";
 import type { SignalRow } from "@/components/signals/signals-explorer";
 import { formatInstrumentLabel } from "@/lib/instruments";
+import { SETUP_TYPE_LABEL } from "@/lib/setup-types";
 import type { OrderBroker } from "@/lib/client-config";
 import {
   postGeneralAdminUpdate,
@@ -225,27 +226,6 @@ export function OngoingSignals({
               )}
             </h2>
           </div>
-          {!isEmpty &&
-            showBody &&
-            signals.length > 1 &&
-            signals.map((signal) => (
-              <span
-                key={signal.id}
-                className="flex items-center gap-1.5 rounded-full border border-white/10 bg-black/20 px-3 py-1 text-sm text-muted-foreground"
-              >
-                <span className="font-heading text-base font-bold signalflow-gold-text">
-                  {instrumentPrefix(signal)}{signal.strike} {signal.optionType}
-                </span>
-                <span>
-                  · Entry @{" "}
-                  <span
-                    className={cn("font-heading text-base font-bold", "signalflow-gold-text")}
-                  >
-                    ₹{signal.entryPrice}
-                  </span>
-                </span>
-              </span>
-            ))}
         </div>
         {collapsible && (
           <button
@@ -271,21 +251,40 @@ export function OngoingSignals({
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(360px,1fr))] gap-4">
+        // One full-width card per signal, stacked vertically — each card is
+        // this signal's complete picture (risk/reward + its own Updates
+        // thread) so nothing about one trade ever sits side by side with,
+        // or bleeds into, another trade's card. Previously this was a
+        // multi-column grid (cards side by side) with a separate Updates
+        // thread rendered further down the page per signal — merged here so
+        // "one card per signal" actually means one card, not two.
+        <div className="flex flex-col gap-4">
           {signals.map((signal) => {
             const point = toRiskReward(signal);
+            const updates = signalUpdates(signal);
+            const setupLabel = signal.setupType ? SETUP_TYPE_LABEL[signal.setupType] : null;
             return (
               <div key={signal.id} className="rounded-xl border border-white/5 bg-black/10 p-3 sm:p-4">
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-white/5 pb-2">
-                  <span className="font-heading text-sm font-bold signalflow-gold-text">
-                    {instrumentPrefix(signal)}{signal.strike} {signal.optionType}
-                  </span>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-heading text-sm font-bold signalflow-gold-text">
+                      {instrumentPrefix(signal)}{signal.strike} {signal.optionType}
+                    </span>
+                    {setupLabel && (
+                      <Badge
+                        variant="outline"
+                        className="border-white/15 px-1.5 py-0 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground"
+                      >
+                        {setupLabel}
+                      </Badge>
+                    )}
+                  </div>
                   <span className="text-[10px] text-muted-foreground">
                     Since {formatSignalDate(signal.signalTime)} {formatSignalTime(signal.signalTime)}
                   </span>
                 </div>
 
-                <div className="mt-4 flex items-center gap-4">
+                <div className="flex items-center gap-4">
                   <div className="min-w-0 flex-1">
                     <TradeRiskRewardBar data={point} />
                   </div>
@@ -300,6 +299,30 @@ export function OngoingSignals({
                       Risk {point.lossPercent.toFixed(1)}%
                     </p>
                   </div>
+                </div>
+
+                {/* This trade's own Updates thread, folded into its card —
+                    see the comment above the outer stack for why. */}
+                <div className="mt-4 border-t border-white/5 pt-2.5">
+                  <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    Updates
+                  </p>
+                  {updates.length > 0 ? (
+                    <div className="flex max-h-[160px] flex-col gap-2 overflow-y-auto pr-1">
+                      {updates.map((u, idx) => (
+                        <div key={u.id} className={cn(idx > 0 && "border-t border-white/5 pt-2")}>
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="whitespace-pre-line text-xs text-foreground/90">{u.message}</p>
+                            <p className="shrink-0 text-xs text-muted-foreground pt-0.5">
+                              {formatUpdateTime(u.createdAt)}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">No updates yet for this trade.</p>
+                  )}
                 </div>
               </div>
             );
@@ -317,6 +340,7 @@ export function OngoingSignals({
                 <TableRow className="border-b-white/10 hover:bg-transparent">
                   <TableHead>Instrument</TableHead>
                   <TableHead>Strike</TableHead>
+                  <TableHead className="hidden sm:table-cell">Setup</TableHead>
                   <TableHead>Entry</TableHead>
                   <TableHead>SL</TableHead>
                   <TableHead>Target(s)</TableHead>
@@ -328,7 +352,7 @@ export function OngoingSignals({
                 {isEmpty ? (
                   <TableRow className="hover:bg-transparent">
                     <TableCell
-                      colSpan={ORDER_BROKER ? 7 : 6}
+                      colSpan={ORDER_BROKER ? 8 : 7}
                       className="py-6 text-center text-xs text-muted-foreground"
                     >
                       No ongoing trades at the moment.
@@ -357,6 +381,9 @@ export function OngoingSignals({
                             </Badge>
                           </div>
                         </TableCell>
+                        <TableCell className="hidden whitespace-nowrap text-xs text-muted-foreground sm:table-cell">
+                          {signal.setupType ? SETUP_TYPE_LABEL[signal.setupType] : "—"}
+                        </TableCell>
                         <TableCell className="font-bold">{signal.entryPrice}</TableCell>
                         <TableCell>{signal.stopLoss}</TableCell>
                         <TableCell>{signal.targets.join(", ")}</TableCell>
@@ -377,7 +404,7 @@ export function OngoingSignals({
                       </TableRow>
                       {ORDER_BROKER && expandedOrderIds.has(signal.id) && (
                         <TableRow className="border-b-white/5 hover:bg-transparent">
-                          <TableCell colSpan={7} className="bg-black/10 py-3">
+                          <TableCell colSpan={8} className="bg-black/10 py-3">
                             <OrderExpansionPanel signalId={signal.id} brokerType={ORDER_BROKER} />
                           </TableCell>
                         </TableRow>
@@ -391,45 +418,6 @@ export function OngoingSignals({
         )}
       </div>
 
-      {!isEmpty && (
-        <div className="mt-4 flex flex-col gap-4">
-          {/* Per-trade Updates -- placed below the trade summary table
-              (rather than inside each risk/reward card above), one heading
-              per trade so a trade's own messages stay grouped together and
-              never mix with another trade's. */}
-          {signals.map((signal) => {
-            const updates = signalUpdates(signal);
-            return (
-              <div key={signal.id} className="rounded-xl border border-white/5 bg-black/10 p-3 sm:p-4">
-                <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2 border-b border-white/5 pb-1.5">
-                  <span className="font-heading text-xs font-bold signalflow-gold-text">
-                    {instrumentPrefix(signal)}{signal.strike} {signal.optionType}
-                  </span>
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    Updates
-                  </p>
-                </div>
-                {updates.length > 0 ? (
-                  <div className="flex max-h-[160px] flex-col gap-2 overflow-y-auto pr-1">
-                    {updates.map((u, idx) => (
-                      <div key={u.id} className={cn(idx > 0 && "border-t border-white/5 pt-2")}>
-                        <div className="flex items-start justify-between gap-2">
-                          <p className="whitespace-pre-line text-xs text-foreground/90">{u.message}</p>
-                          <p className="shrink-0 text-xs text-muted-foreground pt-0.5">
-                            {formatUpdateTime(u.createdAt)}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-xs text-muted-foreground">No updates yet for this trade.</p>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
         </>
       )}
     </div>

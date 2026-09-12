@@ -21,6 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { INSTRUMENTS, INSTRUMENT_LABEL, formatInstrumentLabel, type InstrumentValue } from "@/lib/instruments";
+import { SETUP_TYPE_LABEL, type SetupTypeValue } from "@/lib/setup-types";
 import { calcPnlPoints, computeDisplayStatus } from "@/lib/signal-metrics";
 import {
   computeBoundaries,
@@ -57,6 +58,7 @@ export interface SignalRow {
   contextTags?: string[];
   confidence?: string | null;
   parserName?: string | null;
+  setupType?: SetupTypeValue | null;
 }
 
 type OptionFilter = "ALL" | "CE" | "PE";
@@ -322,6 +324,7 @@ export function SignalsExplorer({
                       onSort={handleSort}
                     />
                   </TableHead>
+                  <TableHead className="hidden lg:table-cell">Setup</TableHead>
                   <TableHead>
                     <div className="flex flex-col gap-1">
                       <span>Status</span>
@@ -400,6 +403,9 @@ export function SignalsExplorer({
                         {signal.pnlPercent != null
                           ? `${signal.pnlPercent > 0 ? "+" : ""}${signal.pnlPercent.toFixed(1)}%`
                           : "—"}
+                      </TableCell>
+                      <TableCell className="hidden whitespace-nowrap text-xs text-muted-foreground lg:table-cell">
+                        {signal.setupType ? SETUP_TYPE_LABEL[signal.setupType] : "—"}
                       </TableCell>
                       <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
                         {computeDisplayStatus(signal)}

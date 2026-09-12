@@ -62,6 +62,15 @@ model Signal {
   parserName    String?  @default("SIGNALFLOW")
   parserVersion String?  @default("1.0.0")
 
+  // Trade setup classification (ORB, Breakout, Breakdown, Reversal,
+  // Continuation, etc.) — admin-set at signal creation, shown as a badge on
+  // the Ongoing Trade card and Trade Log so subscribers can see at a glance
+  // what kind of setup a signal is. Nullable since older signals predate
+  // this field. Not to be confused with the dormant, unused
+  // CanonicalSignalDraft.signalType free-text field in the parser layer
+  // (src/lib/parsers/types.ts) — that's a different, never-wired concept.
+  setupType     SetupType?
+
   @@index([signalTime])
   @@index([status])
 }
@@ -343,6 +352,23 @@ enum SignalStatus {
   SL_HIT
   CLOSED_MANUAL
   EXPIRED
+}
+
+// Trade setup classification for a Signal — see Signal.setupType. Kept as
+// its own enum (rather than reusing `confidence`'s free-text-string
+// approach) so every signal is tagged from a fixed, consistent vocabulary
+// the admin picks from at creation time.
+enum SetupType {
+  ORB
+  BREAKOUT
+  BREAKDOWN
+  REVERSAL
+  CONTINUATION
+  TREND_FOLLOWING
+  RANGE_BOUND
+  SCALP
+  NEWS_BASED
+  OTHER
 }
 
 enum SubscriberPlan {

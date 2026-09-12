@@ -65,6 +65,7 @@ export default async function SignalsPage({
       contextTags: s.contextTags,
       confidence: s.confidence,
       parserName: s.parserName,
+      setupType: s.setupType,
     };
   });
   const ongoing = rows.filter((r) => r.status === "OPEN");

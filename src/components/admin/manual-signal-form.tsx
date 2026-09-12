@@ -15,6 +15,7 @@ import { Combobox } from "@/components/ui/combobox";
 import { createSignals, type SignalInput } from "@/app/admin/(protected)/signals/actions";
 import { INSTRUMENTS, type InstrumentLiteral, type InstrumentValue } from "@/lib/instruments";
 import { getNextExpiry, type InstrumentCategory, type ExpiryOption } from "@/lib/expiry";
+import { SETUP_TYPES, SETUP_TYPE_LABEL, type SetupTypeValue } from "@/lib/setup-types";
 import { ChartImageUploader } from "@/components/signals/chart-image-uploader";
 import { Send } from "lucide-react";
 
@@ -51,6 +52,7 @@ export interface ManualFormValues {
   priceAtSignal: string;
   sellPrice: string;
   risk: "Low" | "Medium" | "High";
+  setupType: SetupTypeValue;
   expiry: string;
   chartImageUrl: string | null;
 }
@@ -70,6 +72,7 @@ function emptyForm(): ManualFormValues {
     priceAtSignal: "",
     sellPrice: "",
     risk: "Medium",
+    setupType: "OTHER",
     expiry: initialExpiry,
     chartImageUrl: null,
   };
@@ -211,6 +214,7 @@ export function ManualSignalForm({ prefilledValues, onSaved, usedStockSymbols = 
       chartImageUrl: form.chartImageUrl,
       target1: targets[0] ?? null,
       target2: targets[1] ?? null,
+      setupType: form.setupType,
       // Persist the actual typed symbol — the `instrument` enum only says
       // "this is a stock trade", not which one, so the real ticker lives
       // here too (see stockSymbol's comment in schema.prisma). Also shows
@@ -235,10 +239,10 @@ export function ManualSignalForm({ prefilledValues, onSaved, usedStockSymbols = 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
       <section className="flex flex-col gap-3">
-        <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground/90 border-b border-white/10 pb-2">
+        <h3 className="text-left text-xs font-bold uppercase tracking-wide text-muted-foreground/90 border-b border-white/10 pb-2">
           Trade Setup
         </h3>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
           <div className="flex flex-col gap-1.5">
             <span className={fieldLabelClass}>Strike</span>
             <Input
@@ -283,7 +287,7 @@ export function ManualSignalForm({ prefilledValues, onSaved, usedStockSymbols = 
           </div>
 
           {form.category === "STOCK" && (
-            <div className="flex flex-col gap-1.5 sm:col-span-2 lg:col-span-1">
+            <div className="flex flex-col gap-1.5 col-span-2 sm:col-span-4">
               <span className={fieldLabelClass}>Stock Symbol</span>
               <Combobox
                 value={form.stockSymbol}
@@ -311,11 +315,30 @@ export function ManualSignalForm({ prefilledValues, onSaved, usedStockSymbols = 
               </SelectContent>
             </Select>
           </div>
+
+          <div className="flex flex-col gap-1.5">
+            <span className={fieldLabelClass}>Setup Type</span>
+            <Select
+              value={form.setupType}
+              onValueChange={(v) => set("setupType", v as SetupTypeValue)}
+            >
+              <SelectTrigger className="h-9 text-xs bg-black/40 border-white/10 w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-[#12131a] border-white/10">
+                {SETUP_TYPES.map((t) => (
+                  <SelectItem key={t} value={t}>
+                    {SETUP_TYPE_LABEL[t]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </section>
 
       <section className="flex flex-col gap-3">
-        <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground/90 border-b border-white/10 pb-2">
+        <h3 className="text-left text-xs font-bold uppercase tracking-wide text-muted-foreground/90 border-b border-white/10 pb-2">
           Price Levels
         </h3>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -371,14 +394,7 @@ export function ManualSignalForm({ prefilledValues, onSaved, usedStockSymbols = 
               className="h-9 text-xs font-mono bg-black/40 border-white/10 focus:border-primary/50 w-full"
             />
           </div>
-        </div>
-      </section>
 
-      <section className="flex flex-col gap-3">
-        <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground/90 border-b border-white/10 pb-2">
-          Expiry
-        </h3>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div className="flex flex-col gap-1.5">
             <span className={`${fieldLabelClass} flex items-center justify-between gap-2`}>
               <span>Expiry Date</span>
@@ -400,8 +416,17 @@ export function ManualSignalForm({ prefilledValues, onSaved, usedStockSymbols = 
         </div>
       </section>
 
+      {/* SCREENSHOT SECTION — sits above the Send Signal button */}
+      <div className="flex flex-col gap-1.5 pt-2 border-t border-white/10">
+        <ChartImageUploader
+          label="SCREENSHOT"
+          value={form.chartImageUrl}
+          onChange={(url) => set("chartImageUrl", url)}
+        />
+      </div>
+
       {/* LEFT-ALIGNED [ Send Signal ] BUTTON WITH MATCHING SIZE, TEXT, & ICON */}
-      <div className="pt-2 flex justify-start">
+      <div className="flex justify-start">
         <Button
           type="submit"
           disabled={isPending}
@@ -410,15 +435,6 @@ export function ManualSignalForm({ prefilledValues, onSaved, usedStockSymbols = 
           <Send className="h-4 w-4" />
           {isPending ? "Sending Signal…" : "Send Signal"}
         </Button>
-      </div>
-
-      {/* SCREENSHOT SECTION */}
-      <div className="flex flex-col gap-1.5 pt-2 border-t border-white/10">
-        <ChartImageUploader
-          label="SCREENSHOT"
-          value={form.chartImageUrl}
-          onChange={(url) => set("chartImageUrl", url)}
-        />
       </div>
     </form>
   );

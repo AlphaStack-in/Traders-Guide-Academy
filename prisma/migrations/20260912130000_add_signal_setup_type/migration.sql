@@ -1,0 +1,5 @@
+-- CreateEnum
+CREATE TYPE "SetupType" AS ENUM ('ORB', 'BREAKOUT', 'BREAKDOWN', 'REVERSAL', 'CONTINUATION', 'TREND_FOLLOWING', 'RANGE_BOUND', 'SCALP', 'NEWS_BASED', 'OTHER');
+
+-- AlterTable
+ALTER TABLE "Signal" ADD COLUMN     "setupType" "SetupType";
