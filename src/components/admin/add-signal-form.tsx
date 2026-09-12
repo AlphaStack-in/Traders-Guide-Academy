@@ -18,39 +18,9 @@ import { ManualSignalForm, type ManualFormValues } from "@/components/admin/manu
 // UI, not just unlikely to be picked.
 import { parseSignalFlowMessage, type ParsedSignalDraft } from "@/lib/parser";
 import { nextWeeklyExpiry } from "@/lib/expiry";
+import { buildSampleSignalTemplate, sampleManualEntryExtras } from "@/lib/sample-signal";
 import { Sparkles, ArrowDown, CheckCircle2, AlertTriangle, ShieldCheck, Zap } from "lucide-react";
 import { INSTRUMENTS, type InstrumentLiteral } from "@/lib/instruments";
-
-const MONTH_ABBR = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-];
-
-// "4th", "1st", "22nd", "23rd", "18th" — matches the ordinal suffixes the
-// parser's own EXPIRY_TEXT regex expects (signalflow-parser.ts).
-function ordinal(day: number): string {
-  if (day >= 11 && day <= 13) return `${day}th`;
-  switch (day % 10) {
-    case 1: return `${day}st`;
-    case 2: return `${day}nd`;
-    case 3: return `${day}rd`;
-    default: return `${day}th`;
-  }
-}
-
-// Built fresh each time (not a fixed string) so the sample always names
-// NIFTY's actual next weekly expiry as of today, instead of a hardcoded
-// date that silently goes stale and fails to parse once "today" passes it
-// (see CHANGELOG 1.0.32).
-function buildSampleSignalTemplate(): string {
-  const [, monthStr, dayStr] = nextWeeklyExpiry().split("-");
-  const expiryText = `${ordinal(parseInt(dayStr, 10))} ${MONTH_ABBR[parseInt(monthStr, 10) - 1]}`;
-  return `BUY #NIFTY 24300 CE
-ABOVE 160-170
-TARGET- 18/40/80/150 POINT
-SL-145
-EXPIRY ${expiryText}`;
-}
 
 export function AddSignalForm({ usedStockSymbols = [] }: { usedStockSymbols?: string[] }) {
   const [rawText, setRawText] = useState("");
@@ -80,8 +50,7 @@ export function AddSignalForm({ usedStockSymbols = [] }: { usedStockSymbols?: st
     toast.success(`Successfully parsed ${results.length} signal${results.length === 1 ? "" : "s"} (TGA parser).`);
   }
 
-  function handleUseParsedData(parsed: ParsedSignalDraft) {
-    // Map parsed result into ManualFormValues
+  function applyParsedToManualForm(parsed: ParsedSignalDraft, useSampleManualExtras: boolean) {
     const rawInst = (parsed.mappedInstrument || parsed.instrument || "NIFTY").toUpperCase();
     const mappedInst = rawInst === "BANKNIFTY" ? "BANK_NIFTY" : rawInst === "MIDCPNIFTY" || rawInst === "MIDCAPNIFTY" ? "MIDCAP_NIFTY" : rawInst as InstrumentLiteral;
     const isKnownInstrument = INSTRUMENTS.includes(mappedInst);
@@ -99,18 +68,37 @@ export function AddSignalForm({ usedStockSymbols = [] }: { usedStockSymbols?: st
         : "",
       priceAtSignal: parsed.priceAtSignal != null ? String(parsed.priceAtSignal) : parsed.cmp != null ? String(parsed.cmp) : parsed.entryPrice != null ? String(parsed.entryPrice) : "",
       sellPrice: parsed.sellPrice != null ? String(parsed.sellPrice) : "",
-      risk: "Medium",
       expiry: parsed.expiry ?? nextWeeklyExpiry(),
+      ...(useSampleManualExtras
+        ? sampleManualEntryExtras()
+        : { risk: "Medium" as const, setupType: "OTHER" as const, comments: "" }),
     };
 
     setPrefilledManualForm(prefilled);
-    toast.success("Parsed data transferred into Manual Signal Entry below.");
 
-    // Scroll to Manual Signal Entry section
     const manualSection = document.getElementById("manual-signal-entry-section");
     if (manualSection) {
       manualSection.scrollIntoView({ behavior: "smooth" });
     }
+  }
+
+  function handleUseParsedData(parsed: ParsedSignalDraft) {
+    applyParsedToManualForm(parsed, false);
+    toast.success("Parsed data transferred into Manual Signal Entry below.");
+  }
+
+  function insertSampleSignal() {
+    const text = buildSampleSignalTemplate();
+    setRawText(text);
+    const results = parseSignalFlowMessage(text);
+    if (results.length === 0) {
+      toast.error("Sample signal failed to parse.");
+      setParsedResults(null);
+      return;
+    }
+    setParsedResults(results);
+    applyParsedToManualForm(results[0], true);
+    toast.success("Sample signal inserted — parse preview and manual entry pre-filled.");
   }
 
   return (
@@ -134,7 +122,7 @@ export function AddSignalForm({ usedStockSymbols = [] }: { usedStockSymbols?: st
           <div className="flex items-center justify-start">
             <button
               type="button"
-              onClick={() => setRawText(sampleTemplate)}
+              onClick={insertSampleSignal}
               className="text-xs text-primary/90 hover:text-primary underline font-semibold cursor-pointer transition-colors"
             >
               Insert Sample Signal
@@ -202,8 +190,8 @@ export function AddSignalForm({ usedStockSymbols = [] }: { usedStockSymbols?: st
                   </div>
                 </div>
 
-                {/* Parsed Fields Summary */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono text-xs text-muted-foreground pt-1 border-t border-white/5">
+                {/* Parsed fields — mirrors Manual Entry (Trade Setup + Price Levels) */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 font-mono text-xs text-muted-foreground pt-1 border-t border-white/5">
                   <div>
                     <span className="text-[10px] text-muted-foreground/70 block uppercase">Entry</span>
                     <span className="font-semibold text-foreground">₹{parsed.entryPrice ?? "-"}</span>
@@ -221,6 +209,14 @@ export function AddSignalForm({ usedStockSymbols = [] }: { usedStockSymbols?: st
                   <div>
                     <span className="text-[10px] text-muted-foreground/70 block uppercase">CMP</span>
                     <span className="font-semibold text-foreground">₹{parsed.cmp ?? parsed.priceAtSignal ?? parsed.entryPrice ?? "-"}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-muted-foreground/70 block uppercase">Sell Price</span>
+                    <span className="font-semibold text-foreground">₹{parsed.sellPrice ?? "—"}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-muted-foreground/70 block uppercase">Expiry</span>
+                    <span className="font-semibold text-primary">{(parsed.expiry ?? nextWeeklyExpiry()).slice(0, 10)}</span>
                   </div>
                 </div>
 

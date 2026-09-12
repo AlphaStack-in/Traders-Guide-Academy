@@ -2,6 +2,12 @@ import Link from "next/link";
 import { TocSidebar, type TocEntry } from "@/components/site/toc-sidebar";
 import { LegalSection as Section } from "@/components/site/legal-section";
 import { getAppSettings } from "@/lib/app-settings";
+import {
+  buildSampleSignalTemplate,
+  SAMPLE_COMMENTS,
+  SAMPLE_SETUP_TYPE,
+} from "@/lib/sample-signal";
+import { SETUP_TYPE_LABEL } from "@/lib/setup-types";
 
 // Admin operator manual — auth is inherited from
 // src/app/admin/(protected)/layout.tsx, same as every other page in this
@@ -12,6 +18,7 @@ import { getAppSettings } from "@/lib/app-settings";
 // (Announcement button, subscriber password reset) rather than described as
 // if they work, since they don't yet — see each section for specifics.
 export default async function AdminHelpPage() {
+  const sampleSignalText = buildSampleSignalTemplate();
   const settings = await getAppSettings();
   const goodwillEnabled = settings.activeBroker === "goodwill";
   const dhanConnectEnabled = settings.activeBroker === "dhan";
@@ -80,14 +87,13 @@ export default async function AdminHelpPage() {
               raw signal message into the text box — e.g.
             </p>
             <pre className="mt-2 whitespace-pre-wrap rounded-lg border border-white/10 bg-black/40 p-3 font-mono text-xs text-foreground">
-{`BUY #NIFTY 24300 CE
-ABOVE 160-170
-TARGET- 18/40/80/150 POINT
-SL-145
-EXPIRY 18th aug`}
+              {sampleSignalText}
             </pre>
             <p className="mt-2">
-              Click <span className="font-semibold text-foreground">Parse Signal</span>. TGA has
+              Click <span className="font-semibold text-foreground">Insert Sample Signal</span> to
+              paste the live example, show the parsed preview, and pre-fill Manual Signal Entry
+              (including example setup type and comments), or paste your own text and click{" "}
+              <span className="font-semibold text-foreground">Parse Signal</span>. TGA has
               its own dedicated parser (badge always reads{" "}
               <span className="font-semibold text-foreground">Parser: TGA</span>) — it reads{" "}
               <span className="font-mono">ABOVE</span> for entry (a range like{" "}
@@ -95,7 +101,8 @@ EXPIRY 18th aug`}
                 TARGET-
               </span>{" "}
               for targets (comma- or slash-separated), <span className="font-mono">SL-</span> for
-              stop-loss, and an optional <span className="font-mono">EXPIRY</span> date. If the
+              stop-loss, optional <span className="font-mono">NOW</span> for CMP, and an{" "}
+              <span className="font-mono">EXPIRY</span> date. If the
               text says <span className="font-mono">POINT</span>/<span className="font-mono">
                 POINTS
               </span>{" "}
@@ -110,17 +117,23 @@ EXPIRY 18th aug`}
 
           <Section id="manual-signal-entry" title="Manual Signal Entry">
             <p>
-              Fill in or review Strike, Type (CE/PE), Instrument, Entry Price, Stop Loss,
-              Target(s), CMP <span className="text-muted-foreground">(optional — defaults to
-              Entry Price if left blank)</span>, Sell Price (optional), Expiry Date, and Risk
-              Rating, then click <span className="font-semibold text-foreground">Send Signal</span>.
-              A few things worth knowing:
+              The form is grouped into <span className="font-semibold text-foreground">Trade
+              Setup</span> (strike, type, instrument, risk, setup type, comments),{" "}
+              <span className="font-semibold text-foreground">Price Levels</span> (entry, stop
+              loss, targets, optional CMP and sell price, expiry), then an optional chart
+              screenshot above <span className="font-semibold text-foreground">Send Signal</span>.
+              CMP defaults to entry price when left blank. Setup type and comments are not parsed
+              from raw text — <span className="font-semibold text-foreground">Insert Sample
+              Signal</span> also pre-fills manual entry with{" "}
+              <span className="font-semibold text-foreground">
+                {SETUP_TYPE_LABEL[SAMPLE_SETUP_TYPE]}
+              </span>{" "}
+              and a short example comment (&quot;{SAMPLE_COMMENTS}&quot;) for you to edit.
             </p>
             <ul className="mt-2 flex flex-col gap-1.5 [&>li]:pl-4 [&>li]:-indent-4">
               <li>
-                • Expiry Date only lists that instrument&apos;s actual valid tradable expiries —
-                it auto-selects the next one, so you can&apos;t accidentally pick a date that
-                doesn&apos;t exist as a real contract.
+                • Expiry in Price Levels only lists that instrument&apos;s actual tradable
+                expiries — it auto-selects the next one when instrument changes.
               </li>
               <li>
                 • Choosing <span className="font-semibold text-foreground">Stock</span> as
@@ -130,7 +143,11 @@ EXPIRY 18th aug`}
                 known or not.
               </li>
               <li>
-                • You can attach a chart screenshot at the bottom before sending.
+                • Comments are optional; when filled, they are saved as the signal&apos;s admin
+                note and posted to that trade&apos;s Updates thread.
+              </li>
+              <li>
+                • Attach a chart screenshot above the Send Signal button when you have one.
               </li>
             </ul>
           </Section>

@@ -58,6 +58,15 @@ export function changelogTimestamp(date: string): string {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.60",
+    date: "12 Sep 2026, 19:03 IST",
+    title: "Sample signal aligned with manual entry",
+    highlights: [
+      "Insert Sample Signal now pre-fills Manual Signal Entry for the grouped form — parsed price levels plus example Golden Line setup type and comments; sample text includes NOW for CMP",
+      "Parsed preview shows expiry and sell price; Admin Help documents the updated parse + manual entry flow",
+    ],
+  },
+  {
     version: "1.0.59",
     date: "12 Sep 2026, 18:55 IST",
     title: "Setup Type expansions + manual comments",
