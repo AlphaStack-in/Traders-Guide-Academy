@@ -6,11 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 **[Tech debts](./tech-debt-ledger.html)** — once deployed, also served at `/tech-debt-ledger.html`
 
-Versioning continues the semantic patch series from the SignalFlow template (`1.0.7` → `1.0.8` …). The footer and Admin Changelog page read the current version from `package.json` (now **1.0.58**).
+Versioning continues the semantic patch series from the SignalFlow template (`1.0.7` → `1.0.8` …). The footer and Admin Changelog page read the current version from `package.json` (now **1.0.59**).
 
 Each release header now includes a build timestamp (24-hour IST, matching `build-info.ts`'s `formattedBuildTime`), not just a date — this reflects the actual commit that shipped the version. While adding timestamps, two pre-existing dates were corrected to match their real shipping commit: `1.0.8` (was dated by the TGA fork commit, 3 days before the digest-email feature in that release actually shipped) and `1.0.2` (was off by one day around a just-after-midnight IST commit).
 
 ## [Unreleased]
+
+## [1.0.59] - 2026-09-12 18:55 IST
+
+### Added
+- Setup Type options: Jadu Ki Chaddi, Golden Line, Black Box, Jackpot, Lakshman Rekha
+- Manual Signal Entry — optional **Comments** field beside Setup Type (saved as signal admin note and posted to Updates)
 
 ## [1.0.58] - 2026-09-12 18:32 IST
 

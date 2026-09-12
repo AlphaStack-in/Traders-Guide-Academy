@@ -42,6 +42,8 @@ export interface SignalInput {
   // Trade setup classification (ORB, Breakout, Breakdown, Reversal,
   // Continuation, etc.) — see Signal.setupType in schema.prisma.
   setupType?: SetupTypeValue | null;
+  /** Optional admin comment shown on ongoing-trade updates (Signal.adminNote). */
+  adminNote?: string | null;
 }
 
 function toSignalCreateData(input: SignalInput) {
@@ -78,6 +80,7 @@ function toSignalCreateData(input: SignalInput) {
     parserName: input.parserName ?? "SIGNALFLOW",
     stockSymbol: input.stockSymbol ?? null,
     setupType: input.setupType ?? null,
+    adminNote: input.adminNote?.trim() ? input.adminNote.trim() : null,
   };
 }
 
@@ -117,6 +120,20 @@ export async function createSignals(inputs: SignalInput[]) {
     const signal = await prisma.signal.create({
       data: { ...toSignalCreateData(input), lotSize },
     });
+
+    const trimmedNote = input.adminNote?.trim();
+    if (trimmedNote) {
+      const noteUpdate = await prisma.adminUpdate.create({
+        data: {
+          signalId: signal.id,
+          strike: signal.strike,
+          optionType: signal.optionType,
+          instrument: signal.instrument,
+          message: trimmedNote,
+        },
+      });
+      await publishAdminUpdate(noteUpdate);
+    }
 
     if (input.sellPrice != null) {
       const pnlPercent = calcPnlPercent(input.entryPrice, input.sellPrice);

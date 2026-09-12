@@ -12,6 +12,11 @@ export type SetupTypeValue =
   | "RANGE_BOUND"
   | "SCALP"
   | "NEWS_BASED"
+  | "JADU_KI_CHADDI"
+  | "GOLDEN_LINE"
+  | "BLACK_BOX"
+  | "JACKPOT"
+  | "LAKSHMAN_REKHA"
   | "OTHER";
 
 export const SETUP_TYPES: SetupTypeValue[] = [
@@ -24,6 +29,11 @@ export const SETUP_TYPES: SetupTypeValue[] = [
   "RANGE_BOUND",
   "SCALP",
   "NEWS_BASED",
+  "JADU_KI_CHADDI",
+  "GOLDEN_LINE",
+  "BLACK_BOX",
+  "JACKPOT",
+  "LAKSHMAN_REKHA",
   "OTHER",
 ];
 
@@ -37,6 +47,11 @@ export const SETUP_TYPE_LABEL: Record<SetupTypeValue, string> = {
   RANGE_BOUND: "Range Bound",
   SCALP: "Scalp",
   NEWS_BASED: "News Based",
+  JADU_KI_CHADDI: "Jadu Ki Chaddi",
+  GOLDEN_LINE: "Golden Line",
+  BLACK_BOX: "Black Box",
+  JACKPOT: "Jackpot",
+  LAKSHMAN_REKHA: "Lakshman Rekha",
   OTHER: "Other",
 };
 

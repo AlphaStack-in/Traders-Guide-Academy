@@ -53,6 +53,7 @@ export interface ManualFormValues {
   sellPrice: string;
   risk: "Low" | "Medium" | "High";
   setupType: SetupTypeValue;
+  comments: string;
   expiry: string;
   chartImageUrl: string | null;
 }
@@ -73,6 +74,7 @@ function emptyForm(): ManualFormValues {
     sellPrice: "",
     risk: "Medium",
     setupType: "OTHER",
+    comments: "",
     expiry: initialExpiry,
     chartImageUrl: null,
   };
@@ -215,6 +217,7 @@ export function ManualSignalForm({ prefilledValues, onSaved, usedStockSymbols = 
       target1: targets[0] ?? null,
       target2: targets[1] ?? null,
       setupType: form.setupType,
+      adminNote: form.comments.trim() === "" ? null : form.comments.trim(),
       // Persist the actual typed symbol — the `instrument` enum only says
       // "this is a stock trade", not which one, so the real ticker lives
       // here too (see stockSymbol's comment in schema.prisma). Also shows
@@ -333,6 +336,16 @@ export function ManualSignalForm({ prefilledValues, onSaved, usedStockSymbols = 
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="flex flex-col gap-1.5 sm:col-span-2 lg:col-span-1">
+            <span className={fieldLabelClass}>Comments (Optional)</span>
+            <Input
+              value={form.comments}
+              onChange={(e) => set("comments", e.target.value)}
+              placeholder="Notes for subscribers"
+              className="h-9 text-xs bg-black/40 border-white/10 focus:border-primary/50 w-full"
+            />
           </div>
         </div>
       </section>

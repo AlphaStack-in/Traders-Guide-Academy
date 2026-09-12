@@ -58,6 +58,15 @@ export function changelogTimestamp(date: string): string {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.59",
+    date: "12 Sep 2026, 18:55 IST",
+    title: "Setup Type expansions + manual comments",
+    highlights: [
+      "Five new Setup Type options — Jadu Ki Chaddi, Golden Line, Black Box, Jackpot, Lakshman Rekha — in manual entry, Manage Signals, and trade displays",
+      "Manual Signal Entry — optional Comments beside Setup Type; saved as the signal admin note and posted to Ongoing Trade Updates when filled",
+    ],
+  },
+  {
     version: "1.0.58",
     date: "12 Sep 2026, 18:32 IST",
     title: "Setup Type + Ongoing Trade Cards",
