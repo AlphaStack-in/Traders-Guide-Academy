@@ -87,6 +87,7 @@ function makeSignal(overrides: Partial<Signal> = {}): Signal {
     parserName: "SIGNALFLOW",
     parserVersion: "1.0.0",
     stockSymbol: null,
+    setupType: null,
     ...overrides,
   };
 }
