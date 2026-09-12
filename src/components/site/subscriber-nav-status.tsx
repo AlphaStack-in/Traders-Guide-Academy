@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ChevronDown, Gift, HelpCircle, LogIn, LogOut, Settings, User } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,23 +13,16 @@ import { cn } from "@/lib/utils";
 
 export function SubscriberNavStatus({
   subscriberName,
-  hasRegistered,
 }: {
   subscriberName: string | null;
-  hasRegistered: boolean;
 }) {
   const router = useRouter();
   const pathname = usePathname();
 
   if (!subscriberName) {
-    if (!hasRegistered) {
-      return (
-        <Button asChild size="sm" className="signalflow-glow signalflow-btn-gradient text-xs font-semibold">
-          <Link href="/register">Register Premium</Link>
-        </Button>
-      );
-    }
-
+    // Register Premium now lives in the sidebar as a highlighted CTA (see
+    // site-sidebar.tsx) — the top bar always shows Login for signed-out
+    // visitors instead.
     const isLoginActive = pathname.startsWith("/login");
     return (
       <Link
