@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { cashfreeWebhookEventId, verifyCashfreeWebhookSignature } from "@/lib/cashfree";
 import { sendTelegramMessage } from "@/lib/telegram";
+import { sendSubscriptionActivatedEmail } from "@/lib/email";
 import { fulfillProductPurchase } from "@/lib/product-fulfillment";
 import type { SubscriptionStatus } from "@prisma/client";
 
@@ -228,9 +229,32 @@ export async function POST(request: Request) {
     const updated = await upsertSubscriptionFromEntity(subEntity);
     if (updated) {
       if (updated.status === "ACTIVE") {
+        // Internal ops alert fires on every ACTIVE transition, same as
+        // before (reactivations included) — the team should see all of
+        // these. The subscriber-facing email below is different: it's
+        // gated by activationEmailSentAt so it only ever goes out once per
+        // Subscription row, not on every later reactivation.
         await sendTelegramMessage(
           `✅ ${updated.subscriber.name} (${updated.subscriber.phone}) started Autopay on the ${updated.billingCycle.toLowerCase()} plan.`,
         );
+
+        if (!updated.activationEmailSentAt) {
+          if (updated.subscriber.email && updated.currentPeriodEnd) {
+            const billingCycleLabel =
+              updated.billingCycle.charAt(0) + updated.billingCycle.slice(1).toLowerCase();
+            await sendSubscriptionActivatedEmail({
+              toEmail: updated.subscriber.email,
+              memberName: updated.subscriber.name,
+              billingCycleLabel,
+              startDate: new Date(),
+              renewsOn: updated.currentPeriodEnd,
+            });
+          }
+          await prisma.subscription.update({
+            where: { id: updated.id },
+            data: { activationEmailSentAt: new Date() },
+          });
+        }
       } else if (updated.status === "HALTED") {
         await sendTelegramMessage(
           `⚠️ Autopay HALTED for ${updated.subscriber.name} (${updated.subscriber.phone}) — repeated charge failures or a customer pause. Follow up manually.`,

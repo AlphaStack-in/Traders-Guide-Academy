@@ -58,6 +58,17 @@ export function changelogTimestamp(date: string): string {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.64",
+    date: "13 Sep 2026, 21:43 IST",
+    title: "New subscription email notifications",
+    highlights: [
+      "Branded confirmation email when Autopay membership activates for the first time — shows validity start date and renewal date",
+      "Course purchase confirmation email now shows validity start/end dates for courses with a fixed access window",
+      "Membership welcome email only sends once per subscription — it won't repeat on later reactivations, though the internal team alert still does",
+      "Dev seed scripts to test course purchase and subscription activation emails locally without Cashfree",
+    ],
+  },
+  {
     version: "1.0.63",
     date: "13 Sep 2026, 21:32 IST",
     title: "Products in admin sidebar",
