@@ -755,6 +755,108 @@ function BestWorstTooltip({ active, payload }: any) {
   );
 }
 
+interface TradeStatsRangePoint {
+  key: "worst" | "avg" | "best";
+  label: string;
+  pnlPercent: number;
+}
+
+function TradeStatsRangeTooltip({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: { payload: TradeStatsRangePoint }[];
+}) {
+  if (!active || !payload || payload.length === 0) return null;
+  const point = payload[0].payload;
+  return (
+    <div
+      className="rounded-lg border border-white/10 px-3 py-2 text-xs shadow-lg"
+      style={{ backgroundColor: "var(--popover)", color: "var(--popover-foreground)" }}
+    >
+      <p className="font-bold text-sm mb-1">{point.label}</p>
+      <p
+        className={
+          point.pnlPercent >= 0 ? "font-bold text-[var(--signalflow-win)]" : "font-bold text-[var(--signalflow-loss)]"
+        }
+      >
+        {point.pnlPercent >= 0 ? "+" : ""}
+        {point.pnlPercent.toFixed(1)}%
+      </p>
+    </div>
+  );
+}
+
+/**
+ * Reimagines the old Avg / Best / Worst trio of separate stat tiles as one
+ * diverging range chart sharing a single 0% baseline — the spread between
+ * worst and best (with avg marked in between) reads at a glance instead of
+ * needing three flat numbers mentally compared against each other. Colored
+ * by sign (win/loss), matching every other P&L bar in this file rather than
+ * introducing a fourth "neutral" hue.
+ */
+export function TradeStatsRangeChart({
+  worstPercent,
+  avgPercent,
+  bestPercent,
+}: {
+  worstPercent: number | null;
+  avgPercent: number;
+  bestPercent: number | null;
+}) {
+  if (worstPercent == null && bestPercent == null) {
+    return (
+      <div className="flex h-[132px] w-full flex-col items-center justify-center gap-1 text-center">
+        <p className="text-xs text-muted-foreground">
+          No closed trades yet — this fills in once a signal closes.
+        </p>
+      </div>
+    );
+  }
+
+  const data: TradeStatsRangePoint[] = [
+    { key: "worst", label: "Worst Trade", pnlPercent: worstPercent ?? 0 },
+    { key: "avg", label: "Avg % / Trade", pnlPercent: avgPercent },
+    { key: "best", label: "Best Trade", pnlPercent: bestPercent ?? 0 },
+  ];
+
+  return (
+    <ResponsiveContainer width="100%" height={140}>
+      <BarChart
+        data={data}
+        layout="vertical"
+        margin={{ top: 4, right: 52, left: 0, bottom: 4 }}
+        barCategoryGap="34%"
+      >
+        <defs>
+          <linearGradient id="tsWinFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--signalflow-win)" stopOpacity={0.95} />
+            <stop offset="100%" stopColor="var(--signalflow-win)" stopOpacity={0.35} />
+          </linearGradient>
+          <linearGradient id="tsLossFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--signalflow-loss)" stopOpacity={0.95} />
+            <stop offset="100%" stopColor="var(--signalflow-loss)" stopOpacity={0.35} />
+          </linearGradient>
+        </defs>
+        {grid}
+        <XAxis type="number" tick={axisTick} unit="%" />
+        <YAxis type="category" dataKey="label" width={100} tick={axisTick} interval={0} />
+        <Tooltip content={<TradeStatsRangeTooltip />} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
+        <Bar dataKey="pnlPercent" name="P&L %" radius={[3, 3, 3, 3]} isAnimationActive={false} barSize={20}>
+          {data.map((entry) => (
+            <Cell
+              key={entry.key}
+              fill={entry.pnlPercent >= 0 ? "url(#tsWinFill)" : "url(#tsLossFill)"}
+            />
+          ))}
+          <LabelList dataKey="pnlPercent" content={makeHorizontalPnlLabel(data)} />
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
 export function BestWorstBarChart({
   data,
 }: {
