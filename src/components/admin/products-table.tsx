@@ -16,12 +16,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { PRODUCT_CATEGORY_LABELS, formatPriceInPaise } from "@/lib/products";
-import { setProductActive, deleteProduct } from "@/app/admin/(protected)/news-alerts/product-actions";
+import { setProductActive, deleteProduct } from "@/app/admin/(protected)/products/product-actions";
 
 // Product-CRUD counterpart to news-alerts-table.tsx's NewsAlertRow/Table —
 // same list-with-inline-actions shape (toggle Active, arm-then-confirm
 // Delete), plus an Edit button neither the alert nor product table had
-// before: lifts the clicked row up to the parent (content-manager.tsx),
+// before: lifts the clicked row up to the parent (products-manager.tsx),
 // which feeds it to add-product-form.tsx as `editingProduct`.
 export interface ProductRow {
   id: string;

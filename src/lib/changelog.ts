@@ -58,6 +58,15 @@ export function changelogTimestamp(date: string): string {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.63",
+    date: "13 Sep 2026, 21:32 IST",
+    title: "Products in admin sidebar",
+    highlights: [
+      "Product catalog management lives at /admin/products with its own sidebar link",
+      "News & Alerts admin page is back to news and market alerts only",
+    ],
+  },
+  {
     version: "1.0.62",
     date: "13 Sep 2026, 19:25 IST",
     title: "Products catalog in admin",

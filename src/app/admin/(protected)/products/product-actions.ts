@@ -5,12 +5,9 @@ import type { ProductCategory } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin-auth";
 
-// Product-CRUD half of the News & Alerts admin page's now-multi-purpose
-// backend — see product-actions.ts's sibling actions.ts for the News Alert
-// half, and src/components/admin/content-manager.tsx for the tab that
-// switches the UI between them. Kept as its own file (rather than merged
-// into actions.ts) since the two entities share nothing beyond
-// requireAdmin() and revalidatePath().
+// Server actions for /admin/products — catalog CRUD for the public /products
+// page. Kept separate from news-alerts/actions.ts since the two entities
+// share nothing beyond requireAdmin() and revalidatePath().
 export interface ProductInput {
   name: string;
   category: ProductCategory;
@@ -82,7 +79,7 @@ function normalize(input: ProductInput) {
 }
 
 function revalidateProductPaths(slug: string) {
-  revalidatePath("/admin/news-alerts");
+  revalidatePath("/admin/products");
   revalidatePath("/products");
   revalidatePath(`/products/${slug}`);
   revalidatePath("/");

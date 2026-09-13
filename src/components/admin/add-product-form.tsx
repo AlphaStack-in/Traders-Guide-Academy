@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { ChartImageUploader } from "@/components/signals/chart-image-uploader";
 import { PRODUCT_CATEGORY_LABELS, PRODUCT_CATEGORY_ORDER } from "@/lib/products";
-import { createProduct, updateProduct } from "@/app/admin/(protected)/news-alerts/product-actions";
+import { createProduct, updateProduct } from "@/app/admin/(protected)/products/product-actions";
 import type { ProductRow } from "@/components/admin/products-table";
 
 function emptyForm() {
@@ -60,8 +60,7 @@ function fromRow(row: ProductRow): FormState {
 
 /**
  * Add/edit form for the /products catalog — the Product-CRUD half of this
- * admin page (see add-news-alert-form.tsx for the News Alert half, and
- * content-manager.tsx for the tab that switches between them). Doubles as
+ * page at /admin/products. Doubles as
  * the edit form: passing `editingProduct` pre-fills every field and routes
  * the submit to updateProduct instead of createProduct. A product's slug
  * (its public /products/[slug] URL) is fixed at creation and never exposed

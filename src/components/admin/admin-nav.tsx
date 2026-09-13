@@ -8,6 +8,7 @@ import {
   LogOut,
   Menu,
   Newspaper,
+  ShoppingBag,
   Settings,
   Shield,
   UserRound,
@@ -33,6 +34,7 @@ const links = [
   { href: "/admin/dashboard", label: "Dashboard", icon: BarChart3 },
   { href: "/admin/signals", label: "Manage Signals", icon: Zap },
   { href: "/admin/news-alerts", label: "News & Alerts", icon: Newspaper },
+  { href: "/admin/products", label: "Products", icon: ShoppingBag },
 ];
 
 function getMembersLinks(activeBroker: ActiveBroker) {
@@ -125,7 +127,7 @@ function AdminSubLink({
  * Left-side navigation for the /admin/* protected area. A single <aside> is
  * rendered: fixed and always visible on desktop (md+), slid off-canvas as a
  * hamburger drawer on mobile. Holds the nav links (Dashboard/Manage
- * Signals/News & Alerts), the Members/Admin link groups (Admin now includes
+ * Signals/News & Alerts/Products), the Members/Admin link groups (Admin now includes
  * Settings), and a Logout action at the bottom — the clock, help link and
  * admin account dropdown (Settings/Logout) still live in AdminTopBar above
  * <main> instead (see below), rendered alongside this in the protected
