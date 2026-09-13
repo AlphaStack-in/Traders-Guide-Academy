@@ -120,6 +120,25 @@ export default async function ProfilePage() {
         />
 
         <div className="signalflow-glass signalflow-gold-border flex flex-col gap-3 rounded-2xl border p-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-heading font-bold text-base">
+                My <span className="signalflow-gold-text">Subscriptions</span>
+              </h3>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Purchases, courses, indicators, memberships and your PMS growth in one place.
+              </p>
+            </div>
+            <a
+              href="/account/subscriptions"
+              className="signalflow-glow signalflow-btn-gradient inline-flex h-9 shrink-0 items-center justify-center rounded-lg px-4 text-xs font-semibold text-black"
+            >
+              Open
+            </a>
+          </div>
+        </div>
+
+        <div className="signalflow-glass signalflow-gold-border flex flex-col gap-3 rounded-2xl border p-5">
           <div>
             <h3 className="font-heading font-bold text-base">
               Payment <span className="signalflow-gold-text">Details</span>

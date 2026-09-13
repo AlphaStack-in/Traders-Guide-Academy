@@ -674,6 +674,18 @@ model Product {
   // At most one product should be true at a time (not DB-enforced).
   isFeatured           Boolean           @default(false)
   isActive             Boolean           @default(true)
+  // Null = lifetime access (the default — every product today has this
+  // unset). When set, a ProductPurchase of this product expires
+  // accessValidityDays after ProductPurchase.createdAt — see the "My
+  // Courses" section of /account/subscriptions. Only meaningful for
+  // category COURSE today, but left on Product rather than a course-only
+  // model since nothing else about a course differs from any other row.
+  accessValidityDays   Int?
+  // Where a subscriber actually accesses this product once bought (e.g. a
+  // Tutor LMS/Graphy course URL). Null falls back to the existing
+  // tgaManagerWhatsAppLink() "ask us" flow already used on the product
+  // detail page for high-touch categories (src/lib/product-fulfillment.ts).
+  courseAccessUrl      String?
   createdAt            DateTime          @default(now())
   updatedAt            DateTime          @updatedAt
   purchases            ProductPurchase[]
@@ -709,10 +721,39 @@ model ProductPurchase {
   fulfilledAt       DateTime?
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
+  pmsValuationEntries PmsValuationEntry[]
 
   @@index([subscriberId])
   @@index([productId])
   @@index([status])
+}
+
+// One row per admin-entered valuation update against a subscriber's PMS
+// purchase — see the "My Subscriptions" PMS account summary/growth section
+// (src/lib/subscriptions.ts, /account/subscriptions). Purely an append-only
+// log an admin adds to by hand: the PMS product (see
+// prisma/seed-products.ts's "portfolio-management-service") is a
+// professionally-traded pooled fund, not something with a live brokerage
+// feed, so there is no automated valuation source to sync from.
+model PmsValuationEntry {
+  id                  String          @id @default(uuid())
+  productPurchaseId   String
+  productPurchase     ProductPurchase @relation(fields: [productPurchaseId], references: [id], onDelete: Cascade)
+  // The date this valuation reflects (as told to us by the fund manager),
+  // not necessarily the date the admin typed it in.
+  asOfDate            DateTime
+  currentValueInPaise Int
+  note                String?
+  // Admin email that entered this valuation — same lightweight-audit-trail
+  // pattern as AppSettings.updatedBy. There's a single hardcoded admin
+  // account today (see src/lib/admin-rbac.ts) so this is always that email,
+  // but kept as a plain string rather than a relation for the same reason
+  // AppSettings.updatedBy is.
+  enteredBy           String?
+  createdAt           DateTime        @default(now())
+
+  @@unique([productPurchaseId, asOfDate])
+  @@index([productPurchaseId])
 }
 
 // Idempotency log for incoming Cashfree webhook deliveries — Cashfree

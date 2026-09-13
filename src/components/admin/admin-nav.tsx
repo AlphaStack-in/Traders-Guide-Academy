@@ -40,6 +40,7 @@ function getMembersLinks(activeBroker: ActiveBroker) {
     { href: "/admin/subscribers", label: "View Members" },
     { href: "/admin/messages", label: "Messages" },
     { href: "/admin/referrals", label: "Referrals" },
+    { href: "/admin/pms-accounts", label: "PMS Accounts" },
     ...(activeBroker === "dhan"
       ? [{ href: "/admin/broker-sessions", label: "Broker Sessions" }]
       : []),

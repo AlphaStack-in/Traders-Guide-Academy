@@ -58,6 +58,16 @@ export function changelogTimestamp(date: string): string {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.61",
+    date: "13 Sep 2026, 06:29 IST",
+    title: "My Subscriptions hub",
+    highlights: [
+      "New /account/subscriptions page: signals membership/autopay status, a unified purchase history, My Courses (with validity), My Indicators & E-books, Memberships, and a PMS account summary with a growth chart",
+      "Admin: new PMS Accounts page (/admin/pms-accounts) to log each member's fund valuation over time — the source of the subscriber-facing PMS growth chart",
+      "Product catalog gained optional accessValidityDays and courseAccessUrl fields (both null/lifetime-access for every product today)",
+    ],
+  },
+  {
     version: "1.0.60",
     date: "12 Sep 2026, 19:03 IST",
     title: "Sample signal aligned with manual entry",

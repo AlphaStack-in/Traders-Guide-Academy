@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Gift, LogOut, Menu, Settings, User, X } from "lucide-react";
+import { Gift, LogOut, Menu, Settings, User, Wallet, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NavbarLogo } from "@/components/site/navbar-logo";
 import { SidebarNavLinks } from "@/components/site/main-navigation";
@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 
 const accountLinks = [
   { href: "/account/profile", label: "Profile", icon: User },
+  { href: "/account/subscriptions", label: "My Subscriptions", icon: Wallet },
   { href: "/account/refer", label: "Refer & Earn", icon: Gift },
   { href: "/account/settings", label: "Settings", icon: Settings },
 ];
