@@ -52,6 +52,10 @@ export function DashboardContent({
   const pct = (n: number) => `${n.toFixed(1)}%`;
   const joinUrl = getClientJoinUrl(referralToken);
 
+  const investedCapital = 10000;
+  const grownCapital = investedCapital * (1 + metrics.totalCapturePercent / 100);
+  const formatRupees = (n: number) => `Rs.${Math.round(n).toLocaleString("en-IN")}`;
+
   return (
     <div className="flex flex-col gap-8">
       {dateFilter && onDateFilterChange && (
@@ -110,6 +114,23 @@ export function DashboardContent({
               Range: {rangeLabel}
             </span>
           </div>
+        </div>
+
+        {/* Invested capital growth callout */}
+        <div className="signalflow-glass signalflow-gold-border signalflow-glow relative overflow-hidden rounded-xl border border-white/10 p-5 text-center">
+          <span
+            className="absolute inset-x-0 top-0 h-[3px]"
+            style={{ backgroundImage: "var(--signalflow-gold-gradient)" }}
+          />
+          <p className="text-sm font-medium text-muted-foreground sm:text-base">
+            If your invested capital was{" "}
+            <span className="font-heading font-bold text-foreground">Rs.10,000</span>, it
+            would&apos;ve grown to{" "}
+            <span className="font-heading text-2xl font-bold signalflow-gold-text sm:text-3xl">
+              {formatRupees(grownCapital)}
+            </span>{" "}
+            now
+          </p>
         </div>
 
         {/* 01 Cumulative % */}
