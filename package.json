@@ -14,6 +14,7 @@
     "db:seed:posters": "tsx prisma/seed-posters.ts",
     "db:migrate": "prisma migrate deploy",
     "hash-password": "tsx scripts/hash-password.ts",
+    "seed:test-pms-purchase": "tsx scripts/seed-test-pms-purchase.ts",
     "test": "vitest run"
   },
   "prisma": {
