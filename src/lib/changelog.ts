@@ -58,6 +58,17 @@ export function changelogTimestamp(date: string): string {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.65",
+    date: "13 Sep 2026, 22:20 IST",
+    title: "Change password in Settings",
+    highlights: [
+      "Account Settings — change your login password while staying signed in",
+      "Google sign-in only? Set a password there so you can also log in with email and password",
+      "Admin Settings — verify your current password and copy a new ADMIN_PASSWORD_HASH for Vercel (redeploy still required to apply it)",
+      "One shared minimum password length (6 characters) for registration and password updates",
+    ],
+  },
+  {
     version: "1.0.64",
     date: "13 Sep 2026, 21:43 IST",
     title: "New subscription email notifications",

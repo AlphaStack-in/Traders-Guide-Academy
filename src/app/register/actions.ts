@@ -3,11 +3,10 @@
 import { prisma } from "@/lib/prisma";
 import { clientConfig } from "@/lib/client-config";
 import { createSubscriberSession, setRegisteredBrowserCookie } from "@/lib/subscriber-auth";
-import { hashPassword } from "@/lib/password";
+import { hashPassword, MIN_PASSWORD_LENGTH } from "@/lib/password";
 import { normalizeEmail } from "@/lib/utils";
 import type { BillingCycle } from "@prisma/client";
 
-const MIN_PASSWORD_LENGTH = 6;
 const VALID_BILLING_CYCLES: BillingCycle[] = ["MONTHLY", "QUARTERLY", "YEARLY"];
 
 export interface RegisterInput {
