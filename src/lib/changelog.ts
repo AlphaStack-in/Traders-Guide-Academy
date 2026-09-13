@@ -58,6 +58,15 @@ export function changelogTimestamp(date: string): string {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.62",
+    date: "13 Sep 2026, 19:25 IST",
+    title: "Products catalog in admin",
+    highlights: [
+      "Admin News & Alerts page: new Products tab to add, edit, show/hide, and delete catalog items (delete blocked when purchases exist)",
+      "Products page: expanded row shows a larger image beside the full description and feature list",
+    ],
+  },
+  {
     version: "1.0.61",
     date: "13 Sep 2026, 06:29 IST",
     title: "My Subscriptions hub",

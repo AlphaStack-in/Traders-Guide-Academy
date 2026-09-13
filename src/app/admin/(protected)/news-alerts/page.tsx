@@ -1,24 +1,35 @@
 import { Newspaper } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { getActiveProducts } from "@/lib/products";
-import { AddNewsAlertForm } from "@/components/admin/add-news-alert-form";
-import { NewsAlertsTable, type NewsAlertRow } from "@/components/admin/news-alerts-table";
+import { ContentManager } from "@/components/admin/content-manager";
+import type { NewsAlertRow } from "@/components/admin/news-alerts-table";
+import type { ProductRow } from "@/components/admin/products-table";
 
 export const dynamic = "force-dynamic";
 
-// Manages the NewsAlert table — both the plain text market alerts the
-// public News & Market Alerts panel already supported, and the
-// image-carrying "poster" entries (live-webinar promos, community
-// announcements) this page was added for. See
-// src/components/news/news-alerts-section.tsx for how these render on the
-// home page, and prisma/seed-posters.ts for the initial batch of posters
-// seeded (inactive by default — most were dated/expired webinar invites).
+// Manages both entities the site's home page can show promotional content
+// for: the NewsAlert table (plain text market alerts + image "poster"
+// entries — live-webinar promos, community announcements) this page
+// originally covered, and — as of the Products tab below — the full
+// /products catalog (courses, indicators, e-books, PMS, membership plans).
+// One admin page, one ContentManager tab switch, two independent
+// backends (see src/app/admin/(protected)/news-alerts/actions.ts and its
+// sibling product-actions.ts) — see src/components/news/news-alerts-section.tsx
+// for how alerts render on the home page, and prisma/seed-posters.ts /
+// prisma/seed-products.ts for the initial seed data of each.
 export default async function NewsAlertsAdminPage() {
-  const [alerts, products] = await Promise.all([
+  const [alerts, activeProducts, allProducts] = await Promise.all([
     prisma.newsAlert.findMany({
       orderBy: [{ isBreaking: "desc" }, { publishedAt: "desc" }],
     }),
     getActiveProducts(),
+    // Unlike the news-alert "link to product" dropdown below (which only
+    // ever offers active products worth promoting), the admin's own
+    // Products tab needs to manage inactive/hidden catalog entries too —
+    // that's the whole point of the Active toggle in ProductsTable.
+    prisma.product.findMany({
+      orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
+    }),
   ]);
 
   const rows: NewsAlertRow[] = alerts.map((a) => ({
@@ -34,7 +45,25 @@ export default async function NewsAlertsAdminPage() {
     publishedAt: a.publishedAt.toISOString(),
   }));
 
-  const productOptions = products.map((p) => ({ slug: p.slug, name: p.name }));
+  const productOptions = activeProducts.map((p) => ({ slug: p.slug, name: p.name }));
+
+  const productRows: ProductRow[] = allProducts.map((p) => ({
+    id: p.id,
+    slug: p.slug,
+    name: p.name,
+    category: p.category,
+    description: p.description,
+    longDescription: p.longDescription,
+    priceInPaise: p.priceInPaise,
+    originalPriceInPaise: p.originalPriceInPaise,
+    rating: p.rating,
+    ratingCount: p.ratingCount,
+    imageUrl: p.imageUrl,
+    isFeatured: p.isFeatured,
+    isActive: p.isActive,
+    accessValidityDays: p.accessValidityDays,
+    courseAccessUrl: p.courseAccessUrl,
+  }));
 
   return (
     <div className="flex flex-col gap-6">
@@ -46,21 +75,13 @@ export default async function NewsAlertsAdminPage() {
           </span>
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Everything shown in the home page&apos;s News &amp; Market Alerts panel — plain market
-          alerts and image posters (webinar promos, community updates) both live here. Only{" "}
-          <strong>Active</strong> entries show on the site; toggle one off instead of deleting it
-          to keep it for later.
+          The home page&apos;s News &amp; Market Alerts panel and the full /products catalog both
+          live here — pick a tab below. Only <strong>Active</strong> entries show on the site;
+          toggle one off instead of deleting it to keep it for later.
         </p>
       </div>
 
-      <AddNewsAlertForm products={productOptions} />
-
-      <div className="flex flex-col gap-3">
-        <h2 className="font-heading text-lg font-bold">
-          All Entries <span className="text-sm font-normal text-muted-foreground">({rows.length})</span>
-        </h2>
-        <NewsAlertsTable rows={rows} />
-      </div>
+      <ContentManager alerts={rows} products={productRows} productOptions={productOptions} />
     </div>
   );
 }
