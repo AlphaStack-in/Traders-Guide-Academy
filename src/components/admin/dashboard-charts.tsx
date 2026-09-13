@@ -816,9 +816,9 @@ export function TradeStatsRangeChart({
   }
 
   const data: TradeStatsRangePoint[] = [
-    { key: "worst", label: "Worst Trade", pnlPercent: worstPercent ?? 0 },
-    { key: "avg", label: "Avg % / Trade", pnlPercent: avgPercent },
-    { key: "best", label: "Best Trade", pnlPercent: bestPercent ?? 0 },
+    { key: "best", label: "Best", pnlPercent: bestPercent ?? 0 },
+    { key: "avg", label: "Avg %", pnlPercent: avgPercent },
+    { key: "worst", label: "Worst", pnlPercent: worstPercent ?? 0 },
   ];
 
   return (
@@ -841,7 +841,7 @@ export function TradeStatsRangeChart({
         </defs>
         {grid}
         <XAxis type="number" tick={axisTick} unit="%" />
-        <YAxis type="category" dataKey="label" width={100} tick={axisTick} interval={0} />
+        <YAxis type="category" dataKey="label" width={56} tick={axisTick} interval={0} />
         <Tooltip content={<TradeStatsRangeTooltip />} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
         <Bar dataKey="pnlPercent" name="P&L %" radius={[3, 3, 3, 3]} isAnimationActive={false} barSize={20}>
           {data.map((entry) => (

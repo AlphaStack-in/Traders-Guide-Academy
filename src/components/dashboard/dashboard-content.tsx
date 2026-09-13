@@ -172,18 +172,16 @@ export function DashboardContent({
         </div>
 
         {/* 02 Trade Stats */}
-        <div>
-          <div className="mb-3 flex items-center gap-2">
+        <div className="signalflow-glass signalflow-gold-border relative rounded-2xl p-6">
+          <div className="mb-4 flex items-center gap-2">
             <SectionNumber n={2} />
-            <h2 className="font-heading text-sm font-semibold text-muted-foreground">
-              Trade Stats
-            </h2>
+            <h2 className="font-heading text-sm font-semibold">Trade Stats</h2>
           </div>
-          <div className="grid gap-4 sm:grid-cols-[minmax(140px,200px)_1fr] sm:items-center">
+          <div className="grid gap-6 sm:grid-cols-[minmax(140px,200px)_1fr] sm:items-center">
             <KpiCard label="Total Signals" value={String(metrics.totalSignals)} delayMs={0} />
-            <div className="signalflow-glass rounded-xl border border-white/5 p-4">
-              <p className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Best &harr; worst trade, avg marked
+            <div>
+              <p className="mb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                Best, Worst, Avg. Trades
               </p>
               <TradeStatsRangeChart
                 worstPercent={metrics.worstTradePercent}
