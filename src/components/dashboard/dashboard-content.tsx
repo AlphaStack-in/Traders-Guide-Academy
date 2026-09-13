@@ -3,13 +3,13 @@
 import { useRef, useState } from "react";
 import { Share2 } from "lucide-react";
 import { KpiCard } from "@/components/admin/kpi-card";
-import { SliderStat } from "@/components/admin/slider-stat";
 import { SectionNumber } from "@/components/admin/section-number";
 import { RecentSignalsList, type RecentSignalItem } from "@/components/admin/recent-signals-list";
 import {
   BestWorstBarChart,
   CumulativeLineChart,
   InstrumentCaptureDonutChart,
+  TradeStatsRangeChart,
   WinLossBarChart,
   WinRateDonutChart,
 } from "@/components/admin/dashboard-charts";
@@ -179,28 +179,18 @@ export function DashboardContent({
               Trade Stats
             </h2>
           </div>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-[minmax(140px,200px)_1fr] sm:items-center">
             <KpiCard label="Total Signals" value={String(metrics.totalSignals)} delayMs={0} />
-            <SliderStat
-              label="Avg % / Trade"
-              value={metrics.avgPercentPerTrade}
-              max={30}
-              displayValue={pct(metrics.avgPercentPerTrade)}
-              accent={metrics.avgPercentPerTrade >= 0 ? "win" : "loss"}
-            />
-            <SliderStat
-              label="Best Trade"
-              value={metrics.bestTradePercent ?? 0}
-              max={50}
-              displayValue={metrics.bestTradePercent != null ? pct(metrics.bestTradePercent) : "—"}
-              accent="win"
-            />
-            <KpiCard
-              label="Worst Trade"
-              value={metrics.worstTradePercent != null ? pct(metrics.worstTradePercent) : "—"}
-              accent="loss"
-              delayMs={40}
-            />
+            <div className="signalflow-glass rounded-xl border border-white/5 p-4">
+              <p className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Best &harr; worst trade, avg marked
+              </p>
+              <TradeStatsRangeChart
+                worstPercent={metrics.worstTradePercent}
+                avgPercent={metrics.avgPercentPerTrade}
+                bestPercent={metrics.bestTradePercent}
+              />
+            </div>
           </div>
         </div>
 
