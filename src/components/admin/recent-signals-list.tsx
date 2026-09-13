@@ -32,7 +32,51 @@ const STATUS_LABEL: Record<RecentSignalItem["status"], string> = {
   EXPIRED: "Expired",
 };
 
+/**
+ * Small diverging "data bar" anchored at a center zero-line: fills right for
+ * positive (win) values and left for negative (loss) values, scaled against
+ * the largest magnitude in the current list so bars are comparable row to row.
+ */
+function DiffBar({ value, maxAbs }: { value: number | null; maxAbs: number }) {
+  const trackWidthPct = maxAbs > 0 && value != null ? Math.min(100, (Math.abs(value) / maxAbs) * 100) : 0;
+  const fillHalfPct = trackWidthPct / 2;
+  const isPositive = (value ?? 0) > 0;
+  const isNegative = (value ?? 0) < 0;
+
+  return (
+    <div className="relative h-1.5 w-14 shrink-0 rounded-full bg-white/10" aria-hidden="true">
+      <span className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-white/25" />
+      {value != null && fillHalfPct > 0 && (
+        <span
+          className={cn(
+            "absolute inset-y-0 rounded-full",
+            isPositive && "bg-[var(--signalflow-win)]",
+            isNegative && "bg-[var(--signalflow-loss)]",
+          )}
+          style={
+            isPositive
+              ? { left: "50%", width: `${fillHalfPct}%` }
+              : { right: "50%", width: `${fillHalfPct}%` }
+          }
+        />
+      )}
+    </div>
+  );
+}
+
 export function RecentSignalsList({ signals }: { signals: RecentSignalItem[] }) {
+  const pointsByRow = signals.map((signal) =>
+    signal.sellPrice != null ? calcPnlPoints(signal.entryPrice, signal.sellPrice) : null,
+  );
+  const maxAbsPoints = Math.max(
+    1,
+    ...pointsByRow.map((p) => (p != null ? Math.abs(p) : 0)),
+  );
+  const maxAbsPercent = Math.max(
+    1,
+    ...signals.map((s) => (s.pnlPercent != null ? Math.abs(s.pnlPercent) : 0)),
+  );
+
   return (
     <div className="overflow-x-auto">
       <Table>
@@ -47,11 +91,10 @@ export function RecentSignalsList({ signals }: { signals: RecentSignalItem[] }) 
           </TableRow>
         </TableHeader>
         <TableBody>
-          {signals.map((signal) => {
+          {signals.map((signal, index) => {
             const isWin = signal.pnlPercent != null && signal.pnlPercent > 0;
             const isLoss = signal.pnlPercent != null && signal.pnlPercent < 0;
-            const pnlPoints =
-              signal.sellPrice != null ? calcPnlPoints(signal.entryPrice, signal.sellPrice) : null;
+            const pnlPoints = pointsByRow[index];
             const dotColor = isWin
               ? "bg-[var(--signalflow-win)]"
               : isLoss
@@ -86,31 +129,41 @@ export function RecentSignalsList({ signals }: { signals: RecentSignalItem[] }) 
                 <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
                   {STATUS_LABEL[signal.status]}
                 </TableCell>
-                <TableCell
-                  className={cn(
-                    "text-right font-heading font-bold",
-                    isWin
-                      ? "text-[var(--signalflow-win)]"
-                      : isLoss
-                        ? "text-[var(--signalflow-loss)]"
-                        : "text-muted-foreground",
-                  )}
-                >
-                  {pnlPoints != null ? `${pnlPoints > 0 ? "+" : ""}${pnlPoints.toFixed(1)}` : "—"}
+                <TableCell className="text-right">
+                  <div className="flex flex-col items-end gap-1">
+                    <span
+                      className={cn(
+                        "font-heading font-bold",
+                        isWin
+                          ? "text-[var(--signalflow-win)]"
+                          : isLoss
+                            ? "text-[var(--signalflow-loss)]"
+                            : "text-muted-foreground",
+                      )}
+                    >
+                      {pnlPoints != null ? `${pnlPoints > 0 ? "+" : ""}${pnlPoints.toFixed(1)}` : "—"}
+                    </span>
+                    <DiffBar value={pnlPoints} maxAbs={maxAbsPoints} />
+                  </div>
                 </TableCell>
-                <TableCell
-                  className={cn(
-                    "text-right font-heading font-bold",
-                    isWin
-                      ? "text-[var(--signalflow-win)]"
-                      : isLoss
-                        ? "text-[var(--signalflow-loss)]"
-                        : "text-muted-foreground",
-                  )}
-                >
-                  {signal.pnlPercent != null
-                    ? `${signal.pnlPercent > 0 ? "+" : ""}${signal.pnlPercent.toFixed(1)}%`
-                    : "—"}
+                <TableCell className="text-right">
+                  <div className="flex flex-col items-end gap-1">
+                    <span
+                      className={cn(
+                        "font-heading font-bold",
+                        isWin
+                          ? "text-[var(--signalflow-win)]"
+                          : isLoss
+                            ? "text-[var(--signalflow-loss)]"
+                            : "text-muted-foreground",
+                      )}
+                    >
+                      {signal.pnlPercent != null
+                        ? `${signal.pnlPercent > 0 ? "+" : ""}${signal.pnlPercent.toFixed(1)}%`
+                        : "—"}
+                    </span>
+                    <DiffBar value={signal.pnlPercent} maxAbs={maxAbsPercent} />
+                  </div>
                 </TableCell>
               </TableRow>
             );
