@@ -7,7 +7,6 @@ import type { ActiveBroker } from "@/lib/app-settings";
 
 interface SiteTopBarProps {
   subscriberName: string | null;
-  hasRegistered: boolean;
   notificationsEnabled: boolean;
   activeBroker: ActiveBroker;
   /** Rendered server-side (AdminNavLink resolves admin auth) and passed down. */
@@ -25,7 +24,6 @@ interface SiteTopBarProps {
  */
 export function SiteTopBar({
   subscriberName,
-  hasRegistered,
   notificationsEnabled,
   activeBroker,
   adminLink,
@@ -38,7 +36,7 @@ export function SiteTopBar({
       <IstClock />
       <HelpNavLink href="/help" />
       <NotificationBell activeBroker={activeBroker} notificationsEnabled={notificationsEnabled} />
-      <SubscriberNavStatus subscriberName={subscriberName} hasRegistered={hasRegistered} />
+      <SubscriberNavStatus subscriberName={subscriberName} />
       {adminLink}
     </div>
   );

@@ -52,6 +52,7 @@ function getMembersLinks(activeBroker: ActiveBroker) {
 // change how it calls this.
 function getAdminGroupLinks(_isSuperAdmin: boolean, activeBroker: ActiveBroker) {
   return [
+    { href: "/admin/settings", label: "Settings" },
     { href: "/admin/help", label: "Help Manual" },
     { href: "/admin/changelog", label: "Changelog" },
     ...(activeBroker === "goodwill"
@@ -122,10 +123,12 @@ function AdminSubLink({
 /**
  * Left-side navigation for the /admin/* protected area. A single <aside> is
  * rendered: fixed and always visible on desktop (md+), slid off-canvas as a
- * hamburger drawer on mobile. Holds only the nav links (Dashboard/Manage
- * Signals/News & Alerts + the Members/Admin link groups) — the clock, help
- * link and admin account/logout menu now live in AdminTopBar above <main>
- * instead (see below), rendered alongside this in the protected layout.
+ * hamburger drawer on mobile. Holds the nav links (Dashboard/Manage
+ * Signals/News & Alerts), the Members/Admin link groups (Admin now includes
+ * Settings), and a Logout action at the bottom — the clock, help link and
+ * admin account dropdown (Settings/Logout) still live in AdminTopBar above
+ * <main> instead (see below), rendered alongside this in the protected
+ * layout.
  */
 export function AdminSidebar({
   isSuperAdmin = false,
@@ -136,9 +139,17 @@ export function AdminSidebar({
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
   const membersLinks = getMembersLinks(activeBroker);
   const adminGroupLinks = getAdminGroupLinks(isSuperAdmin, activeBroker);
   const close = () => setOpen(false);
+
+  async function handleLogout() {
+    close();
+    await fetch("/admin/logout", { method: "POST" });
+    router.push("/admin/login");
+    router.refresh();
+  }
 
   return (
     <>
@@ -212,6 +223,17 @@ export function AdminSidebar({
                 <AdminSubLink key={link.href} {...link} pathname={pathname} onNavigate={close} />
               ))}
             </div>
+          </div>
+
+          <div className="mt-5 border-t border-white/5 pt-3">
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-destructive transition-colors hover:bg-white/5"
+            >
+              <LogOut className="h-4 w-4 shrink-0" />
+              <span>Logout</span>
+            </button>
           </div>
         </div>
       </aside>
