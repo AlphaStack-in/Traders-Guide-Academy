@@ -36,6 +36,15 @@ const CATEGORY_FEATURES: Record<Product["category"], string[]> = {
   MEMBERSHIP: ["Priority access and updates", "Direct onboarding after purchase"],
 };
 
+// Thumbnail side length (px) in the collapsed row vs. the expanded detail
+// panel — the expanded view nearly doubles it (120 → 220) since there's a
+// full row of width to spend on it once the panel opens, and a bigger
+// image reads much better next to the full longDescription copy than the
+// list-row-sized crop does. The bare icon fallback (no product.imageUrl)
+// scales its stroke size to match at each size.
+const COLLAPSED_THUMB_PX = 120;
+const EXPANDED_THUMB_PX = 220;
+
 /**
  * A single horizontal product row on /products (and the "related products"
  * section on the detail page) — thumbnail, details, price/buy column, with
@@ -53,6 +62,12 @@ const CATEGORY_FEATURES: Record<Product["category"], string[]> = {
  * simplification vs. the mockup's single-shared-expanded-row behavior) —
  * simpler to reason about and still satisfies "click a row to see more
  * detail" without one row's state depending on another's.
+ *
+ * The expanded panel repeats the thumbnail at a larger size
+ * (EXPANDED_THUMB_PX) alongside the long description and feature bullets —
+ * an image-beside-text layout (row on sm+, stacked on mobile) rather than
+ * the earlier text-only expansion, so the reader gets a genuinely bigger,
+ * more legible picture of the product instead of just more paragraphs.
  */
 export function ProductRow({
   product,
@@ -65,6 +80,7 @@ export function ProductRow({
   const meta = CATEGORY_META[product.category];
   const Icon = meta.icon;
   const iconSize = product.isFeatured ? 54 : 48;
+  const expandedIconSize = product.isFeatured ? 96 : 88;
   const titleSize = product.isFeatured ? "text-lg" : "text-base";
 
   function toggle() {
@@ -82,6 +98,10 @@ export function ProductRow({
     e.stopPropagation();
   }
 
+  const thumbBackground = product.imageUrl
+    ? undefined
+    : `color-mix(in oklab, var(${meta.colorVar}) 16%, transparent)`;
+
   return (
     <div
       className={cn(
@@ -98,12 +118,8 @@ export function ProductRow({
         className="flex w-full cursor-pointer items-center gap-6 px-5 py-8 text-left"
       >
         <div
-          className="flex h-[120px] w-[120px] shrink-0 items-center justify-center overflow-hidden rounded-xl"
-          style={{
-            background: product.imageUrl
-              ? undefined
-              : `color-mix(in oklab, var(${meta.colorVar}) 16%, transparent)`,
-          }}
+          className="flex shrink-0 items-center justify-center overflow-hidden rounded-xl"
+          style={{ background: thumbBackground, height: COLLAPSED_THUMB_PX, width: COLLAPSED_THUMB_PX }}
         >
           {product.imageUrl ? (
             // Plain <img>, not next/image — a poster's imageUrl backfilled
@@ -175,15 +191,38 @@ export function ProductRow({
 
       {expanded && (
         <div className="border-t border-white/10 px-5 py-5">
-          <p className="text-sm leading-relaxed text-muted-foreground">{product.longDescription}</p>
-          <ul className="mt-3 flex flex-col gap-1.5">
-            {CATEGORY_FEATURES[product.category].map((feature) => (
-              <li key={feature} className="flex items-start gap-2 text-sm text-foreground/90">
-                <Check className="mt-0.5 h-4 w-4 shrink-0 text-[var(--signalflow-win)]" />
-                {feature}
-              </li>
-            ))}
-          </ul>
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
+            <div
+              className="mx-auto flex shrink-0 items-center justify-center overflow-hidden rounded-xl sm:mx-0"
+              style={{ background: thumbBackground, height: EXPANDED_THUMB_PX, width: EXPANDED_THUMB_PX }}
+            >
+              {product.imageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={product.imageUrl}
+                  alt={product.name}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <Icon
+                  style={{ color: `var(${meta.colorVar})`, width: expandedIconSize, height: expandedIconSize }}
+                  strokeWidth={1.5}
+                />
+              )}
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <p className="text-sm leading-relaxed text-muted-foreground">{product.longDescription}</p>
+              <ul className="mt-3 flex flex-col gap-1.5">
+                {CATEGORY_FEATURES[product.category].map((feature) => (
+                  <li key={feature} className="flex items-start gap-2 text-sm text-foreground/90">
+                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-[var(--signalflow-win)]" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
         </div>
       )}
     </div>
