@@ -6,11 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 **[Tech debts](./tech-debt-ledger.html)** — once deployed, also served at `/tech-debt-ledger.html`
 
-Versioning continues the semantic patch series from the SignalFlow template (`1.0.7` → `1.0.8` …). The footer and Admin Changelog page read the current version from `package.json` (now **1.0.60**).
+Versioning continues the semantic patch series from the SignalFlow template (`1.0.7` → `1.0.8` …). The footer and Admin Changelog page read the current version from `package.json` (now **1.0.61**).
 
 Each release header now includes a build timestamp (24-hour IST, matching `build-info.ts`'s `formattedBuildTime`), not just a date — this reflects the actual commit that shipped the version. While adding timestamps, two pre-existing dates were corrected to match their real shipping commit: `1.0.8` (was dated by the TGA fork commit, 3 days before the digest-email feature in that release actually shipped) and `1.0.2` (was off by one day around a just-after-midnight IST commit).
 
 ## [Unreleased]
+
+## [1.0.61] - 2026-09-13 06:29 IST
+
+### Added
+- **My Subscriptions** — new `/account/subscriptions` page: signals membership/autopay status, a unified purchase history (memberships + one-time purchases), My Courses (with validity/expiry), My Indicators & E-books, Memberships, and a PMS account summary with a growth chart
+- Admin **PMS Accounts** page (`/admin/pms-accounts`) — log each member's PMS fund valuation over time; feeds the subscriber-facing growth chart
+- `Product.accessValidityDays` / `Product.courseAccessUrl` (both nullable — every existing product keeps lifetime access with no direct access link, unchanged)
 
 ## [1.0.60] - 2026-09-12 19:03 IST
 
