@@ -58,6 +58,15 @@ export function changelogTimestamp(date: string): string {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.66",
+    date: "13 Sep 2026, 22:55 IST",
+    title: "Trade Stats range chart",
+    highlights: [
+      "Dashboard → Trade Stats: Avg %/Trade, Best Trade, and Worst Trade now show as one range chart on a shared 0% baseline instead of three separate stat cards",
+      "Total Signals stays its own stat tile alongside the new chart",
+    ],
+  },
+  {
     version: "1.0.65",
     date: "13 Sep 2026, 22:20 IST",
     title: "Change password in Settings",
