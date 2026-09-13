@@ -3,6 +3,7 @@ import { sendProductPurchaseEmail } from "@/lib/email";
 import { sendTelegramMessage } from "@/lib/telegram";
 import { clientConfig } from "@/lib/client-config";
 import { isHighTouchCategory, PRODUCT_CATEGORY_LABELS } from "@/lib/products";
+import { computeCourseExpiry } from "@/lib/subscriptions";
 
 /**
  * Delivers a confirmed ProductPurchase (called once payment is CAPTURED —
@@ -46,12 +47,20 @@ export async function fulfillProductPurchase(purchaseId: string): Promise<void> 
       `If you'd like to speed things up, you can also message us directly on WhatsApp from your account.`
     : `You can access "${product.name}" from your account dashboard. If you don't see it there yet, reply to this email and we'll sort it out.`;
 
+  // Only COURSE purchases have a bounded access window today
+  // (Product.accessValidityDays) — every other category is either lifetime
+  // access or, for PMS, not a time-bound access window at all. Null means
+  // lifetime access, so no validity block is shown for that product.
+  const courseExpiresAt =
+    product.category === "COURSE" ? computeCourseExpiry(purchase.createdAt, product.accessValidityDays) : null;
+
   if (subscriber.email) {
     await sendProductPurchaseEmail({
       toEmail: subscriber.email,
       memberName: subscriber.name,
       productName: product.name,
       deliveryDetails,
+      validity: courseExpiresAt ? { startDate: purchase.createdAt, endDate: courseExpiresAt } : undefined,
     });
   }
 

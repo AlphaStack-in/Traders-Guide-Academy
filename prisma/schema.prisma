@@ -581,6 +581,14 @@ model Subscription {
   cancelAtPeriodEnd      Boolean            @default(false)
   lastPaymentFailedAt    DateTime?
   failureReason          String?
+  // Set the first time this row's status transitions to ACTIVE and the
+  // subscriber-facing "your membership is active" email has been sent (see
+  // src/app/api/webhooks/cashfree/route.ts). Guards against re-sending that
+  // email on every later ACTIVE transition (e.g. HALTED -> ACTIVE after a
+  // retried charge succeeds) — the subscriber only gets this email once per
+  // Subscription row, even though the internal Telegram ops alert still
+  // fires on every ACTIVE transition. Null until the first send.
+  activationEmailSentAt  DateTime?
   createdAt              DateTime           @default(now())
   updatedAt              DateTime           @updatedAt
   payments               Payment[]

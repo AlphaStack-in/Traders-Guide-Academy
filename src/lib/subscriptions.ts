@@ -105,7 +105,10 @@ export interface SubscriberSubscriptionsSummary {
   pmsAccounts: PmsAccountEntry[];
 }
 
-function computeCourseExpiry(purchasedAt: Date, accessValidityDays: number | null): Date | null {
+// Exported so src/lib/product-fulfillment.ts can reuse the exact same
+// validity-window math for the "new course purchase" confirmation email
+// (start/end validity dates) rather than re-deriving it.
+export function computeCourseExpiry(purchasedAt: Date, accessValidityDays: number | null): Date | null {
   if (accessValidityDays == null) return null;
   const expiry = new Date(purchasedAt);
   expiry.setDate(expiry.getDate() + accessValidityDays);

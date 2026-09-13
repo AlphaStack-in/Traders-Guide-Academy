@@ -1,6 +1,7 @@
 import { Resend } from "resend";
 import nodemailer from "nodemailer";
 import { clientConfig } from "@/lib/client-config";
+import { formatDateOnly } from "@/lib/utils";
 
 // Shared Resend client -- returns null when RESEND_API_KEY is unset,
 // triggering dev-simulation (console logging) in callers.
@@ -309,6 +310,52 @@ export async function sendReferralAdminAlert({
   });
 }
 
+// Shared "Valid from -> Valid until/Renews on" info box used by both the
+// product-purchase and subscription-activated emails below — one place to
+// keep this on-brand (gold border/accent, matching the signalflow-gold-border
+// utility class's color values) rather than duplicating the markup per
+// template.
+function renderValidityBlock(startLabel: string, startDate: string, endLabel: string, endDate: string): string {
+  return `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin: 24px 0; border: 1px solid rgba(212,175,55,0.4); border-radius: 8px; background: rgba(212,175,55,0.06);">
+      <tr>
+        <td style="padding: 16px 20px; width: 50%;">
+          <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #9CA3AF;">${startLabel}</div>
+          <div style="font-size: 15px; font-weight: 600; color: #F3F4F6; margin-top: 4px;">${startDate}</div>
+        </td>
+        <td style="padding: 16px 20px; width: 50%; border-left: 1px solid rgba(212,175,55,0.25);">
+          <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #9CA3AF;">${endLabel}</div>
+          <div style="font-size: 15px; font-weight: 600; color: #F0C949; margin-top: 4px;">${endDate}</div>
+        </td>
+      </tr>
+    </table>
+  `;
+}
+
+// Shared footer — brand identity + support links, appended to every
+// transactional email in this file that represents a purchase/subscription
+// event (not the admin-alert / contact-reply ones above, which are
+// internal/one-off and keep their existing shorter footers).
+function renderBrandFooter(): string {
+  const links: string[] = [];
+  if (clientConfig.whatsappUrl && clientConfig.whatsappUrl !== "#") {
+    links.push(`<a href="${clientConfig.whatsappUrl}" style="color: #F0C949; text-decoration: none;">WhatsApp</a>`);
+  }
+  if (clientConfig.telegramUrl) {
+    links.push(`<a href="${clientConfig.telegramUrl}" style="color: #F0C949; text-decoration: none;">Telegram</a>`);
+  }
+  if (clientConfig.instagramUrl) {
+    links.push(`<a href="${clientConfig.instagramUrl}" style="color: #F0C949; text-decoration: none;">Instagram</a>`);
+  }
+
+  return `
+    <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+      ${links.length > 0 ? `<p style="font-size: 12px; color: #9CA3AF; margin: 0 0 8px;">${links.join(" &nbsp;•&nbsp; ")}</p>` : ""}
+      <p style="font-size: 11px; color: #6B7280; margin: 0;">${clientConfig.siteName} — this is an automated message, please do not share your login details over email or chat.</p>
+    </div>
+  `;
+}
+
 export interface SendProductPurchaseEmailParams {
   toEmail: string;
   memberName: string;
@@ -318,6 +365,11 @@ export interface SendProductPurchaseEmailParams {
    * with white-space preserved, same convention as the other templates
    * here. */
   deliveryDetails: string;
+  /** Set only for a purchase with a bounded access window (today: a COURSE
+   * whose Product.accessValidityDays is not null) — renders a "Valid from /
+   * Valid until" box. Omitted entirely for lifetime-access products and for
+   * PMS (not a time-bound access window). */
+  validity?: { startDate: Date; endDate: Date };
 }
 
 /**
@@ -336,17 +388,31 @@ export async function sendProductPurchaseEmail({
   memberName,
   productName,
   deliveryDetails,
+  validity,
 }: SendProductPurchaseEmailParams): Promise<{ success: boolean; error?: string }> {
   const resend = getResendClient();
 
   if (!resend) {
     console.log(`[Dev Email Simulation] Product purchase email sent to ${toEmail} for "${productName}"`);
     console.log(`[Dev Email Simulation] Delivery details: ${deliveryDetails}`);
+    if (validity) {
+      console.log(
+        `[Dev Email Simulation] Validity: ${validity.startDate.toDateString()} -> ${validity.endDate.toDateString()}`,
+      );
+    }
     return { success: true };
   }
 
   try {
     const fromAddress = getFromAddress();
+    const validityHtml = validity
+      ? renderValidityBlock(
+          "Valid from",
+          formatDateOnly(validity.startDate),
+          "Valid until",
+          formatDateOnly(validity.endDate),
+        )
+      : "";
 
     const { error } = await resend.emails.send({
       from: fromAddress,
@@ -356,8 +422,10 @@ export async function sendProductPurchaseEmail({
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; background-color: #0B0B0D; color: #F3F4F6; padding: 32px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
           <h2 style="color: #F0C949; margin-top: 0;">Thanks for your purchase, ${memberName}!</h2>
           <p>Your purchase of <strong>${productName}</strong> is confirmed.</p>
+          ${validityHtml}
           <div style="margin: 24px 0; padding: 16px; border-left: 2px solid rgba(240,201,73,0.4); white-space: pre-line;">${deliveryDetails}</div>
           <p style="font-size: 12px; color: #9CA3AF;">Questions about this order? Reply to this email or reach us on WhatsApp from your account.</p>
+          ${renderBrandFooter()}
         </div>
       `,
     });
@@ -371,6 +439,88 @@ export async function sendProductPurchaseEmail({
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : "Failed to send product purchase email.";
     console.error("Error sending product purchase email:", err);
+    return { success: false, error: errorMessage };
+  }
+}
+
+export interface SendSubscriptionActivatedEmailParams {
+  toEmail: string;
+  memberName: string;
+  /** e.g. "Monthly", "Quarterly", "Yearly" — already title-cased by the caller
+   * (see AUTOPAY_STATUS_LABEL / billingCycleLabel convention in subscriptions.ts). */
+  billingCycleLabel: string;
+  /** When Autopay was confirmed active — the "Valid from" date. */
+  startDate: Date;
+  /** Subscription.currentPeriodEnd — phrased as "Renews on" since Autopay
+   * auto-charges again at this date rather than lapsing (unlike a course's
+   * fixed access window). Null is handled by the caller (skip the send, or
+   * fall back to a copy without a date) — this function requires a value. */
+  renewsOn: Date;
+}
+
+/**
+ * Sent the FIRST time a subscriber's recurring signals-membership Autopay
+ * subscription reaches ACTIVE (see Subscription.activationEmailSentAt and
+ * the guard in src/app/api/webhooks/cashfree/route.ts). Deliberately not
+ * re-sent on every later ACTIVE transition (e.g. a HALTED subscription's
+ * retried charge succeeding) — the internal Telegram ops alert still fires
+ * every time for the team's visibility, only this subscriber-facing email
+ * is one-time-per-subscription.
+ */
+export async function sendSubscriptionActivatedEmail({
+  toEmail,
+  memberName,
+  billingCycleLabel,
+  startDate,
+  renewsOn,
+}: SendSubscriptionActivatedEmailParams): Promise<{ success: boolean; error?: string }> {
+  const resend = getResendClient();
+
+  if (!resend) {
+    console.log(`[Dev Email Simulation] Subscription activated email sent to ${toEmail} (${billingCycleLabel})`);
+    console.log(
+      `[Dev Email Simulation] Valid from ${startDate.toDateString()}, renews on ${renewsOn.toDateString()}`,
+    );
+    return { success: true };
+  }
+
+  try {
+    const fromAddress = getFromAddress();
+    const validityHtml = renderValidityBlock(
+      "Valid from",
+      formatDateOnly(startDate),
+      "Renews on",
+      formatDateOnly(renewsOn),
+    );
+
+    const { error } = await resend.emails.send({
+      from: fromAddress,
+      to: [toEmail],
+      subject: `Your ${clientConfig.siteName} membership is active`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; background-color: #0B0B0D; color: #F3F4F6; padding: 32px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+          <div style="text-align: center; margin-bottom: 24px;">
+            <span style="font-size: 18px; font-weight: 700; background: linear-gradient(135deg, #D4AF37 0%, #F0C949 100%); -webkit-background-clip: text; background-clip: text; color: #F0C949;">${clientConfig.siteName}</span>
+          </div>
+          <h2 style="color: #F0C949; margin-top: 0;">Welcome aboard, ${memberName}!</h2>
+          <p>Your <strong>${billingCycleLabel}</strong> signals membership is now active — you're all set to receive live intraday options-buying signals and analytics.</p>
+          ${validityHtml}
+          <p style="font-size: 13px; color: #9CA3AF;">Since this is an Autopay subscription, it renews automatically on the date above unless you cancel from your account beforehand.</p>
+          <p style="font-size: 12px; color: #9CA3AF;">Questions about your membership? Reply to this email or reach us on WhatsApp from your account.</p>
+          ${renderBrandFooter()}
+        </div>
+      `,
+    });
+
+    if (error) {
+      console.error("Resend API error (subscription activated):", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : "Failed to send subscription activated email.";
+    console.error("Error sending subscription activated email:", err);
     return { success: false, error: errorMessage };
   }
 }
