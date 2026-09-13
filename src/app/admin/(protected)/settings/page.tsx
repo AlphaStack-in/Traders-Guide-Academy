@@ -1,5 +1,6 @@
 import { getAppSettings } from "@/lib/app-settings";
 import { AdminSettingsForm } from "@/components/admin/settings-form";
+import { AdminChangePasswordForm } from "@/components/admin/change-password-form";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,7 @@ export default async function AdminSettingsPage() {
         </p>
       </div>
       <AdminSettingsForm initial={settings} />
+      <AdminChangePasswordForm />
     </div>
   );
 }

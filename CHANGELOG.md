@@ -6,11 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 **[Tech debts](./tech-debt-ledger.html)** — once deployed, also served at `/tech-debt-ledger.html`
 
-Versioning continues the semantic patch series from the SignalFlow template (`1.0.7` → `1.0.8` …). The footer and Admin Changelog page read the current version from `package.json` (now **1.0.64**).
+Versioning continues the semantic patch series from the SignalFlow template (`1.0.7` → `1.0.8` …). The footer and Admin Changelog page read the current version from `package.json` (now **1.0.65**).
 
 Each release header now includes a build timestamp (24-hour IST, matching `build-info.ts`'s `formattedBuildTime`), not just a date — this reflects the actual commit that shipped the version. While adding timestamps, two pre-existing dates were corrected to match their real shipping commit: `1.0.8` (was dated by the TGA fork commit, 3 days before the digest-email feature in that release actually shipped) and `1.0.2` (was off by one day around a just-after-midnight IST commit).
 
 ## [Unreleased]
+
+## [1.0.65] - 2026-09-13 22:20 IST
+
+### Added
+- **Account → Settings** — subscribers can change their login password; Google-only accounts (no password yet) see **Set a Password** instead
+- **Admin → Settings** — verify current admin password and generate a new `ADMIN_PASSWORD_HASH` value to paste into Vercel (env-based admin login is unchanged until you redeploy)
+
+### Changed
+- Shared `MIN_PASSWORD_LENGTH` (6 characters) in `src/lib/password.ts` for registration and all password-change flows
 
 ## [1.0.64] - 2026-09-13 21:43 IST
 

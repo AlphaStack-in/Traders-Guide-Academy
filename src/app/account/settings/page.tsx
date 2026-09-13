@@ -4,6 +4,7 @@ import { Footer } from "@/components/site/footer";
 import { getCurrentSubscriber } from "@/lib/subscriber-auth";
 import { getSubscriberPreferences } from "@/app/account/settings/actions";
 import { SubscriberSettingsForm } from "@/components/account/settings-form";
+import { ChangePasswordForm } from "@/components/account/change-password-form";
 
 export default async function AccountSettingsPage() {
   const subscriber = await getCurrentSubscriber();
@@ -26,6 +27,7 @@ export default async function AccountSettingsPage() {
           </p>
         </div>
         <SubscriberSettingsForm initial={preferences} />
+        <ChangePasswordForm hasPassword={Boolean(subscriber.passwordHash)} />
       </main>
       <Footer />
     </div>

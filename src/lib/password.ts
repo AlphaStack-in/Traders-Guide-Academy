@@ -9,6 +9,15 @@ import { randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 const KEY_LENGTH = 64;
 
 /**
+ * Shared minimum password length — enforced at subscriber registration
+ * (src/app/register/actions.ts) and reused for password-change flows
+ * (subscriber: src/app/account/settings/actions.ts; admin:
+ * src/app/admin/(protected)/settings/actions.ts) so the rule can't drift
+ * between the two.
+ */
+export const MIN_PASSWORD_LENGTH = 6;
+
+/**
  * Hashes a plaintext password. Safe to store the result directly (e.g. in
  * ADMIN_PASSWORD_HASH or Subscriber.passwordHash).
  */
