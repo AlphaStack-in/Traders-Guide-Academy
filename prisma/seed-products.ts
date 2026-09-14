@@ -49,10 +49,13 @@ const PRODUCTS: SeedProduct[] = [
     slug: "a-to-z-stock-market-course",
     name: "A to Z Basic To Advance Level Stock Market Course",
     category: "COURSE",
-    description: "A complete beginner-to-advanced stock market course covering the full trading fundamentals.",
+    description:
+      "Comprehensive trading program covering basic-to-advanced technical analysis, 6 intraday strategies, 5 positional systems, and live mentorship.",
     longDescription:
-      "A complete beginner-to-advanced stock market course — starts from the basics of how markets work and builds up to advanced technical and fundamental analysis techniques used by active traders.",
-    priceInPaise: 1400000,
+      "The flagship TGA training program covers complete stock market fundamentals up through advanced option buying and positional trade execution. Students receive direct live mentorship, interactive chart walk-throughs, 6 specialized intraday strategies (including Diamond and Blue Candle), and 5 positional trading frameworks. The course also includes access to proprietary TradingView indicator scripts like Golden Line and Jadoo Ki Chhadi, alongside hands-on guidance on risk management, position sizing, and trade journaling. Designed to transform retail traders into disciplined, rule-based market participants.",
+    priceInPaise: 2500000,
+    originalPriceInPaise: 3500000,
+    isFeatured: true,
     rating: 5.0,
     ratingCount: 2,
   },
@@ -209,6 +212,14 @@ async function main() {
       update: data,
     });
     console.log(`Upserted product: ${slug}`);
+  }
+
+  const retired = await prisma.product.updateMany({
+    where: { slug: "a-to-z-masterclass-mentorship" },
+    data: { isActive: false },
+  });
+  if (retired.count > 0) {
+    console.log("Deactivated product: a-to-z-masterclass-mentorship");
   }
 }
 

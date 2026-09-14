@@ -58,6 +58,16 @@ export function changelogTimestamp(date: string): string {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.68",
+    date: "14 Sep 2026, 21:50 IST",
+    title: "A-to-Z catalog fold-in",
+    highlights: [
+      "Flagship A-to-Z course keeps slug a-to-z-stock-market-course with updated mentorship copy and ₹25,000 pricing",
+      "Orphan a-to-z-masterclass-mentorship listing deactivated via seed-products.ts (preserves DB references)",
+      "Golden Line & Speedometer suite seeded at ₹2,500 without a strike price",
+    ],
+  },
+  {
     version: "1.0.67",
     date: "14 Sep 2026, 20:55 IST",
     title: "Seminar webinar product catalog",

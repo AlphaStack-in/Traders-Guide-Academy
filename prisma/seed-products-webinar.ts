@@ -20,18 +20,23 @@
  * sign-off; see the existing "portfolio-management-service" entry in
  * seed-products.ts for the same open flag on the pre-existing PMS listing.
  *
- * TWO POSSIBLE NEAR-DUPLICATES to resolve before/after running this —
- * check the live catalog and decide whether to fold these into the
- * existing rows (update by slug) instead of adding a second listing:
- *   1. "a-to-z-masterclass-mentorship" below vs. the existing
- *      "a-to-z-stock-market-course" in seed-products.ts — same subject,
- *      different price/scope (this one adds live mentorship + indicators).
- *   2. "golden-line-speedometer-volatility-suite" below vs. the existing
- *      "golden-line-and-btc-indicator" in seed-products.ts — same Golden
- *      Line tool, bundled differently. Its ₹25,000 price also matches the
- *      flagship course price exactly, which is more likely a transcription
- *      slip than an intended figure — confirm the real price before this
- *      goes live.
+ * RESOLVED (2026-09-14, user decision):
+ *   1. A-to-Z course: the old "a-to-z-stock-market-course" listing in
+ *      seed-products.ts is being RETIRED in favor of this webinar version.
+ *      That means this file does NOT include an "a-to-z-masterclass-
+ *      mentorship" row — instead, update the existing
+ *      "a-to-z-stock-market-course" row's copy/price/isFeatured directly in
+ *      seed-products.ts to the flagship mentorship version (same slug, so
+ *      existing purchases/ratings on that product stay attached). See the
+ *      chat/PR notes for the exact replacement copy.
+ *   2. "golden-line-speedometer-volatility-suite" below is seeded at a
+ *      PLACEHOLDER price of ₹2,500 (priced just above the existing
+ *      "golden-line-and-btc-indicator" at ₹2,000) — NOT a confirmed price
+ *      from the seminar recording. Still overlaps with that existing
+ *      indicator (same Golden Line family, different bundle); worth a
+ *      merchandising call on whether to keep both once the real price is
+ *      confirmed. Update this row (or drop it) once the actual quoted price
+ *      is verified against the recording.
  */
 import { PrismaClient, type ProductCategory } from "@prisma/client";
 
@@ -44,7 +49,7 @@ interface SeedProduct {
   description: string;
   longDescription: string;
   priceInPaise: number;
-  originalPriceInPaise?: number;
+  originalPriceInPaise?: number | null;
   rating?: number;
   ratingCount?: number;
   isFeatured?: boolean;
@@ -79,18 +84,6 @@ const PRODUCTS: SeedProduct[] = [
     accessValidityDays: 90,
   },
   {
-    slug: "a-to-z-masterclass-mentorship",
-    name: "A-to-Z Stock Market Masterclass & Mentorship",
-    category: "COURSE",
-    description:
-      "Comprehensive trading program covering basic-to-advanced technical analysis, 6 intraday strategies, 5 positional systems, and live mentorship.",
-    longDescription:
-      "The flagship TGA training program covers complete stock market fundamentals up through advanced option buying and positional trade execution. Students receive direct live mentorship, interactive chart walk-throughs, 6 specialized intraday strategies (including Diamond and Blue Candle), and 5 positional trading frameworks. The course also includes access to proprietary TradingView indicator scripts like Golden Line and Jadoo Ki Chhadi, alongside hands-on guidance on risk management, position sizing, and trade journaling. Designed to transform retail traders into disciplined, rule-based market participants.",
-    priceInPaise: 2500000,
-    originalPriceInPaise: 3500000,
-    isFeatured: true,
-  },
-  {
     slug: "sniper-setup-free-trial-masterclass",
     name: "1-Week Free Trading Masterclass & Sniper Setup",
     category: "COURSE",
@@ -122,10 +115,11 @@ const PRODUCTS: SeedProduct[] = [
       "Advanced TradingView indicator suite featuring Golden Line levels and ATR-based market regime volatility filters.",
     longDescription:
       "Built for active intraday and positional traders, this indicator suite combines TGA's Golden Line key price levels with a Speedometer volatility filter. The ATR-based volatility filter helps traders identify low-momentum regimes to avoid choppy market conditions and false breakouts. Integrates easily onto TradingView charts with clear visual cues for trend confirmation and risk management. Comes with lifetime script access and complete setup instructions.",
-    // FLAG: ₹25,000 (see file header) — matches the flagship course price
-    // exactly; confirm against the actual webinar quote before publishing.
-    priceInPaise: 2500000,
-    originalPriceInPaise: 3000000,
+    // PLACEHOLDER PRICE (see file header) — not the confirmed webinar
+    // quote. Priced just above golden-line-and-btc-indicator (₹2,000).
+    // Update once the real price is verified against the recording.
+    priceInPaise: 250000,
+    originalPriceInPaise: null,
   },
   {
     slug: "commodity-crypto-alpha-indicator",
