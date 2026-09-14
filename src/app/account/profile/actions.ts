@@ -57,3 +57,23 @@ export async function updateSubscriberProfile(input: UpdateProfileInput) {
 
   return { success: true };
 }
+
+/**
+ * Saves the subscriber's own profile photo (a base64 data URL from the photo
+ * picker on /account/profile — see profile-photo-picker.tsx), or clears it
+ * when passed null. Kept separate from updateSubscriberProfile above so a
+ * photo change doesn't need the Name/Phone/Email edit form to be open.
+ */
+export async function updateSubscriberPhoto(photoUrl: string | null) {
+  try {
+    const subscriber = await requireSubscriber();
+    await prisma.subscriber.update({
+      where: { id: subscriber.id },
+      data: { photoUrl },
+    });
+    return { success: true };
+  } catch (err) {
+    console.error("updateSubscriberPhoto error:", err);
+    return { success: false, error: "Couldn't save your photo. Please try again." };
+  }
+}

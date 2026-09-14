@@ -84,6 +84,10 @@ model Subscriber {
   // so two accounts could still collide as "Foo@x.com" vs "foo@x.com" if a
   // caller stores a non-normalized value directly.
   email                 String?                @unique
+  // Base64 data URL (or an external URL, if we ever move this to blob
+  // storage) for the subscriber's own profile photo, set via the photo
+  // picker on /account/profile. Null shows the initials avatar instead.
+  photoUrl              String?
   plan                  SubscriberPlan         @default(PREMIUM)
   createdAt             DateTime               @default(now())
   // Which pricing tier the subscriber registered under (Monthly/Quarterly/

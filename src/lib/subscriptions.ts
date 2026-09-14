@@ -13,8 +13,10 @@
  *   - PMS purchases, with their admin-entered PmsValuationEntry history and
  *     a computed growth percentage
  */
-import type { PaymentStatus, ProductCategory, SubscriptionStatus } from "@prisma/client";
+import type { PaymentStatus, ProductCategory, Subscriber, SubscriptionStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { clientConfig, type PricingPlan } from "@/lib/client-config";
+import { formatDateOnly, formatFullTimestamp } from "@/lib/utils";
 
 // Subscriber-facing labels for SubscriptionStatus — identical wording to the
 // map already inlined in src/app/account/profile/page.tsx. Duplicated
@@ -96,8 +98,35 @@ export interface PmsAccountEntry {
   valuations: PmsValuationPoint[];
 }
 
+// Registration tiers, cheapest to priciest — same ordering the old
+// profile-edit-form.tsx used to pick what "Upgrade" should default to.
+const TIER_ORDER: PricingPlan["id"][] = ["monthly", "quarterly", "yearly"];
+
+export interface PlanBillingSummary {
+  /** Which pricing tier the subscriber registered under (e.g. "Quarterly"), or "—". */
+  planLabel: string;
+  /** Pre-formatted registration timestamp. */
+  joinedLabel: string;
+  /**
+   * An *estimated* current-period range projected from registration date +
+   * plan length — there's no real renewal tracking on the manual/WhatsApp
+   * flow, payment is still manual/off-platform. Both null when the
+   * subscriber has no billingCycle on record to project from, or when a
+   * real `membership` (Cashfree Autopay) period is available instead.
+   */
+  periodStartLabel: string | null;
+  periodEndLabel: string | null;
+  /** For the Upgrade/Extend panels. */
+  plans: PricingPlan[];
+  currentPlanId?: PricingPlan["id"];
+  upgradePlanId?: PricingPlan["id"];
+  /** False once already on the top tier — nothing to upgrade to. */
+  showUpgrade: boolean;
+}
+
 export interface SubscriberSubscriptionsSummary {
   membership: MembershipSummary | null;
+  planBilling: PlanBillingSummary;
   purchaseHistory: PurchaseHistoryItem[];
   courses: CourseEntry[];
   indicatorsAndEbooks: SimplePurchaseEntry[];
@@ -115,9 +144,20 @@ export function computeCourseExpiry(purchasedAt: Date, accessValidityDays: numbe
   return expiry;
 }
 
+// See the "Period (est.)" doc-comment on PlanBillingSummary above — this is
+// the projection math, not a real renewal date.
+function addCycleInterval(date: Date, cycle: "MONTHLY" | "QUARTERLY" | "YEARLY"): Date {
+  const d = new Date(date);
+  if (cycle === "MONTHLY") d.setMonth(d.getMonth() + 1);
+  else if (cycle === "QUARTERLY") d.setMonth(d.getMonth() + 3);
+  else d.setFullYear(d.getFullYear() + 1);
+  return d;
+}
+
 export async function getSubscriberSubscriptionsSummary(
-  subscriberId: string,
+  subscriber: Subscriber,
 ): Promise<SubscriberSubscriptionsSummary> {
+  const subscriberId = subscriber.id;
   const [latestSubscription, payments, productPurchases] = await Promise.all([
     prisma.subscription.findFirst({
       where: { subscriberId },
@@ -237,5 +277,42 @@ export async function getSubscriberSubscriptionsSummary(
       };
     });
 
-  return { membership, purchaseHistory, courses, indicatorsAndEbooks, memberships, pmsAccounts };
+  const subscriberPlan = subscriber.billingCycle
+    ? clientConfig.pricingPlans.find((p) => p.id === subscriber.billingCycle!.toLowerCase())
+    : null;
+
+  const currentTierIndex = subscriberPlan ? TIER_ORDER.indexOf(subscriberPlan.id) : -1;
+  const upgradePlanId =
+    currentTierIndex >= 0 && currentTierIndex < TIER_ORDER.length - 1
+      ? TIER_ORDER[currentTierIndex + 1]
+      : undefined;
+
+  const planBilling: PlanBillingSummary = {
+    planLabel: subscriberPlan ? subscriberPlan.label : "—",
+    joinedLabel: formatFullTimestamp(subscriber.createdAt),
+    // Only show the estimated period when there's no real Autopay period to
+    // show instead (membership.currentPeriodEnd already covers that case).
+    periodStartLabel:
+      !membership?.currentPeriodEnd && subscriber.billingCycle
+        ? formatDateOnly(subscriber.createdAt)
+        : null,
+    periodEndLabel:
+      !membership?.currentPeriodEnd && subscriber.billingCycle
+        ? formatDateOnly(addCycleInterval(subscriber.createdAt, subscriber.billingCycle))
+        : null,
+    plans: clientConfig.pricingPlans,
+    currentPlanId: subscriberPlan?.id,
+    upgradePlanId,
+    showUpgrade: currentTierIndex !== TIER_ORDER.length - 1,
+  };
+
+  return {
+    membership,
+    planBilling,
+    purchaseHistory,
+    courses,
+    indicatorsAndEbooks,
+    memberships,
+    pmsAccounts,
+  };
 }

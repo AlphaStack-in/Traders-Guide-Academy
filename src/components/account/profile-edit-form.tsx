@@ -3,49 +3,21 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Pencil, X } from "lucide-react";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { WhatsAppIcon } from "@/components/site/icons";
 import { BROKER_OPTIONS, NEEDS_DEMAT_BROKER_VALUE } from "@/lib/brokers";
 import { updateSubscriberProfile } from "@/app/account/profile/actions";
-import { cancelMySubscription } from "@/app/account/billing/actions";
-import { ContinuePremiumPanel } from "@/components/site/continue-premium-panel";
+import { ProfilePhotoPicker } from "@/components/account/profile-photo-picker";
 import { clientConfig } from "@/lib/client-config";
-import type { PricingPlan } from "@/lib/client-config";
 
 interface ProfileEditFormProps {
   initialName: string;
   initialPhone: string;
   initialEmail: string;
   initialCurrentBroker: string | null;
-  /** Pre-formatted, read-only — which pricing tier they registered under. */
-  planLabel: string;
-  /**
-   * Pre-formatted, read-only — an *estimated* current-period range projected
-   * from registration date + plan length (there's no real renewal tracking
-   * yet, payment is still manual/off-platform). Both null together when the
-   * subscriber has no billing cycle on record to project from.
-   */
-  periodStartLabel: string | null;
-  periodEndLabel: string | null;
-  /** Pre-formatted, read-only. */
-  joinedLabel: string;
-  /** For the Upgrade/Extend panels below the Plan row. */
-  plans: PricingPlan[];
-  currentPlanId?: PricingPlan["id"];
-  upgradePlanId?: PricingPlan["id"];
-  /** False once already on the top tier — nothing to upgrade to. */
-  showUpgrade: boolean;
-  /**
-   * Real Subscription record (see prisma/schema.prisma), when one exists —
-   * replaces the estimated Period row with the real Cashfree Autopay period
-   * end and shows a status badge + Cancel control. Null for a subscriber
-   * with no self-service subscription on record yet (still on the old
-   * manual/WhatsApp flow only).
-   */
-  autopay?: { statusLabel: string; isActive: boolean; periodEndLabel: string | null } | null;
+  initialPhotoUrl: string | null;
 }
 
 /**
@@ -76,41 +48,23 @@ function NewDematAccountCta() {
 }
 
 /**
- * Lets a subscriber view and edit their own Name/Phone/Email/Current Broker
- * on the account dashboard (src/app/account/profile/page.tsx). Plan, period
- * dates, and Joined date stay read-only — those aren't self-service fields
- * (a plan change routes through the Upgrade/Extend WhatsApp flow, not a
- * plain form edit).
+ * Lets a subscriber view and edit their own photo/Name/Phone/Email/Current
+ * Broker on the account dashboard (src/app/account/profile/page.tsx).
+ *
+ * Plan, billing period, and Joined date used to live in this card too, but
+ * now live on the "Plan & Billing" section of /account/subscriptions (see
+ * membership-status-card.tsx) alongside every other purchase a subscriber
+ * has made — this card is just their contact identity now, which is what
+ * keeps it short.
  */
 export function ProfileEditForm({
   initialName,
   initialPhone,
   initialEmail,
   initialCurrentBroker,
-  planLabel,
-  periodStartLabel,
-  periodEndLabel,
-  joinedLabel,
-  plans,
-  currentPlanId,
-  upgradePlanId,
-  showUpgrade,
-  autopay = null,
+  initialPhotoUrl,
 }: ProfileEditFormProps) {
   const router = useRouter();
-  const [isCancelling, startCancelling] = useTransition();
-
-  function handleCancelAutopay() {
-    startCancelling(async () => {
-      const result = await cancelMySubscription();
-      if (!result.success) {
-        toast.error(result.error);
-        return;
-      }
-      toast.success("Autopay cancelled — you won't be charged again.");
-      router.refresh();
-    });
-  }
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(initialName);
   const [phone, setPhone] = useState(initialPhone);
@@ -156,12 +110,18 @@ export function ProfileEditForm({
   if (!isEditing) {
     return (
       <div className="signalflow-glass signalflow-neutral-border flex flex-col gap-3 rounded-2xl border p-5">
-        <div className="flex items-start justify-between">
-          <h3 className="font-heading font-bold text-base">Your Info</h3>
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-4">
+            <ProfilePhotoPicker name={initialName} initialPhotoUrl={initialPhotoUrl} />
+            <div>
+              <h3 className="font-heading font-bold text-base">{initialName}</h3>
+              <p className="text-xs text-muted-foreground">{initialPhone}</p>
+            </div>
+          </div>
           <button
             type="button"
             onClick={() => setIsEditing(true)}
-            className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+            className="flex shrink-0 items-center gap-1 text-xs font-medium text-primary hover:underline"
           >
             <Pencil className="h-3.5 w-3.5" />
             Edit
@@ -169,90 +129,20 @@ export function ProfileEditForm({
         </div>
         <table className="w-full border-collapse text-sm">
           <tbody>
-            <tr className="border-b border-white/5">
-              <td className="w-[38%] py-2 pr-4 align-top text-xs text-muted-foreground">Name</td>
-              <td className="py-2 font-heading font-semibold">{initialName}</td>
-            </tr>
-            <tr className="border-b border-white/5">
-              <td className="py-2 pr-4 align-top text-xs text-muted-foreground">Phone</td>
-              <td className="py-2 font-heading font-semibold">{initialPhone}</td>
-            </tr>
-            <tr className="border-b border-white/5">
-              <td className="py-2 pr-4 align-top text-xs text-muted-foreground">Email</td>
+            <tr className={initialCurrentBroker && initialCurrentBroker !== NEEDS_DEMAT_BROKER_VALUE ? "border-b border-white/5" : undefined}>
+              <td className="w-[38%] py-2 pr-4 align-top text-xs text-muted-foreground">Email</td>
               <td className="py-2 font-heading font-semibold">{initialEmail}</td>
             </tr>
             {initialCurrentBroker && initialCurrentBroker !== NEEDS_DEMAT_BROKER_VALUE && (
-              <tr className="border-b border-white/5">
+              <tr>
                 <td className="py-2 pr-4 align-top text-xs text-muted-foreground">Current Broker</td>
                 <td className="py-2 font-heading font-semibold">{initialCurrentBroker}</td>
               </tr>
             )}
-            <tr className="border-b border-white/5">
-              <td className="py-2 pr-4 align-top text-xs text-muted-foreground">Plan</td>
-              <td className="py-2 font-heading font-semibold">{planLabel}</td>
-            </tr>
-            {autopay ? (
-              <tr className="border-b border-white/5">
-                <td className="py-2 pr-4 align-top text-xs text-muted-foreground">Autopay</td>
-                <td className="py-2 font-heading font-semibold">
-                  {autopay.statusLabel}
-                  {autopay.periodEndLabel && (
-                    <span className="ml-1.5 font-normal text-muted-foreground">
-                      · renews {autopay.periodEndLabel}
-                    </span>
-                  )}
-                </td>
-              </tr>
-            ) : (
-              periodStartLabel &&
-              periodEndLabel && (
-                <tr className="border-b border-white/5">
-                  <td className="py-2 pr-4 align-top text-xs text-muted-foreground">Period (est.)</td>
-                  <td className="py-2 font-heading font-semibold">
-                    {periodStartLabel} – {periodEndLabel}
-                  </td>
-                </tr>
-              )
-            )}
-            <tr>
-              <td className="py-2 pr-4 align-top text-xs text-muted-foreground">Joined</td>
-              <td className="py-2 font-heading font-semibold">{joinedLabel}</td>
-            </tr>
           </tbody>
         </table>
 
         {initialNeedsDemat && <NewDematAccountCta />}
-
-        <div className="flex flex-wrap items-center gap-2 border-t border-white/5 pt-3">
-          {showUpgrade && (
-            <ContinuePremiumPanel
-              plans={plans}
-              triggerLabel="Upgrade"
-              defaultPlanId={upgradePlanId}
-              initialPhone={initialPhone}
-              authenticated
-            />
-          )}
-          <ContinuePremiumPanel
-            plans={plans}
-            triggerLabel="Extend"
-            defaultPlanId={currentPlanId}
-            initialPhone={initialPhone}
-            authenticated
-          />
-          {autopay?.isActive && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={isCancelling}
-              onClick={handleCancelAutopay}
-              className="ml-auto text-muted-foreground hover:text-destructive"
-            >
-              {isCancelling ? "Cancelling…" : "Cancel Autopay"}
-            </Button>
-          )}
-        </div>
       </div>
     );
   }
@@ -272,6 +162,13 @@ export function ProfileEditForm({
         >
           <X className="h-4 w-4" />
         </button>
+      </div>
+
+      <div className="flex items-center gap-4">
+        <ProfilePhotoPicker name={initialName} initialPhotoUrl={initialPhotoUrl} />
+        <p className="text-xs text-muted-foreground">
+          Tap the camera icon to change your photo — it saves right away.
+        </p>
       </div>
 
       <div className="flex flex-col gap-1.5">

@@ -23,7 +23,7 @@ export default async function SubscriptionsPage() {
     redirect("/login?redirectTo=/account/subscriptions");
   }
 
-  const summary = await getSubscriberSubscriptionsSummary(subscriber.id);
+  const summary = await getSubscriberSubscriptionsSummary(subscriber);
 
   return (
     <div className="flex min-h-screen flex-col md:pl-64">
@@ -33,7 +33,11 @@ export default async function SubscriptionsPage() {
           My <span className="signalflow-gold-text">Subscriptions</span>
         </h1>
 
-        <MembershipStatusCard membership={summary.membership} />
+        <MembershipStatusCard
+          membership={summary.membership}
+          planBilling={summary.planBilling}
+          phone={subscriber.phone}
+        />
         <PurchaseHistoryList items={summary.purchaseHistory} />
         <MyCoursesSection courses={summary.courses} />
         <SimplePurchasesSection
