@@ -40,6 +40,8 @@ const chartTooltipItemStyle = {
 
 const axisTick = { fontSize: 11, fill: "var(--muted-foreground)" };
 const grid = <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />;
+/** Recharts defaults to a white stroke on pie sectors and bars — disable on the dark dashboard. */
+const chartShapeStroke = "none";
 
 function formatDdMmm(dateStr: string) {
   const date = new Date(dateStr);
@@ -81,6 +83,7 @@ export function CumulativeLineChart({
           strokeWidth={2.5}
           fill="url(#cumulativeFill)"
           dot={false}
+          activeDot={{ stroke: chartShapeStroke, strokeWidth: 0 }}
           name="Cumulative %"
           isAnimationActive={false}
         />
@@ -215,8 +218,8 @@ export function WinLossBarChart({ data }: { data: DayPnl[] }) {
           <XAxis type="number" tick={axisTick} unit="%" />
           <YAxis type="category" dataKey="date" width={58} tick={axisTick} tickFormatter={formatDdMmm} />
           <Tooltip content={<WinLossTooltip />} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
-          <Bar dataKey="profitPercent" name="Total Profit %" stackId="dailyPnl" fill="var(--signalflow-win)" radius={[0, 3, 3, 0]} isAnimationActive={false} />
-          <Bar dataKey="lossPercent" name="Total Loss %" stackId="dailyPnl" fill="var(--signalflow-loss)" radius={[3, 0, 0, 3]} isAnimationActive={false}>
+          <Bar dataKey="profitPercent" name="Total Profit %" stackId="dailyPnl" fill="var(--signalflow-win)" radius={[0, 3, 3, 0]} stroke={chartShapeStroke} isAnimationActive={false} />
+          <Bar dataKey="lossPercent" name="Total Loss %" stackId="dailyPnl" fill="var(--signalflow-loss)" radius={[3, 0, 0, 3]} stroke={chartShapeStroke} isAnimationActive={false}>
             <LabelList dataKey="netPercent" content={makeHorizontalPnlLabel(labelData)} />
           </Bar>
         </BarChart>
@@ -421,10 +424,11 @@ export function WinRateDonutChart({
             paddingAngle={3}
             startAngle={90}
             endAngle={-270}
+            stroke={chartShapeStroke}
             isAnimationActive={false}
           >
             {data.map((entry, index) => (
-              <Cell key={entry.name} fill={fills[index % fills.length]} />
+              <Cell key={entry.name} fill={fills[index % fills.length]} stroke={chartShapeStroke} />
             ))}
           </Pie>
           <Tooltip contentStyle={chartTooltipStyle}
@@ -497,8 +501,6 @@ export function WinLossCountDonutChart({ wins, losses }: { wins: number; losses:
                 <stop offset="100%" stopColor="var(--signalflow-loss)" stopOpacity={0.55} />
               </linearGradient>
             </defs>
-            {/* thin ring (innerRadius close to outerRadius); stroke="none" on
-                both Pie and Cell drops Recharts' default white sector outline */}
             <Pie
               data={data}
               dataKey="value"
@@ -509,10 +511,10 @@ export function WinLossCountDonutChart({ wins, losses }: { wins: number; losses:
               startAngle={90}
               endAngle={-270}
               isAnimationActive={false}
-              stroke="none"
+              stroke={chartShapeStroke}
             >
               {data.map((entry, index) => (
-                <Cell key={entry.name} fill={fills[index % fills.length]} stroke="none" />
+                <Cell key={entry.name} fill={fills[index % fills.length]} stroke={chartShapeStroke} />
               ))}
             </Pie>
             <Tooltip
@@ -598,6 +600,7 @@ export function InstrumentCaptureDonutChart({
             paddingAngle={3}
             startAngle={90}
             endAngle={-270}
+            stroke={chartShapeStroke}
             isAnimationActive={false}
             label={InstrumentDonutLabel}
             labelLine={false}
@@ -605,6 +608,7 @@ export function InstrumentCaptureDonutChart({
             {visible.map((entry, index) => (
               <Cell
                 key={entry.label}
+                stroke={chartShapeStroke}
                 fill={
                   clientConfig.instrumentDonutColors[
                     index % clientConfig.instrumentDonutColors.length
@@ -931,10 +935,11 @@ export function TradeStatsRangeChart({
         <XAxis type="number" tick={axisTick} unit="%" />
         <YAxis type="category" dataKey="label" width={56} tick={axisTick} interval={0} />
         <Tooltip content={<TradeStatsRangeTooltip />} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
-        <Bar dataKey="pnlPercent" name="P&L %" radius={[3, 3, 3, 3]} isAnimationActive={false} barSize={20}>
+        <Bar dataKey="pnlPercent" name="P&L %" radius={[3, 3, 3, 3]} stroke={chartShapeStroke} isAnimationActive={false} barSize={20}>
           {data.map((entry) => (
             <Cell
               key={entry.key}
+              stroke={chartShapeStroke}
               fill={entry.pnlPercent >= 0 ? "url(#tsWinFill)" : "url(#tsLossFill)"}
             />
           ))}
@@ -989,10 +994,11 @@ export function BestWorstBarChart({
         <XAxis type="number" tick={axisTick} unit="%" />
         <YAxis type="category" dataKey="label" width={148} tick={<BestWorstYAxisTick width={148} />} interval={0} />
         <Tooltip content={<BestWorstTooltip />} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
-        <Bar dataKey="pnlPercent" name="P&L %" radius={[0, 3, 3, 0]} isAnimationActive={false}>
+        <Bar dataKey="pnlPercent" name="P&L %" radius={[0, 3, 3, 0]} stroke={chartShapeStroke} isAnimationActive={false}>
           {visibleData.map((entry) => (
             <Cell
               key={entry.label}
+              stroke={chartShapeStroke}
               fill={entry.pnlPercent >= 0 ? "url(#bwWinFill)" : "url(#bwLossFill)"}
             />
           ))}
