@@ -455,6 +455,91 @@ export function WinRateDonutChart({
   );
 }
 
+/**
+ * Compact companion to WinRateDonutChart for the "02 Trade Stats" section —
+ * sized to sit next to the Total Signals stat tile rather than take a full
+ * dashboard column. Shows raw win/loss trade counts (not the %-based figures
+ * WinRateDonutChart carries), since Total Signals nearby is itself a count.
+ * Separate gradient ids from WinRateDonutChart (wlc- prefix) because both
+ * charts render on the same dashboard page at once and SVG gradient ids are
+ * document-scoped, not per-chart.
+ */
+export function WinLossCountDonutChart({ wins, losses }: { wins: number; losses: number }) {
+  const total = wins + losses;
+
+  if (total === 0) {
+    return (
+      <div className="flex h-[100px] w-full flex-col items-center justify-center text-center">
+        <p className="text-[11px] text-muted-foreground">No closed trades yet</p>
+      </div>
+    );
+  }
+
+  const winRate = Math.round((wins / total) * 100);
+  const data = [
+    { name: "Wins", value: wins },
+    { name: "Losses", value: losses },
+  ];
+  const fills = ["url(#wlcWinFill)", "url(#wlcLossFill)"];
+
+  return (
+    <div>
+      <div className="relative" style={{ width: "100%", height: 100 }}>
+        <ResponsiveContainer width="100%" height={100}>
+          <PieChart>
+            <defs>
+              <linearGradient id="wlcWinFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="var(--signalflow-win)" stopOpacity={1} />
+                <stop offset="100%" stopColor="var(--signalflow-win)" stopOpacity={0.55} />
+              </linearGradient>
+              <linearGradient id="wlcLossFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="var(--signalflow-loss)" stopOpacity={1} />
+                <stop offset="100%" stopColor="var(--signalflow-loss)" stopOpacity={0.55} />
+              </linearGradient>
+            </defs>
+            <Pie
+              data={data}
+              dataKey="value"
+              nameKey="name"
+              innerRadius={28}
+              outerRadius={44}
+              paddingAngle={3}
+              startAngle={90}
+              endAngle={-270}
+              isAnimationActive={false}
+            >
+              {data.map((entry, index) => (
+                <Cell key={entry.name} fill={fills[index % fills.length]} />
+              ))}
+            </Pie>
+            <Tooltip
+              contentStyle={chartTooltipStyle}
+              labelStyle={chartTooltipLabelStyle}
+              itemStyle={chartTooltipItemStyle}
+            />
+          </PieChart>
+        </ResponsiveContainer>
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <div className="text-center">
+            <p className="font-heading text-base font-bold leading-none">{winRate}%</p>
+            <p className="text-[8px] uppercase tracking-wide text-muted-foreground">Win rate</p>
+          </div>
+        </div>
+      </div>
+      <div className="mt-2 flex items-center justify-center gap-3 text-[11px] text-muted-foreground">
+        <span className="flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-sm" style={{ backgroundColor: "var(--signalflow-win)" }} />
+          {wins} Won
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-sm" style={{ backgroundColor: "var(--signalflow-loss)" }} />
+          {losses} Lost
+        </span>
+      </div>
+    </div>
+  );
+}
+
 function pctSigned(n: number) {
   return `${n >= 0 ? "+" : ""}${n.toFixed(1)}%`;
 }

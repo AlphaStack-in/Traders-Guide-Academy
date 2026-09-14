@@ -11,6 +11,7 @@ import {
   InstrumentCaptureDonutChart,
   TradeStatsRangeChart,
   WinLossBarChart,
+  WinLossCountDonutChart,
   WinRateDonutChart,
 } from "@/components/admin/dashboard-charts";
 import type { DashboardMetrics } from "@/lib/signal-metrics";
@@ -177,8 +178,16 @@ export function DashboardContent({
             <SectionNumber n={2} />
             <h2 className="font-heading text-sm font-semibold">Trade Stats</h2>
           </div>
-          <div className="grid gap-6 sm:grid-cols-[minmax(140px,200px)_1fr] sm:items-center">
-            <KpiCard label="Total Signals" value={String(metrics.totalSignals)} delayMs={0} />
+          <div className="grid gap-6 sm:grid-cols-[minmax(140px,200px)_1fr] sm:items-start">
+            <div className="flex flex-col gap-4">
+              <KpiCard label="Total Signals" value={String(metrics.totalSignals)} delayMs={0} />
+              <div className="signalflow-glass rounded-xl border border-white/5 p-3">
+                <p className="mb-1 text-center text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                  Win / Loss
+                </p>
+                <WinLossCountDonutChart wins={metrics.winCount} losses={metrics.lossCount} />
+              </div>
+            </div>
             <div>
               <p className="mb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
                 Best, Worst, Avg. Trades
