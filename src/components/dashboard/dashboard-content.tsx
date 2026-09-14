@@ -178,14 +178,16 @@ export function DashboardContent({
             <h2 className="font-heading text-sm font-semibold">Trade Stats</h2>
           </div>
           <div className="grid gap-6 sm:grid-cols-[minmax(140px,200px)_1fr] sm:items-start">
-            <div>
-              <p className="mb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
-                Total Signals{" "}
-                <span className="font-heading text-base font-bold signalflow-gold-text tabular-nums">
-                  {metrics.totalSignals}
-                </span>
+            <div className="flex flex-col items-center text-center">
+              <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                Total Signals
               </p>
-              <WinLossCountDonutChart wins={metrics.winCount} losses={metrics.lossCount} />
+              <p className="mt-3 font-heading text-3xl font-bold signalflow-gold-text tabular-nums">
+                {metrics.totalSignals}
+              </p>
+              <div className="mt-4">
+                <WinLossCountDonutChart wins={metrics.winCount} losses={metrics.lossCount} />
+              </div>
             </div>
             <div>
               <p className="mb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">

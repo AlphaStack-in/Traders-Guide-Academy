@@ -487,7 +487,7 @@ export function WinLossCountDonutChart({ wins, losses }: { wins: number; losses:
   const fills = ["url(#wlcWinFill)", "url(#wlcLossFill)"];
 
   return (
-    <div className="shrink-0">
+    <div className="flex flex-col items-center">
       <div className="relative" style={{ width: 110, height: 100 }}>
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
