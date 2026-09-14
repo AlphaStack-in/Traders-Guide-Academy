@@ -58,6 +58,16 @@ export function changelogTimestamp(date: string): string {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.69",
+    date: "14 Sep 2026, 22:15 IST",
+    title: "My Subscriptions terminal dashboard",
+    highlights: [
+      "Account → My Subscriptions is now a 3-column executive-terminal layout: billing hub, PMS portfolio centerpiece, and product columns",
+      "Shared TerminalCard, stat tiles, and a billing-period progress ring unify the section cards",
+      "Responsive grid collapses to a single column on mobile",
+    ],
+  },
+  {
     version: "1.0.68",
     date: "14 Sep 2026, 21:50 IST",
     title: "A-to-Z catalog fold-in",

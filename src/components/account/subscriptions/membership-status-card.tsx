@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ContinuePremiumPanel } from "@/components/site/continue-premium-panel";
 import { cancelMySubscription } from "@/app/account/billing/actions";
 import { formatDateOnly } from "@/lib/utils";
+import { TerminalCard, ProgressRing, EyebrowBadge } from "@/components/account/subscriptions/ui";
 import type { MembershipSummary, PlanBillingSummary } from "@/lib/subscriptions";
 
 interface MembershipStatusCardProps {
@@ -17,11 +18,22 @@ interface MembershipStatusCardProps {
   phone: string;
 }
 
+function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-3 py-1">
+      <span className="text-xs text-muted-foreground">{label}</span>
+      <span className="text-right text-xs font-semibold text-slate-200">{value}</span>
+    </div>
+  );
+}
+
 /**
- * "Plan & Billing" card for /account/subscriptions — combines the recurring
- * signals-membership (Cashfree Autopay) status with the plain facts that
- * used to live in the Your Info card on /account/profile (registration
- * plan, Joined date, estimated billing period) plus the Upgrade/Extend
+ * "Plan & Billing" card for /account/subscriptions — the dashboard's
+ * flagship card: combines the recurring signals-membership (Cashfree
+ * Autopay) status with the plain facts that used to live in the Your Info
+ * card on /account/profile (registration plan, Joined date, estimated
+ * billing period), a progress ring for the current period
+ * (planBilling.progress — see lib/subscriptions.ts), and the Upgrade/Extend
  * actions. Deliberately reuses the existing cancelMySubscription server
  * action (src/app/account/billing/actions.ts) rather than duplicating any
  * Cashfree logic.
@@ -42,18 +54,23 @@ export function MembershipStatusCard({ membership, planBilling, phone }: Members
     });
   }
 
+  const periodLabel = membership?.currentPeriodEnd
+    ? `Renews ${formatDateOnly(membership.currentPeriodEnd)}`
+    : planBilling.periodStartLabel && planBilling.periodEndLabel
+      ? `${planBilling.periodStartLabel} – ${planBilling.periodEndLabel}`
+      : null;
+
   return (
-    <div className="signalflow-glass signalflow-gold-border flex flex-col gap-3 rounded-2xl border p-5">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h2 className="font-heading text-lg font-bold">
-            Plan &amp; <span className="signalflow-gold-text">Billing</span>
-          </h2>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            Your plan, renewal, and premium signals subscription.
-          </p>
-        </div>
-        {membership?.isActive && (
+    <TerminalCard
+      title={
+        <>
+          Plan &amp; <span className="signalflow-gold-text">Billing</span>
+        </>
+      }
+      subtitle="Your plan, renewal, and premium signals subscription."
+      accent="primary"
+      action={
+        membership?.isActive && (
           <Button
             type="button"
             variant="outline"
@@ -64,44 +81,41 @@ export function MembershipStatusCard({ membership, planBilling, phone }: Members
           >
             {isCancelling ? "Cancelling…" : "Cancel Autopay"}
           </Button>
+        )
+      }
+    >
+      <div className="flex items-center justify-between gap-3">
+        <EyebrowBadge tone={membership?.isActive ? "win" : "primary"} pulse={!!membership?.isActive}>
+          {membership ? membership.statusLabel : "Registered"}
+        </EyebrowBadge>
+        {membership && (
+          <span className="text-[10px] font-mono text-muted-foreground">{membership.billingCycleLabel}</span>
         )}
       </div>
 
-      <table className="w-full border-collapse text-sm">
-        <tbody>
-          <tr className="border-b border-white/5">
-            <td className="w-[38%] py-2 pr-4 align-top text-xs text-muted-foreground">Plan</td>
-            <td className="py-2 font-heading font-semibold">{planBilling.planLabel}</td>
-          </tr>
-          {membership ? (
-            <tr className={membership.currentPeriodEnd ? "border-b border-white/5" : undefined}>
-              <td className="py-2 pr-4 align-top text-xs text-muted-foreground">Autopay</td>
-              <td className="py-2 font-heading font-semibold">
-                {membership.statusLabel}
-                {membership.currentPeriodEnd && (
-                  <span className="ml-1.5 font-normal text-muted-foreground">
-                    · renews {formatDateOnly(membership.currentPeriodEnd)}
-                  </span>
-                )}
-              </td>
-            </tr>
-          ) : (
-            planBilling.periodStartLabel &&
-            planBilling.periodEndLabel && (
-              <tr className="border-b border-white/5">
-                <td className="py-2 pr-4 align-top text-xs text-muted-foreground">Period (est.)</td>
-                <td className="py-2 font-heading font-semibold">
-                  {planBilling.periodStartLabel} – {planBilling.periodEndLabel}
-                </td>
-              </tr>
-            )
-          )}
-          <tr>
-            <td className="py-2 pr-4 align-top text-xs text-muted-foreground">Joined</td>
-            <td className="py-2 font-heading font-semibold">{planBilling.joinedLabel}</td>
-          </tr>
-        </tbody>
-      </table>
+      <div>
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Plan</p>
+        <h3 className="mt-0.5 font-heading text-lg font-extrabold text-white">{planBilling.planLabel}</h3>
+      </div>
+
+      {planBilling.progress && (
+        <div className="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-black/20 p-3">
+          <div className="space-y-1">
+            <span className="block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              {membership?.currentPeriodEnd ? "Current Period" : "Estimated Period"}
+            </span>
+            {periodLabel && <p className="text-xs font-semibold text-white">{periodLabel}</p>}
+            <span className="inline-block font-mono text-[11px] font-semibold text-[var(--signalflow-win)]">
+              {planBilling.progress.daysRemaining} days remaining
+            </span>
+          </div>
+          <ProgressRing percent={planBilling.progress.percent} />
+        </div>
+      )}
+
+      <div className="pt-1">
+        <DetailRow label="Joined" value={planBilling.joinedLabel} />
+      </div>
 
       <div className="flex flex-wrap items-center gap-2 border-t border-white/5 pt-3">
         {planBilling.showUpgrade && (
@@ -121,6 +135,6 @@ export function MembershipStatusCard({ membership, planBilling, phone }: Members
           authenticated
         />
       </div>
-    </div>
+    </TerminalCard>
   );
 }

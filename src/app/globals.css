@@ -224,6 +224,10 @@
     border-color: color-mix(in oklab, var(--signalflow-gold-start) 45%, transparent);
     box-shadow: 0 0 24px -10px color-mix(in oklab, var(--signalflow-gold-start) 35%, transparent);
   }
+  .signalflow-primary-border {
+    border-color: color-mix(in oklab, var(--primary) 55%, transparent);
+    box-shadow: 0 0 24px -8px color-mix(in oklab, var(--primary) 45%, transparent);
+  }
 
   .signalflow-reveal {
     animation: signalflow-reveal-in 0.6s ease both;

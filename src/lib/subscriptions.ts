@@ -102,6 +102,13 @@ export interface PmsAccountEntry {
 // profile-edit-form.tsx used to pick what "Upgrade" should default to.
 const TIER_ORDER: PricingPlan["id"][] = ["monthly", "quarterly", "yearly"];
 
+export interface PeriodProgress {
+  /** 0-100, how far through the current billing period "today" falls. */
+  percent: number;
+  daysRemaining: number;
+  totalDays: number;
+}
+
 export interface PlanBillingSummary {
   /** Which pricing tier the subscriber registered under (e.g. "Quarterly"), or "—". */
   planLabel: string;
@@ -116,6 +123,14 @@ export interface PlanBillingSummary {
    */
   periodStartLabel: string | null;
   periodEndLabel: string | null;
+  /**
+   * Same current-period window as above (real Autopay period when one
+   * exists, otherwise the estimated registration-based projection),
+   * reduced to a ring percentage + days-remaining for the "My Subscriptions"
+   * dashboard's progress ring. Null only when there's no period to project
+   * at all (e.g. no billingCycle on record and no Autopay subscription).
+   */
+  progress: PeriodProgress | null;
   /** For the Upgrade/Extend panels. */
   plans: PricingPlan[];
   currentPlanId?: PricingPlan["id"];
@@ -152,6 +167,28 @@ function addCycleInterval(date: Date, cycle: "MONTHLY" | "QUARTERLY" | "YEARLY")
   else if (cycle === "QUARTERLY") d.setMonth(d.getMonth() + 3);
   else d.setFullYear(d.getFullYear() + 1);
   return d;
+}
+
+// Inverse of addCycleInterval — used to back into a period *start* from a
+// real Subscription.currentPeriodEnd, which Cashfree gives us without a
+// matching currentPeriodStart on our side.
+function subtractCycleInterval(date: Date, cycle: "MONTHLY" | "QUARTERLY" | "YEARLY"): Date {
+  const d = new Date(date);
+  if (cycle === "MONTHLY") d.setMonth(d.getMonth() - 1);
+  else if (cycle === "QUARTERLY") d.setMonth(d.getMonth() - 3);
+  else d.setFullYear(d.getFullYear() - 1);
+  return d;
+}
+
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
+function computePeriodProgress(periodStart: Date, periodEnd: Date): PeriodProgress {
+  const now = Date.now();
+  const totalMs = Math.max(periodEnd.getTime() - periodStart.getTime(), ONE_DAY_MS);
+  const percent = Math.min(100, Math.max(0, Math.round(((now - periodStart.getTime()) / totalMs) * 100)));
+  const daysRemaining = Math.max(0, Math.ceil((periodEnd.getTime() - now) / ONE_DAY_MS));
+  const totalDays = Math.max(1, Math.round(totalMs / ONE_DAY_MS));
+  return { percent, daysRemaining, totalDays };
 }
 
 export async function getSubscriberSubscriptionsSummary(
@@ -287,6 +324,21 @@ export async function getSubscriberSubscriptionsSummary(
       ? TIER_ORDER[currentTierIndex + 1]
       : undefined;
 
+  // Progress ring for the dashboard: prefer the real Autopay period
+  // (back-computing its start from currentPeriodEnd + billingCycle, since
+  // Cashfree only gives us the end); fall back to the same estimated
+  // registration-based projection the labels below already use.
+  let progress: PeriodProgress | null = null;
+  if (latestSubscription?.currentPeriodEnd) {
+    const periodStart = subtractCycleInterval(latestSubscription.currentPeriodEnd, latestSubscription.billingCycle);
+    progress = computePeriodProgress(periodStart, latestSubscription.currentPeriodEnd);
+  } else if (subscriber.billingCycle) {
+    progress = computePeriodProgress(
+      subscriber.createdAt,
+      addCycleInterval(subscriber.createdAt, subscriber.billingCycle),
+    );
+  }
+
   const planBilling: PlanBillingSummary = {
     planLabel: subscriberPlan ? subscriberPlan.label : "—",
     joinedLabel: formatFullTimestamp(subscriber.createdAt),
@@ -300,6 +352,7 @@ export async function getSubscriberSubscriptionsSummary(
       !membership?.currentPeriodEnd && subscriber.billingCycle
         ? formatDateOnly(addCycleInterval(subscriber.createdAt, subscriber.billingCycle))
         : null,
+    progress,
     plans: clientConfig.pricingPlans,
     currentPlanId: subscriberPlan?.id,
     upgradePlanId,
