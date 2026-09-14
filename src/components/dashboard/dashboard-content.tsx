@@ -179,11 +179,11 @@ export function DashboardContent({
           </div>
           <div className="grid gap-6 sm:grid-cols-[minmax(140px,200px)_1fr] sm:items-start">
             <div className="flex flex-col items-center text-center">
-              <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+              <p className="flex items-baseline gap-3 whitespace-nowrap text-xs font-bold uppercase tracking-wide text-muted-foreground">
                 Total Signals
-              </p>
-              <p className="mt-3 font-heading text-3xl font-bold signalflow-gold-text tabular-nums">
-                {metrics.totalSignals}
+                <span className="font-heading text-2xl font-bold signalflow-gold-text tabular-nums">
+                  {metrics.totalSignals}
+                </span>
               </p>
               <div className="mt-4">
                 <WinLossCountDonutChart wins={metrics.winCount} losses={metrics.lossCount} />
