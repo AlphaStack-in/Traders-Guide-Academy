@@ -469,7 +469,7 @@ export function WinLossCountDonutChart({ wins, losses }: { wins: number; losses:
 
   if (total === 0) {
     return (
-      <div className="flex h-[100px] w-full flex-col items-center justify-center text-center">
+      <div className="flex h-[100px] w-[120px] shrink-0 flex-col items-center justify-center text-center">
         <p className="text-[11px] text-muted-foreground">No closed trades yet</p>
       </div>
     );
@@ -483,9 +483,9 @@ export function WinLossCountDonutChart({ wins, losses }: { wins: number; losses:
   const fills = ["url(#wlcWinFill)", "url(#wlcLossFill)"];
 
   return (
-    <div>
-      <div className="relative" style={{ width: "100%", height: 100 }}>
-        <ResponsiveContainer width="100%" height={100}>
+    <div className="shrink-0">
+      <div className="relative" style={{ width: 110, height: 100 }}>
+        <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <defs>
               <linearGradient id="wlcWinFill" x1="0" y1="0" x2="0" y2="1">
@@ -497,19 +497,22 @@ export function WinLossCountDonutChart({ wins, losses }: { wins: number; losses:
                 <stop offset="100%" stopColor="var(--signalflow-loss)" stopOpacity={0.55} />
               </linearGradient>
             </defs>
+            {/* thin ring (innerRadius close to outerRadius); stroke="none" on
+                both Pie and Cell drops Recharts' default white sector outline */}
             <Pie
               data={data}
               dataKey="value"
               nameKey="name"
-              innerRadius={28}
+              innerRadius={36}
               outerRadius={44}
               paddingAngle={3}
               startAngle={90}
               endAngle={-270}
               isAnimationActive={false}
+              stroke="none"
             >
               {data.map((entry, index) => (
-                <Cell key={entry.name} fill={fills[index % fills.length]} />
+                <Cell key={entry.name} fill={fills[index % fills.length]} stroke="none" />
               ))}
             </Pie>
             <Tooltip

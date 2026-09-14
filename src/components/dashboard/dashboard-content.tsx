@@ -2,7 +2,6 @@
 
 import { useRef, useState } from "react";
 import { Share2 } from "lucide-react";
-import { KpiCard } from "@/components/admin/kpi-card";
 import { SectionNumber } from "@/components/admin/section-number";
 import { RecentSignalsList, type RecentSignalItem } from "@/components/admin/recent-signals-list";
 import {
@@ -178,13 +177,17 @@ export function DashboardContent({
             <SectionNumber n={2} />
             <h2 className="font-heading text-sm font-semibold">Trade Stats</h2>
           </div>
-          <div className="grid gap-6 sm:grid-cols-[minmax(140px,200px)_1fr] sm:items-start">
-            <div className="flex flex-col gap-4">
-              <KpiCard label="Total Signals" value={String(metrics.totalSignals)} delayMs={0} />
-              <div className="signalflow-glass rounded-xl border border-white/5 p-3">
-                <p className="mb-1 text-center text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
-                  Win / Loss
-                </p>
+          <div className="grid gap-6 sm:grid-cols-[minmax(140px,200px)_1fr] sm:items-center">
+            <div className="signalflow-glass rounded-xl border border-white/5 p-4">
+              <div className="flex items-center gap-4">
+                <div className="shrink-0">
+                  <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                    Total Signals
+                  </p>
+                  <p className="mt-1 font-heading text-3xl font-bold signalflow-gold-text">
+                    {metrics.totalSignals}
+                  </p>
+                </div>
                 <WinLossCountDonutChart wins={metrics.winCount} losses={metrics.lossCount} />
               </div>
             </div>
