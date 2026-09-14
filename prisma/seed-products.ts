@@ -161,7 +161,7 @@ const PRODUCTS: SeedProduct[] = [
     longDescription:
       "A disciplined group investment approach backed by strategy, technology and experience. 50 like-minded investors form one group, each contributing ₹30,000 (₹15,00,000 total capital). We trade the pooled fund using proven strategies, advanced indicators and real market experience, reinvesting profits to compound growth faster. The target is to grow the fund to ₹1,00,00,000 as quickly as possible — once reached, the full amount is divided among all members.\n\nIncludes free access to a 1-year mentorship program, all premium indicators, important study notes, and live support and guidance, plus a like-minded trading community.\n\nRisk cover: if there is any loss, we bear it. Minimum return guarantee: even if the ₹1 crore target isn't reached, members get a minimum 15% return in year 1. Profit share: after profits are distributed to the group, a 20% commission is taken.",
     priceInPaise: 3000000,
-    isFeatured: true,
+    isFeatured: false,
     imageUrl: "/posters/pms-portfolio-management-system-2026-09-10.jpeg",
   },
   {

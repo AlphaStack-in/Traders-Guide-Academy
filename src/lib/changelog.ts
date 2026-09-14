@@ -58,6 +58,15 @@ export function changelogTimestamp(date: string): string {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.67",
+    date: "14 Sep 2026, 20:55 IST",
+    title: "Seminar webinar product catalog",
+    highlights: [
+      "Eight new /products listings from the September 2026 seminar promo (manual seed: prisma/seed-products-webinar.ts)",
+      "Featured catalog band now targets A-to-Z Masterclass & Mentorship — PMS is no longer featured",
+    ],
+  },
+  {
     version: "1.0.66",
     date: "13 Sep 2026, 22:55 IST",
     title: "Trade Stats range chart",
