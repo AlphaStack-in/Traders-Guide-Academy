@@ -11,6 +11,13 @@ import {
 
 interface SubscriberSettingsFormProps {
   initial: SubscriberPreferences;
+  /**
+   * Master switch from the admin Settings page (AppSettings.digestEnabled).
+   * When the admin has turned the weekly digest email off site-wide, the
+   * feature and its toggle are hidden here too — there's nothing for a
+   * subscriber to opt in/out of if it isn't sending.
+   */
+  digestFeatureEnabled: boolean;
 }
 
 interface ToggleRowProps {
@@ -33,7 +40,7 @@ function ToggleRow({ title, description, checked, disabled, onCheckedChange }: T
   );
 }
 
-export function SubscriberSettingsForm({ initial }: SubscriberSettingsFormProps) {
+export function SubscriberSettingsForm({ initial, digestFeatureEnabled }: SubscriberSettingsFormProps) {
   const [isPending, startTransition] = useTransition();
   const [prefs, setPrefs] = useState<SubscriberPreferences>(initial);
 
@@ -57,18 +64,20 @@ export function SubscriberSettingsForm({ initial }: SubscriberSettingsFormProps)
         Notification <span className="signalflow-gold-text">Preferences</span>
       </h2>
       <div className="mt-2 divide-y divide-white/5">
-        <ToggleRow
-          title="Weekly performance digest email"
-          description="A weekly summary of win rate and signals sent to your email. Off means you're unsubscribed."
-          checked={!prefs.emailDigestOptOut}
-          disabled={isPending}
-          onCheckedChange={(checked) =>
-            persist(
-              { emailDigestOptOut: !checked },
-              checked ? "You'll receive the weekly digest email." : "You're unsubscribed from the weekly digest.",
-            )
-          }
-        />
+        {digestFeatureEnabled && (
+          <ToggleRow
+            title="Weekly performance digest email"
+            description="A weekly summary of win rate and signals sent to your email. Off means you're unsubscribed."
+            checked={!prefs.emailDigestOptOut}
+            disabled={isPending}
+            onCheckedChange={(checked) =>
+              persist(
+                { emailDigestOptOut: !checked },
+                checked ? "You'll receive the weekly digest email." : "You're unsubscribed from the weekly digest.",
+              )
+            }
+          />
+        )}
         <ToggleRow
           title="Notification bell alerts"
           description="Instant alerts in the bell icon (top nav) for new signals and admin updates."

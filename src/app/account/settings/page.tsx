@@ -5,6 +5,7 @@ import { getCurrentSubscriber } from "@/lib/subscriber-auth";
 import { getSubscriberPreferences } from "@/app/account/settings/actions";
 import { SubscriberSettingsForm } from "@/components/account/settings-form";
 import { ChangePasswordForm } from "@/components/account/change-password-form";
+import { getAppSettings } from "@/lib/app-settings";
 
 export default async function AccountSettingsPage() {
   const subscriber = await getCurrentSubscriber();
@@ -12,7 +13,10 @@ export default async function AccountSettingsPage() {
     redirect("/login?redirectTo=/account/settings");
   }
 
-  const preferences = await getSubscriberPreferences();
+  const [preferences, appSettings] = await Promise.all([
+    getSubscriberPreferences(),
+    getAppSettings(),
+  ]);
 
   return (
     <div className="flex min-h-screen flex-col md:pl-64">
@@ -26,7 +30,7 @@ export default async function AccountSettingsPage() {
             Control what notifications you receive.
           </p>
         </div>
-        <SubscriberSettingsForm initial={preferences} />
+        <SubscriberSettingsForm initial={preferences} digestFeatureEnabled={appSettings.digestEnabled} />
         <ChangePasswordForm hasPassword={Boolean(subscriber.passwordHash)} />
       </main>
       <Footer />
