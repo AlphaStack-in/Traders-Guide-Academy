@@ -58,6 +58,14 @@ export function changelogTimestamp(date: string): string {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.72",
+    date: "15 Sep 2026, 07:53 IST",
+    title: "Wider products layout",
+    highlights: [
+      "/products page container, filter sidebar, and sidebar-to-list spacing widened for large screens",
+    ],
+  },
+  {
     version: "1.0.71",
     date: "15 Sep 2026, 07:35 IST",
     title: "Products catalog polish",

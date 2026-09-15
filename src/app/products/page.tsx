@@ -61,7 +61,7 @@ export default async function ProductsPage() {
   return (
     <div className="flex min-h-screen flex-col md:pl-64">
       <Navbar />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10 sm:px-6 lg:px-8">
+      <main className="mx-auto w-full max-w-[1440px] flex-1 px-4 py-10 sm:px-6 lg:px-10 xl:px-12">
         <div className="mb-8 space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
             <div className="flex items-center gap-1.5">
@@ -83,7 +83,7 @@ export default async function ProductsPage() {
           </span>
 
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div className="max-w-2xl">
+            <div className="max-w-3xl">
               <h1 className="font-heading text-3xl font-bold sm:text-4xl">
                 <span className="signalflow-gold-text">Master the Markets with Professional Edge</span>
               </h1>

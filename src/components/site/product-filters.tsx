@@ -71,7 +71,7 @@ export function ProductFilters({
   }
 
   return (
-    <aside className="flex w-full shrink-0 flex-col gap-4 lg:sticky lg:top-20 lg:max-w-[280px]">
+    <aside className="flex w-full shrink-0 flex-col gap-4 lg:sticky lg:top-20 lg:max-w-[300px]">
       <div className="signalflow-glass space-y-5 rounded-2xl p-4">
         <div className="flex items-center justify-between border-b border-white/10 pb-3">
           <div className="flex items-center gap-2">

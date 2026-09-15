@@ -176,7 +176,7 @@ export function ProductCatalog({
   }
 
   return (
-    <div className="flex flex-col gap-6 lg:flex-row">
+    <div className="flex flex-col gap-6 lg:flex-row lg:gap-8">
       <ProductFilters
         counts={counts}
         totalCount={products.length}
