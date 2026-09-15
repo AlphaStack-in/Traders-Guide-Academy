@@ -58,6 +58,15 @@ export function changelogTimestamp(date: string): string {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.71",
+    date: "15 Sep 2026, 07:35 IST",
+    title: "Products catalog polish",
+    highlights: [
+      "/products hero: breadcrumb, live build-version badge, Advanced Facets anchor, and updated marketplace copy",
+      "Quick-filter presets drive real filter/sort state; category art thumbnails when products lack images",
+    ],
+  },
+  {
     version: "1.0.70",
     date: "15 Sep 2026, 07:00 IST",
     title: "Products catalog redesign",

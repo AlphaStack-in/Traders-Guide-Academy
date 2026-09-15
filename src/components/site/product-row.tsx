@@ -27,18 +27,82 @@ const COLLAPSED_THUMB_PX = 120;
 const EXPANDED_THUMB_PX = 220;
 
 /**
+ * Decorative fallback thumbnail for a product with no real imageUrl —
+ * a tinted glass box with corner-ring accents, the category icon, and a
+ * small uppercase category tag chip underneath (all driven by the
+ * product's real category, never invented per-product flourishes) —
+ * modeled on the "Apex Quant Dark" reference's card-art treatment for its
+ * demo listings, adapted to be generic/reusable across every real product
+ * instead of a one-off per fake item.
+ */
+function CategoryThumbnail({ product, size }: { product: Product; size: number }) {
+  if (product.imageUrl) {
+    return (
+      // Plain <img>, not next/image — a poster's imageUrl backfilled here
+      // (see News & Alerts admin actions) can be a base64 data: URL, which
+      // next/image's optimizer can't process.
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover" />
+    );
+  }
+
+  const Icon = PRODUCT_CATEGORY_ICONS[product.category];
+  const colorVar = PRODUCT_CATEGORY_COLOR_VAR[product.category];
+  const iconPx = Math.round(size * 0.38);
+  const large = size >= 200;
+
+  return (
+    <div
+      className="relative flex h-full w-full flex-col items-center justify-center gap-1.5"
+      style={{
+        background: `linear-gradient(135deg, color-mix(in oklab, var(${colorVar}) 20%, transparent), color-mix(in oklab, var(${colorVar}) 4%, transparent) 70%)`,
+      }}
+    >
+      <div
+        className="pointer-events-none absolute -top-3 -right-3 rounded-full border"
+        style={{
+          width: large ? 64 : 40,
+          height: large ? 64 : 40,
+          borderColor: `color-mix(in oklab, var(${colorVar}) 30%, transparent)`,
+        }}
+      />
+      <div className="pointer-events-none absolute -bottom-2 -left-2 h-8 w-8 rounded-full border border-white/10" />
+      <Icon
+        style={{ color: `var(${colorVar})`, width: iconPx, height: iconPx }}
+        strokeWidth={1.5}
+        className="relative z-10"
+      />
+      <span
+        className="relative z-10 rounded px-1.5 py-0.5 text-[9px] font-bold tracking-wider uppercase"
+        style={{
+          background: `color-mix(in oklab, var(${colorVar}) 16%, transparent)`,
+          color: `var(${colorVar})`,
+          border: `1px solid color-mix(in oklab, var(${colorVar}) 30%, transparent)`,
+        }}
+      >
+        {PRODUCT_CATEGORY_LABELS[product.category]}
+      </span>
+    </div>
+  );
+}
+
+/**
  * A single horizontal product row on /products (and the "related products"
  * section on the detail page) — thumbnail, details, price/buy column, with
  * a click-to-expand inline detail panel. Rows are intentionally taller than
  * a typical list item (generous padding) to comfortably fit the bigger
  * thumbnail and two-line description, per the approved mockup.
  *
- * Visual language (badges, category tinting, glass card, expand drawer) is
- * modeled on the "Apex Quant Dark" institutional-marketplace reference the
- * user supplied — adapted to this site's existing teal/gold brand tokens
- * (see globals.css) rather than introducing a new palette, and to the real
- * Product fields in prisma/schema.prisma (no fabricated stats like fake
- * durations or lesson counts that aren't in the data model).
+ * Visual language (badges, category tinting, glass card, expand drawer,
+ * decorative card-art thumbnails) is modeled on the "Apex Quant Dark"
+ * institutional-marketplace reference the user supplied — adapted to this
+ * site's existing teal/gold brand tokens (see globals.css) rather than
+ * introducing a new palette, and to the real Product fields in
+ * prisma/schema.prisma. The reference's expanded-card content for its one
+ * demo listing (video preview, "3h 30m" duration, "8 Lessons", difficulty,
+ * format) is deliberately NOT reproduced here — those aren't real fields on
+ * Product, and the user confirmed (2026-09-15) this real, live catalog
+ * should never show fabricated per-product stats.
  *
  * The row itself is a div (role="button"), not a real <button> — the price
  * button and "View Details" button inside it are real interactive elements,
@@ -66,10 +130,8 @@ export function ProductRow({
   isAuthenticated: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const Icon = PRODUCT_CATEGORY_ICONS[product.category];
   const colorVar = PRODUCT_CATEGORY_COLOR_VAR[product.category];
-  const iconSize = product.isFeatured ? 54 : 48;
-  const expandedIconSize = product.isFeatured ? 96 : 88;
+  const Icon = PRODUCT_CATEGORY_ICONS[product.category];
   const titleSize = product.isFeatured ? "text-lg" : "text-base";
   const isFree = product.priceInPaise === 0;
   const savingsPercent = computeSavingsPercent(product.originalPriceInPaise, product.priceInPaise);
@@ -88,10 +150,6 @@ export function ProductRow({
   function stopPropagation(e: MouseEvent) {
     e.stopPropagation();
   }
-
-  const thumbBackground = product.imageUrl
-    ? undefined
-    : `color-mix(in oklab, var(${colorVar}) 16%, transparent)`;
 
   return (
     <div
@@ -122,25 +180,10 @@ export function ProductRow({
         className="flex w-full cursor-pointer flex-col items-stretch gap-4 px-5 py-6 text-left sm:flex-row sm:items-center sm:gap-6 sm:py-8"
       >
         <div
-          className="relative flex shrink-0 items-center justify-center self-start overflow-hidden rounded-xl"
-          style={{ background: thumbBackground, height: COLLAPSED_THUMB_PX, width: COLLAPSED_THUMB_PX }}
+          className="shrink-0 self-start overflow-hidden rounded-xl border border-white/10 shadow-inner"
+          style={{ height: COLLAPSED_THUMB_PX, width: COLLAPSED_THUMB_PX }}
         >
-          {product.imageUrl ? (
-            // Plain <img>, not next/image — a poster's imageUrl backfilled
-            // here (see News & Alerts admin actions) can be a base64 data:
-            // URL, which next/image's optimizer can't process.
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={product.imageUrl}
-              alt={product.name}
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <Icon
-              style={{ color: `var(${colorVar})`, width: iconSize, height: iconSize }}
-              strokeWidth={1.5}
-            />
-          )}
+          <CategoryThumbnail product={product} size={COLLAPSED_THUMB_PX} />
         </div>
 
         <div className="min-w-0 flex-1">
@@ -223,22 +266,10 @@ export function ProductRow({
         <div className="border-t border-white/10 bg-black/20 px-5 py-5">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-start">
             <div
-              className="mx-auto flex shrink-0 items-center justify-center overflow-hidden rounded-xl sm:mx-0"
-              style={{ background: thumbBackground, height: EXPANDED_THUMB_PX, width: EXPANDED_THUMB_PX }}
+              className="mx-auto shrink-0 overflow-hidden rounded-xl border border-white/10 shadow-inner sm:mx-0"
+              style={{ height: EXPANDED_THUMB_PX, width: EXPANDED_THUMB_PX }}
             >
-              {product.imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={product.imageUrl}
-                  alt={product.name}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <Icon
-                  style={{ color: `var(${colorVar})`, width: expandedIconSize, height: expandedIconSize }}
-                  strokeWidth={1.5}
-                />
-              )}
+              <CategoryThumbnail product={product} size={EXPANDED_THUMB_PX} />
             </div>
 
             <div className="min-w-0 flex-1 space-y-4">

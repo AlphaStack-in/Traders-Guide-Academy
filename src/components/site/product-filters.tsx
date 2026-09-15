@@ -1,7 +1,7 @@
 "use client";
 
 import type { ProductCategory } from "@prisma/client";
-import { Filter, RotateCcw, Send, Star, LayoutGrid } from "lucide-react";
+import { Filter, RotateCcw, Headset, Star, LayoutGrid } from "lucide-react";
 import {
   PRODUCT_CATEGORY_LABELS,
   PRODUCT_CATEGORY_ORDER,
@@ -90,7 +90,7 @@ export function ProductFilters({
         </div>
 
         <div className="space-y-1.5">
-          <h3 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">Product Type</h3>
+          <h3 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">Product Class</h3>
           <button
             type="button"
             onClick={() => onChange({ ...filters, types: new Set() })}
@@ -143,7 +143,7 @@ export function ProductFilters({
         </div>
 
         <div className="space-y-1.5 border-t border-white/10 pt-4">
-          <h3 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">Price</h3>
+          <h3 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">Valuation Range</h3>
           <div className="flex flex-col gap-1.5">
             {PRICE_CHIPS.map((chip) => (
               <button
@@ -166,7 +166,7 @@ export function ProductFilters({
         </div>
 
         <div className="space-y-1.5 border-t border-white/10 pt-4">
-          <h3 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">Rating</h3>
+          <h3 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">Quality &amp; Rating</h3>
           <div className="flex flex-col gap-1.5">
             {RATING_CHIPS.map((chip) => (
               <button
@@ -198,11 +198,11 @@ export function ProductFilters({
       {telegramUrl && (
         <div className="space-y-1.5 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
           <div className="flex items-center gap-1.5 text-sm font-semibold text-primary">
-            <Send className="h-4 w-4" /> Need help choosing?
+            <Headset className="h-4 w-4" /> Desk Guidance
           </div>
           <p className="text-xs leading-relaxed text-muted-foreground">
-            Not sure which course, indicator or plan fits your trading style? Ask us directly on our Telegram
-            channel.
+            Not sure which course, indicator or plan fits your trading style? Chat directly with our team on
+            Telegram.
           </p>
           <a
             href={telegramUrl}
@@ -210,7 +210,7 @@ export function ProductFilters({
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
           >
-            Chat with the team →
+            Chat with Trading Desk →
           </a>
         </div>
       )}

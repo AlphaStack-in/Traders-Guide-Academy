@@ -1,10 +1,12 @@
+import Link from "next/link";
 import { Navbar } from "@/components/site/navbar";
 import { Footer } from "@/components/site/footer";
 import { ProductCatalog } from "@/components/site/product-catalog";
 import { getActiveProducts } from "@/lib/products";
 import { getCurrentSubscriber } from "@/lib/subscriber-auth";
 import { clientConfig } from "@/lib/client-config";
-import { ShieldCheck, LayoutGrid, Star, Gift, Lock } from "lucide-react";
+import { getBuildInfo } from "@/lib/build-info";
+import { ShieldCheck, LayoutGrid, Star, Gift, Lock, SlidersHorizontal } from "lucide-react";
 
 export const metadata = {
   title: `Products — ${process.env.NEXT_PUBLIC_SITE_NAME_SHORT ?? "TGA"}`,
@@ -12,6 +14,7 @@ export const metadata = {
 
 export default async function ProductsPage() {
   const [products, subscriber] = await Promise.all([getActiveProducts(), getCurrentSubscriber()]);
+  const { version } = getBuildInfo();
 
   // Real, computed stats for the hero strip below — no fabricated figures.
   // Weighted average rating (weighted by each product's own review count,
@@ -60,18 +63,46 @@ export default async function ProductsPage() {
       <Navbar />
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10 sm:px-6 lg:px-8">
         <div className="mb-8 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1.5">
+              <Link href="/" className="hover:text-primary">
+                Home
+              </Link>
+              <span>/</span>
+              <span className="font-medium text-primary">Products</span>
+            </div>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-2.5 py-1 font-semibold text-[var(--signalflow-win)]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[var(--signalflow-win)]" />
+              Catalog Live · v{version}
+            </span>
+          </div>
+
           <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold tracking-wide text-primary uppercase">
             <ShieldCheck className="h-3.5 w-3.5" />
-            Verified Product Catalog
+            High-Consequence Trading Architecture
           </span>
-          <div>
-            <h1 className="font-heading text-3xl font-bold sm:text-4xl">
-              <span className="signalflow-gold-text">Products</span>
-            </h1>
-            <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-              Courses, indicators, e-books, our PMS and membership plans from {clientConfig.siteName} — all
-              in one place.
-            </p>
+
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-2xl">
+              <h1 className="font-heading text-3xl font-bold sm:text-4xl">
+                <span className="signalflow-gold-text">Master the Markets with Professional Edge</span>
+              </h1>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Institutional-grade PineScript indicators, battle-tested options masterclasses, automated
+                signal suites, and private desk mentorship — forged for quantitative execution.
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground/70">
+                Courses, indicators, e-books, our PMS and membership plans from {clientConfig.siteName} — all
+                in one place.
+              </p>
+            </div>
+            <a
+              href="#quick-filter"
+              className="signalflow-glow inline-flex shrink-0 items-center gap-2 self-start rounded-lg border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-primary/40 lg:self-auto"
+            >
+              <SlidersHorizontal className="h-4 w-4 text-primary" />
+              Advanced Facets
+            </a>
           </div>
 
           <div className="grid grid-cols-2 gap-3 pt-1 sm:grid-cols-4">
@@ -92,11 +123,14 @@ export default async function ProductsPage() {
           </div>
         </div>
 
-        <ProductCatalog
-          products={products}
-          isAuthenticated={Boolean(subscriber)}
-          telegramUrl={clientConfig.telegramUrl || undefined}
-        />
+        <div id="quick-filter">
+          <ProductCatalog
+            products={products}
+            isAuthenticated={Boolean(subscriber)}
+            telegramUrl={clientConfig.telegramUrl || undefined}
+            liveVersionLabel={`v${version}`}
+          />
+        </div>
       </main>
       <Footer />
     </div>

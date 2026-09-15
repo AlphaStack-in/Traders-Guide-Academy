@@ -5,7 +5,7 @@ import type { Product, ProductCategory } from "@prisma/client";
 import { PackageSearch } from "lucide-react";
 import { ProductRow } from "@/components/site/product-row";
 import { ProductFilters, type ProductFilterState, type PriceBucket } from "@/components/site/product-filters";
-import { PRODUCT_CATEGORY_ORDER, PRODUCT_CATEGORY_LABELS, PRODUCT_CATEGORY_ICONS } from "@/lib/products";
+import { PRODUCT_CATEGORY_ORDER } from "@/lib/products";
 import {
   Select,
   SelectContent,
@@ -16,6 +16,15 @@ import {
 import { cn } from "@/lib/utils";
 
 type SortOption = "popularity" | "price-asc" | "price-desc" | "rating";
+
+/** The five quick-filter shortcuts shown as pills above the results — real
+ * filter/sort presets (not decorative), matching the reference mockup's
+ * quick-filter bar labels ("All Products", "Best Selling", "Free Starter
+ * Kits", "Highly Rated", "Elite Inner Circle"). Tracked as its own bit of
+ * state (rather than derived from filters/sort) so exactly one pill can be
+ * highlighted at a time and it cleanly clears whenever the sidebar or sort
+ * dropdown is used directly instead. */
+type QuickPreset = "all" | "best-selling" | "free" | "highly-rated" | "elite";
 
 const DEFAULT_FILTERS: ProductFilterState = {
   types: new Set(),
@@ -51,13 +60,18 @@ export function ProductCatalog({
   products,
   isAuthenticated,
   telegramUrl,
+  liveVersionLabel,
 }: {
   products: Product[];
   isAuthenticated: boolean;
   telegramUrl?: string;
+  /** Real deployed build version (e.g. "v1.0.70") for the "catalog live" status
+   * pill next to the results count — never a fabricated version/feed number. */
+  liveVersionLabel?: string;
 }) {
   const [filters, setFilters] = useState<ProductFilterState>(DEFAULT_FILTERS);
   const [sort, setSort] = useState<SortOption>("popularity");
+  const [activePreset, setActivePreset] = useState<QuickPreset>("all");
 
   const counts = useMemo(() => {
     const result = Object.fromEntries(PRODUCT_CATEGORY_ORDER.map((c) => [c, 0])) as Record<
@@ -67,6 +81,8 @@ export function ProductCatalog({
     for (const p of products) result[p.category] += 1;
     return result;
   }, [products]);
+
+  const freeCount = useMemo(() => products.filter((p) => p.priceInPaise === 0).length, [products]);
 
   const featured = products.find((p) => p.isFeatured);
 
@@ -116,17 +132,47 @@ export function ProductCatalog({
 
   function resetFilters() {
     setFilters(DEFAULT_FILTERS);
+    setSort("popularity");
+    setActivePreset("all");
   }
 
-  function setSingleType(category: ProductCategory | null) {
-    if (category === null) {
-      setFilters((f) => ({ ...f, types: new Set() }));
-      return;
+  /** Sidebar edits are a direct, deliberate action — clear whichever quick
+   * preset pill was highlighted so the UI never shows a pill "active" that
+   * no longer matches the real filter state. */
+  function updateFilters(next: ProductFilterState) {
+    setFilters(next);
+    setActivePreset("all");
+  }
+
+  function updateSort(next: SortOption) {
+    setSort(next);
+    setActivePreset("all");
+  }
+
+  function applyPreset(key: QuickPreset) {
+    setActivePreset(key);
+    switch (key) {
+      case "all":
+        setFilters(DEFAULT_FILTERS);
+        setSort("popularity");
+        break;
+      case "best-selling":
+        setFilters(DEFAULT_FILTERS);
+        setSort("popularity");
+        break;
+      case "free":
+        setFilters({ ...DEFAULT_FILTERS, priceBucket: "free" });
+        setSort("popularity");
+        break;
+      case "highly-rated":
+        setFilters({ ...DEFAULT_FILTERS, minRating: 5 });
+        setSort("rating");
+        break;
+      case "elite":
+        setFilters({ ...DEFAULT_FILTERS, types: new Set<ProductCategory>(["MEMBERSHIP"]) });
+        setSort("popularity");
+        break;
     }
-    setFilters((f) => {
-      const alreadyOnlyThis = f.types.size === 1 && f.types.has(category);
-      return { ...f, types: alreadyOnlyThis ? new Set() : new Set([category]) };
-    });
   }
 
   return (
@@ -135,60 +181,101 @@ export function ProductCatalog({
         counts={counts}
         totalCount={products.length}
         filters={filters}
-        onChange={setFilters}
+        onChange={updateFilters}
         onReset={resetFilters}
         hasActiveFilters={hasActiveFilters}
         telegramUrl={telegramUrl}
       />
 
       <div className="min-w-0 flex-1">
-        {/* Quick category pill row — a fast single-tap shortcut on top of the
-            sidebar's full multi-select controls, mirroring the reference's
-            horizontal filter bar. */}
+        {/* Quick preset pill row — real filter/sort shortcuts (not decorative
+            category tabs), matching the reference mockup's horizontal
+            quick-filter bar: All Products / Best Selling / Free Starter Kits /
+            Highly Rated / Elite Inner Circle. */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1">
           <button
             type="button"
-            onClick={() => setSingleType(null)}
+            onClick={() => applyPreset("all")}
             className={cn(
               "shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors",
-              filters.types.size === 0
+              activePreset === "all"
                 ? "bg-primary text-primary-foreground"
                 : "bg-white/5 text-muted-foreground hover:bg-white/10 hover:text-foreground",
             )}
           >
             All Products ({products.length})
           </button>
-          {PRODUCT_CATEGORY_ORDER.map((category) => {
-            const Icon = PRODUCT_CATEGORY_ICONS[category];
-            const active = filters.types.size === 1 && filters.types.has(category);
-            return (
-              <button
-                key={category}
-                type="button"
-                onClick={() => setSingleType(category)}
-                className={cn(
-                  "flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors",
-                  active
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-white/5 text-muted-foreground hover:bg-white/10 hover:text-foreground",
-                )}
-              >
-                <Icon className="h-3.5 w-3.5" />
-                {PRODUCT_CATEGORY_LABELS[category]} ({counts[category] ?? 0})
-              </button>
-            );
-          })}
+          <button
+            type="button"
+            onClick={() => applyPreset("best-selling")}
+            className={cn(
+              "flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors",
+              activePreset === "best-selling"
+                ? "bg-primary text-primary-foreground"
+                : "bg-white/5 text-muted-foreground hover:bg-white/10 hover:text-foreground",
+            )}
+          >
+            <span className="text-[var(--signalflow-gold-start)]">⚡</span> Best Selling
+          </button>
+          {freeCount > 0 && (
+            <button
+              type="button"
+              onClick={() => applyPreset("free")}
+              className={cn(
+                "flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors",
+                activePreset === "free"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-white/5 text-muted-foreground hover:bg-white/10 hover:text-foreground",
+              )}
+            >
+              <span>📘</span> Free Starter Kits ({freeCount})
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => applyPreset("highly-rated")}
+            className={cn(
+              "flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors",
+              activePreset === "highly-rated"
+                ? "bg-primary text-primary-foreground"
+                : "bg-white/5 text-muted-foreground hover:bg-white/10 hover:text-foreground",
+            )}
+          >
+            <span>📈</span> Highly Rated
+          </button>
+          {(counts.MEMBERSHIP ?? 0) > 0 && (
+            <button
+              type="button"
+              onClick={() => applyPreset("elite")}
+              className={cn(
+                "flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors",
+                activePreset === "elite"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-white/5 text-muted-foreground hover:bg-white/10 hover:text-foreground",
+              )}
+            >
+              <span>💎</span> Elite Inner Circle
+            </button>
+          )}
         </div>
 
         <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-white/[0.02] px-4 py-2.5">
-          <p className="text-sm text-muted-foreground">
-            Showing <span className="font-semibold text-foreground">{totalCount}</span> of{" "}
-            <span className="font-semibold text-foreground">{products.length}</span> product
-            {products.length === 1 ? "" : "s"}
-          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <p className="text-sm text-muted-foreground">
+              Showing <span className="font-semibold text-foreground">{totalCount}</span> of{" "}
+              <span className="font-semibold text-foreground">{products.length}</span> product
+              {products.length === 1 ? "" : "s"}
+            </p>
+            {liveVersionLabel && (
+              <span className="hidden items-center gap-1.5 text-xs font-semibold text-[var(--signalflow-win)] sm:inline-flex">
+                <span className="h-1.5 w-1.5 rounded-full bg-[var(--signalflow-win)]" />
+                Catalog live · {liveVersionLabel}
+              </span>
+            )}
+          </div>
           <div className="flex items-center gap-2">
             <span className="hidden text-xs text-muted-foreground sm:inline">Sort by</span>
-            <Select value={sort} onValueChange={(v) => setSort(v as SortOption)}>
+            <Select value={sort} onValueChange={(v) => updateSort(v as SortOption)}>
               <SelectTrigger className="h-8 w-[170px] border-white/10 bg-white/[0.03] text-xs">
                 <SelectValue />
               </SelectTrigger>
