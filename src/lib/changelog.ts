@@ -58,6 +58,15 @@ export function changelogTimestamp(date: string): string {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.74",
+    date: "15 Sep 2026, 09:00 IST",
+    title: "Explore products + marquee sections",
+    highlights: [
+      "Explore Flagship Products section redesigned with updated layout and client-config lineup",
+      "Testimonials and Instagram video grid use horizontal scrolling marquees again",
+    ],
+  },
+  {
     version: "1.0.73",
     date: "15 Sep 2026, 08:20 IST",
     title: "Homepage visual redesign",

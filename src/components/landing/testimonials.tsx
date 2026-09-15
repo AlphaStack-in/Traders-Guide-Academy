@@ -1,4 +1,8 @@
 import { clientConfig } from "@/lib/client-config";
+import { repeatForMarquee } from "@/lib/marquee";
+
+// w-80 (320px) card + mr-4 (16px).
+const CARD_WIDTH_PX = 336;
 
 const AVATAR_COLORS = [
   "var(--signalflow-gold-start)",
@@ -36,31 +40,41 @@ export function Testimonials() {
   const testimonials = clientConfig.testimonials;
   const ratings = testimonials.map((t) => t.rating ?? 5);
   const averageRating = ratings.reduce((sum, r) => sum + r, 0) / ratings.length;
+  const repeated = repeatForMarquee(testimonials, CARD_WIDTH_PX);
+  const items = [...repeated, ...repeated];
 
   return (
-    <section className="px-4 py-16 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-6xl">
-        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-          <div>
-            <h2 className="font-heading text-2xl font-bold sm:text-3xl">
-              What our <span className="signalflow-gold-text">subscribers say</span>
-            </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Real feedback from our premium subscribers.
-            </p>
-          </div>
-          <div className="flex items-center gap-2 self-start rounded-xl border border-white/10 bg-card px-4 py-2 text-xs font-semibold text-muted-foreground sm:self-auto">
-            <Stars rating={averageRating} />
-            <span className="font-bold text-foreground">{averageRating.toFixed(1)} / 5.0</span>
-            <span className="hidden text-muted-foreground/70 sm:inline">Overall Rating</span>
-          </div>
+    <section className="py-16">
+      <div className="mx-auto flex max-w-6xl flex-col justify-between gap-4 px-4 sm:flex-row sm:items-end sm:px-6 lg:px-8">
+        <div>
+          <h2 className="font-heading text-2xl font-bold sm:text-3xl">
+            What our <span className="signalflow-gold-text">subscribers say</span>
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Real feedback from our premium subscribers.
+          </p>
         </div>
+        <div className="flex items-center gap-2 self-start rounded-xl border border-white/10 bg-card px-4 py-2 text-xs font-semibold text-muted-foreground sm:self-auto">
+          <Stars rating={averageRating} />
+          <span className="font-bold text-foreground">{averageRating.toFixed(1)} / 5.0</span>
+          <span className="hidden text-muted-foreground/70 sm:inline">Overall Rating</span>
+        </div>
+      </div>
 
-        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {testimonials.map((t, i) => (
+      <div
+        className="relative mt-10 overflow-hidden"
+        style={{
+          maskImage: "linear-gradient(90deg, transparent, black 8%, black 92%, transparent)",
+        }}
+      >
+        <div
+          className="signalflow-marquee-track flex w-max"
+          style={{ ["--signalflow-marquee-duration" as string]: "56s" }}
+        >
+          {items.map((t, i) => (
             <div
-              key={t.name}
-              className="flex flex-col justify-between rounded-2xl border border-white/10 bg-card/70 p-6"
+              key={`${t.name}-${i}`}
+              className="mr-4 flex w-80 shrink-0 flex-col justify-between rounded-2xl border border-white/10 bg-card/70 p-6"
             >
               <div>
                 <div className="mb-3 flex items-center justify-between text-xs">

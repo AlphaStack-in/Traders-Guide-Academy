@@ -69,16 +69,30 @@ export interface Course {
   href: string;
 }
 
-// Homepage "Explore Products" cards (PMS advisory, credit-link style
-// offerings) — a lightweight marketing teaser, separate from the real
+// Homepage "Explore Flagship Products" cards (PMS advisory, credit-link
+// style offerings) — a lightweight marketing teaser, separate from the real
 // database-backed product catalog behind productsScrollEnabled. TODO:
-// placeholder — replace with TGA's real advisory/membership products
-// before launch.
+// placeholder — replace with TGA's real advisory/membership products,
+// deliverables and pricing before launch; the "deliverables" bullets in
+// particular read as specific institutional claims (execution speed,
+// dedicated support, review cadence) that must be true before going live.
 export interface ExploreProduct {
-  eyebrow: string;
+  // Small corner ribbon, e.g. "Flagship PMS" / "Institutional API".
+  badge: string;
+  // Drives the card's accent color (border/CTA/stat box) — keep to the two
+  // treatments already styled in explore-products.tsx.
+  accent: "amber" | "cyan";
+  // 3-line stat box in place of an icon, e.g. ["₹1", "CRORE", "Target"] or
+  // ["⚡", "CREDIT", "Link"].
+  stat: [string, string, string];
+  category: string;
   title: string;
   description: string;
+  deliverables: { label: string; detail: string }[];
+  priceCaption: string;
   priceLabel: string;
+  priceSuffix: string;
+  ctaLabel: string;
   href: string;
 }
 
@@ -385,23 +399,68 @@ const CLIENTS: Record<ClientId, ClientConfig> = {
       },
     ],
     // TODO: placeholder — replace with TGA's real advisory/membership
-    // products before launch (this is a marketing teaser, not wired to
-    // checkout — see ExploreProduct doc comment above).
+    // products, deliverables and pricing before launch (this is a marketing
+    // teaser, not wired to checkout — see ExploreProduct doc comment above).
     exploreProducts: [
       {
-        eyebrow: "PMS Advisory",
+        badge: "Flagship PMS",
+        accent: "amber",
+        stat: ["₹1", "CRORE", "Target"],
+        category: "PMS Advisory & Wealth",
         title: "Portfolio Management Service",
         description:
-          "Hedged strategic allocation and systematic weekly risk review for high net-worth accounts.",
+          "Hedged strategic allocation and systematic risk mitigation for high net-worth accounts.",
+        deliverables: [
+          { label: "Min Capital ₹10L+", detail: "Tailored for portfolios scaling to ₹1 Crore+" },
+          {
+            label: "Systematic Multi-Leg Hedging",
+            detail: "Defined maximum downside and gamma protection",
+          },
+          {
+            label: "Zero Personal Time Commitment",
+            detail: "End-to-end strategy execution and weekly rebalancing",
+          },
+          {
+            label: "Weekly Alpha Reviews",
+            detail: "Direct performance review with the senior fund lead",
+          },
+        ],
+        priceCaption: "Starting Retainer Fee",
         priceLabel: "₹30,000",
+        priceSuffix: "/ onboarding",
+        ctaLabel: "Apply for PMS",
         href: "/contact",
       },
       {
-        eyebrow: "Membership Plan",
+        badge: "Institutional API",
+        accent: "cyan",
+        stat: ["⚡", "CREDIT", "Link"],
+        category: "Direct Bridge & Routing",
         title: "Algo Execution Credit Link",
         description:
-          "Priority order routing support and dedicated onboarding for active intraday traders.",
+          "Advanced algorithmic order routing with dedicated latency buffers and institutional gateway access.",
+        deliverables: [
+          {
+            label: "Direct API Bridge",
+            detail: "Low-latency execution to leading broker terminals",
+          },
+          {
+            label: "Smart Routing Buffers",
+            detail: "Built to reduce slippage during fast momentum moves",
+          },
+          {
+            label: "Dedicated Support Desk",
+            detail: "Priority terminal support and API token maintenance",
+          },
+          {
+            label: "Zero Per-Trade Surcharge",
+            detail: "Flat lifetime connection license with updates included",
+          },
+        ],
+        priceCaption: "License Cost",
         priceLabel: "₹25,000",
+        priceSuffix: "/ lifetime access",
+        ctaLabel: "Access Credit Link",
         href: "/contact",
       },
     ],
