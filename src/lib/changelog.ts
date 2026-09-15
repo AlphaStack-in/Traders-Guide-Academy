@@ -58,6 +58,15 @@ export function changelogTimestamp(date: string): string {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.73",
+    date: "15 Sep 2026, 08:20 IST",
+    title: "Homepage visual redesign",
+    highlights: [
+      "Landing page restyled to the Stitch mockup with refreshed hero, trust stats, how-it-works, testimonials, pricing, and Instagram grid (left sidebar nav unchanged)",
+      "Featured Courses and Explore Products sections added; placeholder titles and prices live in client-config until the real catalog ships",
+    ],
+  },
+  {
     version: "1.0.72",
     date: "15 Sep 2026, 07:53 IST",
     title: "Wider products layout",

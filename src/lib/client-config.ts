@@ -43,12 +43,43 @@ export interface Testimonial {
   role: string;
   date: string;
   quote: string;
+  // Out of 5. Optional — defaults to 5 (all testimonials shown are positive
+  // by construction). The homepage's "Overall Rating" badge is the average
+  // of these, never a separately invented number.
+  rating?: number;
 }
 
 export interface InstagramThumbnail {
   thumbnailUrl: string;
   videoUrl: string;
   label: string;
+}
+
+// Homepage "Featured Courses" cards. TODO: placeholder catalog — replace
+// titles, levels, prices and hrefs with TGA's real course lineup before
+// launch (same "flag, don't fabricate" convention as pricingPlans/
+// paymentInfo below). tag/price are free-text so a client can show "Free"
+// or a real course page link once one exists.
+export interface Course {
+  tag: string;
+  title: string;
+  description: string;
+  priceLabel: string;
+  ctaLabel: string;
+  href: string;
+}
+
+// Homepage "Explore Products" cards (PMS advisory, credit-link style
+// offerings) — a lightweight marketing teaser, separate from the real
+// database-backed product catalog behind productsScrollEnabled. TODO:
+// placeholder — replace with TGA's real advisory/membership products
+// before launch.
+export interface ExploreProduct {
+  eyebrow: string;
+  title: string;
+  description: string;
+  priceLabel: string;
+  href: string;
 }
 
 export interface BrokerOfferConfig {
@@ -133,6 +164,8 @@ export interface ClientConfig {
   paymentInfo: PaymentInfo;
   testimonials: Testimonial[];
   instagramThumbnails: InstagramThumbnail[];
+  courses: Course[];
+  exploreProducts: ExploreProduct[];
 }
 
 // Everything below is a placeholder pending real TGA input — brand assets,
@@ -318,6 +351,58 @@ const CLIENTS: Record<ClientId, ClientConfig> = {
         thumbnailUrl: "https://i.ytimg.com/vi/Z1PFczKPd8E/hqdefault.jpg",
         videoUrl: "https://www.youtube.com/watch?v=Z1PFczKPd8E",
         label: "Banknifty Rectangle Breakout Trade setup/ #banknifty #tradersguide",
+      },
+    ],
+    // TODO: placeholder catalog — replace with TGA's real courses (titles,
+    // levels, prices, and a real /courses or checkout href) before launch.
+    courses: [
+      {
+        tag: "Free",
+        title: "Option Hedging Strategy",
+        description:
+          "Hedge delta, gamma and tail-risk moves using structured multi-leg spreads for calmer expiries.",
+        priceLabel: "Free",
+        ctaLabel: "Enroll now",
+        href: "/register",
+      },
+      {
+        tag: "Intermediate",
+        title: "Technical Analysis On Index",
+        description:
+          "Candlestick psychology, supply-demand zones and liquidity reads for Nifty & Bank Nifty.",
+        priceLabel: "₹4,999",
+        ctaLabel: "View course",
+        href: "/contact",
+      },
+      {
+        tag: "Advanced",
+        title: "Best Ways to Trade Index Options",
+        description:
+          "Theta decay, IV crush around events, and disciplined scalp rules on short timeframes.",
+        priceLabel: "₹2,999",
+        ctaLabel: "View course",
+        href: "/contact",
+      },
+    ],
+    // TODO: placeholder — replace with TGA's real advisory/membership
+    // products before launch (this is a marketing teaser, not wired to
+    // checkout — see ExploreProduct doc comment above).
+    exploreProducts: [
+      {
+        eyebrow: "PMS Advisory",
+        title: "Portfolio Management Service",
+        description:
+          "Hedged strategic allocation and systematic weekly risk review for high net-worth accounts.",
+        priceLabel: "₹30,000",
+        href: "/contact",
+      },
+      {
+        eyebrow: "Membership Plan",
+        title: "Algo Execution Credit Link",
+        description:
+          "Priority order routing support and dedicated onboarding for active intraday traders.",
+        priceLabel: "₹25,000",
+        href: "/contact",
       },
     ],
   },

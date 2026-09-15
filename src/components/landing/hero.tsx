@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
+import { ArrowRight, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   WhatsAppIcon,
@@ -110,13 +111,27 @@ export function Hero() {
             </p>
           </div>
         </div>
-        <div className="mt-8 flex justify-center">
+        <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Button
             asChild
             size="lg"
-            className="signalflow-glow signalflow-btn-gradient h-14 gap-2.5 px-10 text-base"
+            className="signalflow-glow signalflow-btn-gradient h-14 w-full gap-2.5 px-10 text-base sm:w-auto"
           >
-            <Link href="/register">Register Premium</Link>
+            <Link href="/register">
+              Register Premium Access
+              <ArrowRight className="h-5 w-5" />
+            </Link>
+          </Button>
+          <Button
+            asChild
+            size="lg"
+            variant="outline"
+            className="signalflow-glow h-14 w-full gap-2.5 px-8 text-base sm:w-auto"
+          >
+            <Link href="/dashboard">
+              Explore Verified Track Record
+              <ExternalLink className="h-4 w-4 text-primary" />
+            </Link>
           </Button>
         </div>
 

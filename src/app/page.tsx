@@ -5,6 +5,8 @@ import { TrustStats } from "@/components/landing/trust-stats";
 import { HowItWorks } from "@/components/landing/how-it-works";
 import { Testimonials } from "@/components/landing/testimonials";
 import { Pricing } from "@/components/landing/pricing";
+import { FeaturedCourses } from "@/components/landing/featured-courses";
+import { ExploreProducts } from "@/components/landing/explore-products";
 import { NewsAlertsSection } from "@/components/news/news-alerts-section";
 import { ProductsScrollSection } from "@/components/products/products-scroll-section";
 import { InstagramGrid } from "@/components/landing/instagram-grid";
@@ -24,6 +26,8 @@ export default async function Home() {
         <HowItWorks />
         <Testimonials />
         <Pricing />
+        <FeaturedCourses />
+        <ExploreProducts />
         {settings.newsAlertsEnabled && (
           <section className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
             <NewsAlertsSection />
