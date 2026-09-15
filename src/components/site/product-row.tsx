@@ -3,38 +3,19 @@
 import { useState, type KeyboardEvent, type MouseEvent } from "react";
 import Link from "next/link";
 import type { Product } from "@prisma/client";
-import { ChevronDown, GraduationCap, LineChart, BookOpen, Briefcase, Crown, Check } from "lucide-react";
+import { ChevronDown, Check, Sparkles } from "lucide-react";
 import { StarRating } from "@/components/site/star-rating";
 import { ProductCheckoutButton } from "@/components/site/product-checkout-button";
 import { Button } from "@/components/ui/button";
-import { PRODUCT_CATEGORY_LABELS, formatPriceInPaise } from "@/lib/products";
+import {
+  PRODUCT_CATEGORY_LABELS,
+  PRODUCT_CATEGORY_ICONS,
+  PRODUCT_CATEGORY_COLOR_VAR,
+  PRODUCT_CATEGORY_FEATURES,
+  formatPriceInPaise,
+  computeSavingsPercent,
+} from "@/lib/products";
 import { cn } from "@/lib/utils";
-
-const CATEGORY_META: Record<
-  Product["category"],
-  { icon: typeof GraduationCap; colorVar: string }
-> = {
-  COURSE: { icon: GraduationCap, colorVar: "--signalflow-text-accent-start" },
-  INDICATOR: { icon: LineChart, colorVar: "--signalflow-ce" },
-  EBOOK: { icon: BookOpen, colorVar: "--signalflow-gold-start" },
-  PMS: { icon: Briefcase, colorVar: "--signalflow-gold-start" },
-  MEMBERSHIP: { icon: Crown, colorVar: "--signalflow-pe" },
-};
-
-/** What-you-get bullets shown in the expanded panel — generic per category
- * since the migrated Graphy data doesn't include structured feature lists.
- * Swap for real per-product bullets once the client supplies them. */
-const CATEGORY_FEATURES: Record<Product["category"], string[]> = {
-  COURSE: ["Lifetime access to recorded modules", "Practical, example-driven lessons"],
-  INDICATOR: ["Installs on your own charting platform", "Ongoing updates included"],
-  EBOOK: ["Instant download after enrolling", "Reference material you keep"],
-  PMS: [
-    "₹30,000 contribution joins a 50-member group (₹15,00,000 pooled capital)",
-    "Free 1-year mentorship, premium indicators & study notes",
-    "Loss covered by us, plus a minimum 15% return guaranteed in year 1",
-  ],
-  MEMBERSHIP: ["Priority access and updates", "Direct onboarding after purchase"],
-};
 
 // Thumbnail side length (px) in the collapsed row vs. the expanded detail
 // panel — the expanded view nearly doubles it (120 → 220) since there's a
@@ -52,6 +33,13 @@ const EXPANDED_THUMB_PX = 220;
  * a typical list item (generous padding) to comfortably fit the bigger
  * thumbnail and two-line description, per the approved mockup.
  *
+ * Visual language (badges, category tinting, glass card, expand drawer) is
+ * modeled on the "Apex Quant Dark" institutional-marketplace reference the
+ * user supplied — adapted to this site's existing teal/gold brand tokens
+ * (see globals.css) rather than introducing a new palette, and to the real
+ * Product fields in prisma/schema.prisma (no fabricated stats like fake
+ * durations or lesson counts that aren't in the data model).
+ *
  * The row itself is a div (role="button"), not a real <button> — the price
  * button and "View Details" button inside it are real interactive elements,
  * and nesting a button/link inside a button is invalid HTML. Both stop
@@ -64,10 +52,11 @@ const EXPANDED_THUMB_PX = 220;
  * detail" without one row's state depending on another's.
  *
  * The expanded panel repeats the thumbnail at a larger size
- * (EXPANDED_THUMB_PX) alongside the long description and feature bullets —
- * an image-beside-text layout (row on sm+, stacked on mobile) rather than
- * the earlier text-only expansion, so the reader gets a genuinely bigger,
- * more legible picture of the product instead of just more paragraphs.
+ * (EXPANDED_THUMB_PX) alongside the long description and a "What's
+ * included" feature grid — an image-beside-text layout (row on sm+, stacked
+ * on mobile) rather than the earlier text-only expansion, so the reader
+ * gets a genuinely bigger, more legible picture of the product instead of
+ * just more paragraphs.
  */
 export function ProductRow({
   product,
@@ -77,11 +66,13 @@ export function ProductRow({
   isAuthenticated: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const meta = CATEGORY_META[product.category];
-  const Icon = meta.icon;
+  const Icon = PRODUCT_CATEGORY_ICONS[product.category];
+  const colorVar = PRODUCT_CATEGORY_COLOR_VAR[product.category];
   const iconSize = product.isFeatured ? 54 : 48;
   const expandedIconSize = product.isFeatured ? 96 : 88;
   const titleSize = product.isFeatured ? "text-lg" : "text-base";
+  const isFree = product.priceInPaise === 0;
+  const savingsPercent = computeSavingsPercent(product.originalPriceInPaise, product.priceInPaise);
 
   function toggle() {
     setExpanded((v) => !v);
@@ -100,25 +91,38 @@ export function ProductRow({
 
   const thumbBackground = product.imageUrl
     ? undefined
-    : `color-mix(in oklab, var(${meta.colorVar}) 16%, transparent)`;
+    : `color-mix(in oklab, var(${colorVar}) 16%, transparent)`;
 
   return (
     <div
       className={cn(
-        "signalflow-glow overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] transition-colors",
-        product.isFeatured && "signalflow-gold-border",
+        "signalflow-glow relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] transition-colors",
+        product.isFeatured ? "signalflow-gold-border" : "hover:border-white/20",
       )}
     >
+      {/* Rim accent for the featured/highlighted listing — mirrors the
+          reference's "golden rim" flourish, using the brand teal→gold
+          gradient tokens already defined for this site. */}
+      {product.isFeatured && (
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 h-[2px]"
+          style={{
+            background:
+              "linear-gradient(90deg, var(--signalflow-text-accent-start), var(--signalflow-gold-start), transparent)",
+          }}
+        />
+      )}
+
       <div
         role="button"
         tabIndex={0}
         onClick={toggle}
         onKeyDown={handleKeyDown}
         aria-expanded={expanded}
-        className="flex w-full cursor-pointer items-center gap-6 px-5 py-8 text-left"
+        className="flex w-full cursor-pointer flex-col items-stretch gap-4 px-5 py-6 text-left sm:flex-row sm:items-center sm:gap-6 sm:py-8"
       >
         <div
-          className="flex shrink-0 items-center justify-center overflow-hidden rounded-xl"
+          className="relative flex shrink-0 items-center justify-center self-start overflow-hidden rounded-xl"
           style={{ background: thumbBackground, height: COLLAPSED_THUMB_PX, width: COLLAPSED_THUMB_PX }}
         >
           {product.imageUrl ? (
@@ -133,22 +137,30 @@ export function ProductRow({
             />
           ) : (
             <Icon
-              style={{ color: `var(${meta.colorVar})`, width: iconSize, height: iconSize }}
+              style={{ color: `var(${colorVar})`, width: iconSize, height: iconSize }}
               strokeWidth={1.5}
             />
           )}
         </div>
 
         <div className="min-w-0 flex-1">
-          <span
-            className="inline-block rounded-full px-2 py-0.5 text-xs font-medium"
-            style={{
-              background: `color-mix(in oklab, var(${meta.colorVar}) 15%, transparent)`,
-              color: `var(${meta.colorVar})`,
-            }}
-          >
-            {PRODUCT_CATEGORY_LABELS[product.category]}
-          </span>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span
+              className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide"
+              style={{
+                background: `color-mix(in oklab, var(${colorVar}) 15%, transparent)`,
+                color: `var(${colorVar})`,
+              }}
+            >
+              <Icon className="h-3 w-3" />
+              {PRODUCT_CATEGORY_LABELS[product.category]}
+            </span>
+            {product.isFeatured && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-[color-mix(in_oklab,var(--signalflow-gold-start)_18%,transparent)] px-2 py-0.5 text-xs font-semibold text-[var(--signalflow-gold-start)]">
+                <Sparkles className="h-3 w-3" /> Featured
+              </span>
+            )}
+          </div>
 
           <h3 className={cn("font-heading mt-1.5 font-bold text-foreground", titleSize)}>{product.name}</h3>
 
@@ -161,12 +173,27 @@ export function ProductRow({
           </p>
         </div>
 
-        <div className="flex w-[140px] shrink-0 flex-col items-stretch gap-2" onClick={stopPropagation}>
-          {product.originalPriceInPaise != null && (
-            <span className="text-right text-xs text-muted-foreground line-through">
-              {formatPriceInPaise(product.originalPriceInPaise)}
-            </span>
-          )}
+        <div
+          className="flex w-full shrink-0 flex-col items-stretch gap-2 border-t border-white/10 pt-3 sm:w-[150px] sm:border-t-0 sm:pt-0"
+          onClick={stopPropagation}
+        >
+          <div className="flex items-center justify-between gap-2 sm:flex-col sm:items-end sm:gap-0.5">
+            {product.originalPriceInPaise != null && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-muted-foreground line-through">
+                  {formatPriceInPaise(product.originalPriceInPaise)}
+                </span>
+                {savingsPercent != null && (
+                  <span className="rounded bg-[var(--signalflow-gold-start)]/15 px-1.5 py-0.5 text-[10px] font-bold text-[var(--signalflow-gold-start)]">
+                    SAVE {savingsPercent}%
+                  </span>
+                )}
+              </div>
+            )}
+            {isFree && (
+              <span className="text-xs font-semibold text-[var(--signalflow-win)]">100% Free</span>
+            )}
+          </div>
           <ProductCheckoutButton
             productId={product.id}
             priceInPaise={product.priceInPaise}
@@ -185,13 +212,16 @@ export function ProductRow({
         </div>
 
         <ChevronDown
-          className={cn("h-5 w-5 shrink-0 text-muted-foreground transition-transform", expanded && "rotate-180")}
+          className={cn(
+            "hidden h-5 w-5 shrink-0 self-center text-muted-foreground transition-transform sm:block",
+            expanded && "rotate-180",
+          )}
         />
       </div>
 
       {expanded && (
-        <div className="border-t border-white/10 px-5 py-5">
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
+        <div className="border-t border-white/10 bg-black/20 px-5 py-5">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-start">
             <div
               className="mx-auto flex shrink-0 items-center justify-center overflow-hidden rounded-xl sm:mx-0"
               style={{ background: thumbBackground, height: EXPANDED_THUMB_PX, width: EXPANDED_THUMB_PX }}
@@ -205,22 +235,49 @@ export function ProductRow({
                 />
               ) : (
                 <Icon
-                  style={{ color: `var(${meta.colorVar})`, width: expandedIconSize, height: expandedIconSize }}
+                  style={{ color: `var(${colorVar})`, width: expandedIconSize, height: expandedIconSize }}
                   strokeWidth={1.5}
                 />
               )}
             </div>
 
-            <div className="min-w-0 flex-1">
+            <div className="min-w-0 flex-1 space-y-4">
               <p className="text-sm leading-relaxed text-muted-foreground">{product.longDescription}</p>
-              <ul className="mt-3 flex flex-col gap-1.5">
-                {CATEGORY_FEATURES[product.category].map((feature) => (
-                  <li key={feature} className="flex items-start gap-2 text-sm text-foreground/90">
-                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-[var(--signalflow-win)]" />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
+
+              <div>
+                <span
+                  className="mb-2 block text-xs font-semibold tracking-wider uppercase"
+                  style={{ color: `var(${colorVar})` }}
+                >
+                  What&apos;s Included
+                </span>
+                <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {PRODUCT_CATEGORY_FEATURES[product.category].map((feature) => (
+                    <li
+                      key={feature}
+                      className="flex items-start gap-2 rounded-lg border border-white/10 bg-white/[0.02] p-2.5 text-sm text-foreground/90"
+                    >
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-[var(--signalflow-win)]" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="flex flex-col gap-3 border-t border-white/10 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex w-full items-center gap-2 sm:w-auto" onClick={stopPropagation}>
+                  <ProductCheckoutButton
+                    productId={product.id}
+                    priceInPaise={product.priceInPaise}
+                    isAuthenticated={isAuthenticated}
+                    className="flex-1 sm:w-48 sm:flex-initial"
+                    style={{ fontSize: "16px", fontWeight: 700 }}
+                  />
+                  <Button asChild variant="outline" size="sm" className="border-white/10 bg-white/[0.03] text-xs font-semibold">
+                    <Link href={`/products/${product.slug}`}>Full details</Link>
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

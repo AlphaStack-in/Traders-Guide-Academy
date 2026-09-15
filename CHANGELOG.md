@@ -6,11 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 **[Tech debts](./tech-debt-ledger.html)** — once deployed, also served at `/tech-debt-ledger.html`
 
-Versioning continues the semantic patch series from the SignalFlow template (`1.0.7` → `1.0.8` …). The footer and Admin Changelog page read the current version from `package.json` (now **1.0.69**).
+Versioning continues the semantic patch series from the SignalFlow template (`1.0.7` → `1.0.8` …). The footer and Admin Changelog page read the current version from `package.json` (now **1.0.70**).
 
 Each release header now includes a build timestamp (24-hour IST, matching `build-info.ts`'s `formattedBuildTime`), not just a date — this reflects the actual commit that shipped the version. While adding timestamps, two pre-existing dates were corrected to match their real shipping commit: `1.0.8` (was dated by the TGA fork commit, 3 days before the digest-email feature in that release actually shipped) and `1.0.2` (was off by one day around a just-after-midnight IST commit).
 
 ## [Unreleased]
+
+## [1.0.70] - 2026-09-15 07:00 IST
+
+### Changed
+- **Products** — `/products` catalog redesigned with a verified-catalog hero and live stat tiles (product count, weighted average rating, free resources, Cashfree checkout), sidebar filters (category, price bucket, minimum rating), sort control, featured band, and expandable product rows with shared category icons, colors, and savings badges
+- **Products** — category feature bullets, icons, and color tokens centralized in `src/lib/products.ts` so the catalog, product detail page, and home scroll section stay aligned
 
 ## [1.0.69] - 2026-09-14 22:15 IST
 

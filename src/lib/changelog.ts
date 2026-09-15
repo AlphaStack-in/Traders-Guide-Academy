@@ -58,6 +58,15 @@ export function changelogTimestamp(date: string): string {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.70",
+    date: "15 Sep 2026, 07:00 IST",
+    title: "Products catalog redesign",
+    highlights: [
+      "/products now has a verified-catalog hero with live stat tiles, sidebar filters, sort, featured band, and expandable rows",
+      "Shared category icons, colors, feature bullets, and savings badges live in src/lib/products.ts for catalog, detail, and home sections",
+    ],
+  },
+  {
     version: "1.0.69",
     date: "14 Sep 2026, 22:15 IST",
     title: "My Subscriptions terminal dashboard",

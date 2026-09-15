@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { LockOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createProductCheckout, claimFreeProduct } from "@/app/products/actions";
 import { formatPriceInPaise } from "@/lib/products";
@@ -30,7 +31,10 @@ function loadCashfreeCheckoutScript(): Promise<void> {
 
 /**
  * The catalog/detail-page buy button — price-only label (no "Buy Now"
- * text), matching the approved mockup. Paid products open Cashfree's
+ * text), matching the approved mockup. A free product also shows a small
+ * unlock icon ahead of the "Free" label (the institutional-marketplace
+ * reference's iconography for no-cost items), purely decorative — the
+ * click behavior below is unchanged. Paid products open Cashfree's
  * one-time Orders checkout; free products call claimFreeProduct directly,
  * no Cashfree involved. Not logged in yet -> sends the visitor to log in
  * first rather than silently failing inside requireSubscriber().
@@ -106,10 +110,15 @@ export function ProductCheckoutButton({
       type="button"
       disabled={isPending}
       onClick={handleClick}
-      className={cn("signalflow-btn-gradient signalflow-btn-3d", className)}
+      className={cn("signalflow-btn-gradient signalflow-btn-3d gap-1.5", className)}
       style={style}
     >
-      {isPending ? "…" : formatPriceInPaise(priceInPaise)}
+      {isPending ? "…" : (
+        <>
+          {isFree && <LockOpen className="h-4 w-4" />}
+          {formatPriceInPaise(priceInPaise)}
+        </>
+      )}
     </Button>
   );
 }

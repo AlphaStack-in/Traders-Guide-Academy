@@ -3,22 +3,16 @@ import { Navbar } from "@/components/site/navbar";
 import { Footer } from "@/components/site/footer";
 import { StarRating } from "@/components/site/star-rating";
 import { ProductCheckoutButton } from "@/components/site/product-checkout-button";
-import { getProductBySlug, isHighTouchCategory, PRODUCT_CATEGORY_LABELS, formatPriceInPaise } from "@/lib/products";
+import {
+  getProductBySlug,
+  isHighTouchCategory,
+  PRODUCT_CATEGORY_LABELS,
+  PRODUCT_CATEGORY_FEATURES,
+  formatPriceInPaise,
+} from "@/lib/products";
 import { getCurrentSubscriber } from "@/lib/subscriber-auth";
 import { tgaManagerWhatsAppLink } from "@/lib/product-fulfillment";
 import { WhatsAppIcon } from "@/components/site/icons";
-
-const CATEGORY_FEATURES: Record<string, string[]> = {
-  COURSE: ["Lifetime access to recorded modules", "Practical, example-driven lessons"],
-  INDICATOR: ["Installs on your own charting platform", "Ongoing updates included"],
-  EBOOK: ["Instant download after enrolling", "Reference material you keep"],
-  PMS: [
-    "₹30,000 contribution joins a 50-member group (₹15,00,000 pooled capital)",
-    "Free 1-year mentorship, premium indicators & study notes",
-    "Loss covered by us, plus a minimum 15% return guaranteed in year 1",
-  ],
-  MEMBERSHIP: ["Priority access and updates", "Direct onboarding after purchase"],
-};
 
 export default async function ProductDetailPage({
   params,
@@ -103,7 +97,7 @@ export default async function ProductDetailPage({
         <div className="mt-8">
           <h2 className="font-heading text-lg font-semibold text-foreground">What you get</h2>
           <ul className="mt-3 flex flex-col gap-2">
-            {(CATEGORY_FEATURES[product.category] ?? []).map((feature) => (
+            {(PRODUCT_CATEGORY_FEATURES[product.category] ?? []).map((feature) => (
               <li key={feature} className="flex items-start gap-2 text-sm text-foreground/90">
                 <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
                 {feature}

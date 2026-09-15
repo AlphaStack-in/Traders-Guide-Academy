@@ -1,20 +1,14 @@
 import Link from "next/link";
 import type { Product } from "@prisma/client";
-import { ShoppingBag, GraduationCap, LineChart, BookOpen, Briefcase, Crown } from "lucide-react";
+import { ShoppingBag } from "lucide-react";
 import { clientConfig } from "@/lib/client-config";
 import { repeatForMarquee } from "@/lib/marquee";
-import { PRODUCT_CATEGORY_LABELS, formatPriceInPaise } from "@/lib/products";
-
-const CATEGORY_META: Record<
-  Product["category"],
-  { icon: typeof GraduationCap; colorVar: string }
-> = {
-  COURSE: { icon: GraduationCap, colorVar: "--signalflow-text-accent-start" },
-  INDICATOR: { icon: LineChart, colorVar: "--signalflow-ce" },
-  EBOOK: { icon: BookOpen, colorVar: "--signalflow-gold-start" },
-  PMS: { icon: Briefcase, colorVar: "--signalflow-gold-start" },
-  MEMBERSHIP: { icon: Crown, colorVar: "--signalflow-pe" },
-};
+import {
+  PRODUCT_CATEGORY_LABELS,
+  PRODUCT_CATEGORY_ICONS,
+  PRODUCT_CATEGORY_COLOR_VAR,
+  formatPriceInPaise,
+} from "@/lib/products";
 
 // w-[520px] card + mr-4 (16px) — ~3x the original 172px thumbnail so poster
 // art (and the fallback icon box) reads clearly at a glance mid-scroll.
@@ -46,6 +40,8 @@ const REFERENCE_SPEED_PX_PER_SEC = 72;
  * box otherwise — same imageUrl convention as NewsAlertsSection: a
  * same-origin /public path or a base64 data: URL, rendered via a plain
  * <img> rather than next/image since a data: URL breaks its optimizer.
+ * Category icon + color come from src/lib/products.ts (shared with the
+ * /products catalog itself) rather than a local copy.
  *
  * Gated by AppSettings.productsScrollEnabled (src/lib/app-settings.ts),
  * toggled from the admin Settings page — same on/off pattern as the News &
@@ -96,8 +92,8 @@ export function ProductsScrollSection({ products }: { products: Product[] }) {
           style={{ ["--signalflow-marquee-duration" as string]: `${durationSeconds}s` }}
         >
           {items.map((product, i) => {
-            const meta = CATEGORY_META[product.category];
-            const Icon = meta.icon;
+            const Icon = PRODUCT_CATEGORY_ICONS[product.category];
+            const colorVar = PRODUCT_CATEGORY_COLOR_VAR[product.category];
             return (
               <Link
                 key={`${product.id}-${i}`}
@@ -116,10 +112,10 @@ export function ProductsScrollSection({ products }: { products: Product[] }) {
                 ) : (
                   <div
                     className="flex h-72 w-full items-center justify-center rounded-xl"
-                    style={{ background: `color-mix(in oklab, var(${meta.colorVar}) 16%, transparent)` }}
+                    style={{ background: `color-mix(in oklab, var(${colorVar}) 16%, transparent)` }}
                   >
                     <Icon
-                      style={{ color: `var(${meta.colorVar})`, width: 84, height: 84 }}
+                      style={{ color: `var(${colorVar})`, width: 84, height: 84 }}
                       strokeWidth={1.25}
                     />
                   </div>
@@ -128,8 +124,8 @@ export function ProductsScrollSection({ products }: { products: Product[] }) {
                 <span
                   className="w-fit rounded-full px-2.5 py-1 text-xs font-medium"
                   style={{
-                    background: `color-mix(in oklab, var(${meta.colorVar}) 15%, transparent)`,
-                    color: `var(${meta.colorVar})`,
+                    background: `color-mix(in oklab, var(${colorVar}) 15%, transparent)`,
+                    color: `var(${colorVar})`,
                   }}
                 >
                   {PRODUCT_CATEGORY_LABELS[product.category]}
