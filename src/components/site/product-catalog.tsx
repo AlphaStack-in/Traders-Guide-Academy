@@ -52,7 +52,9 @@ function matchesPriceBucket(priceInPaise: number, bucket: PriceBucket): boolean 
  * Client-side orchestrator for /products: holds filter/sort state, derives
  * the visible product list from the full (already server-fetched) catalog,
  * and renders the sidebar + quick-filter pill bar + results bar + featured
- * band + row list. Visual language modeled on the "Apex Quant Dark"
+ * band + row list. The "catalog live" version pill lives once on the page
+ * hero (products/page.tsx), not again on this results bar.
+ * Visual language modeled on the "Apex Quant Dark"
  * institutional-marketplace reference the user supplied, adapted to this
  * site's own product data and brand tokens.
  */
@@ -60,14 +62,10 @@ export function ProductCatalog({
   products,
   isAuthenticated,
   telegramUrl,
-  liveVersionLabel,
 }: {
   products: Product[];
   isAuthenticated: boolean;
   telegramUrl?: string;
-  /** Real deployed build version (e.g. "v1.0.70") for the "catalog live" status
-   * pill next to the results count — never a fabricated version/feed number. */
-  liveVersionLabel?: string;
 }) {
   const [filters, setFilters] = useState<ProductFilterState>(DEFAULT_FILTERS);
   const [sort, setSort] = useState<SortOption>("popularity");
@@ -260,19 +258,11 @@ export function ProductCatalog({
         </div>
 
         <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-white/[0.02] px-4 py-2.5">
-          <div className="flex flex-wrap items-center gap-3">
-            <p className="text-sm text-muted-foreground">
-              Showing <span className="font-semibold text-foreground">{totalCount}</span> of{" "}
-              <span className="font-semibold text-foreground">{products.length}</span> product
-              {products.length === 1 ? "" : "s"}
-            </p>
-            {liveVersionLabel && (
-              <span className="hidden items-center gap-1.5 text-xs font-semibold text-[var(--signalflow-win)] sm:inline-flex">
-                <span className="h-1.5 w-1.5 rounded-full bg-[var(--signalflow-win)]" />
-                Catalog live · {liveVersionLabel}
-              </span>
-            )}
-          </div>
+          <p className="text-sm text-muted-foreground">
+            Showing <span className="font-semibold text-foreground">{totalCount}</span> of{" "}
+            <span className="font-semibold text-foreground">{products.length}</span> product
+            {products.length === 1 ? "" : "s"}
+          </p>
           <div className="flex items-center gap-2">
             <span className="hidden text-xs text-muted-foreground sm:inline">Sort by</span>
             <Select value={sort} onValueChange={(v) => updateSort(v as SortOption)}>

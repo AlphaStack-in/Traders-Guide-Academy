@@ -6,7 +6,6 @@ import Link from "next/link";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WhatsAppIcon } from "@/components/site/icons";
-import { ContinuePremiumPanel } from "@/components/site/continue-premium-panel";
 import { clientConfig } from "@/lib/client-config";
 import { cn } from "@/lib/utils";
 
@@ -198,10 +197,6 @@ export function Pricing() {
               T &amp; C
             </Link>
           </p>
-        </div>
-
-        <div className="mt-6 flex justify-center">
-          <ContinuePremiumPanel plans={pricingPlans} />
         </div>
 
         {clientConfig.dhanOfferEnabled && <BrokerOfferBanner />}

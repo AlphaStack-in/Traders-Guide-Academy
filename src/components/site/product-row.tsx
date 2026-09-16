@@ -28,9 +28,9 @@ const EXPANDED_THUMB_PX = 220;
 
 /**
  * Decorative fallback thumbnail for a product with no real imageUrl —
- * a tinted glass box with corner-ring accents, the category icon, and a
- * small uppercase category tag chip underneath (all driven by the
- * product's real category, never invented per-product flourishes) —
+ * a tinted glass box with corner-ring accents and the category icon
+ * (driven by the product's real category). The category name lives on the
+ * row badge only, so the thumbnail does not repeat it —
  * modeled on the "Apex Quant Dark" reference's card-art treatment for its
  * demo listings, adapted to be generic/reusable across every real product
  * instead of a one-off per fake item.
@@ -72,16 +72,6 @@ function CategoryThumbnail({ product, size }: { product: Product; size: number }
         strokeWidth={1.5}
         className="relative z-10"
       />
-      <span
-        className="relative z-10 rounded px-1.5 py-0.5 text-[9px] font-bold tracking-wider uppercase"
-        style={{
-          background: `color-mix(in oklab, var(${colorVar}) 16%, transparent)`,
-          color: `var(${colorVar})`,
-          border: `1px solid color-mix(in oklab, var(${colorVar}) 30%, transparent)`,
-        }}
-      >
-        {PRODUCT_CATEGORY_LABELS[product.category]}
-      </span>
     </div>
   );
 }

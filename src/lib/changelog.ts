@@ -58,6 +58,17 @@ export function changelogTimestamp(date: string): string {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.75",
+    date: "16 Sep 2026, 17:30 IST",
+    title: "Home section order, course marquee, catalog cleanup",
+    highlights: [
+      "Explore Flagship Products now sits above Featured Courses on the home page",
+      "Featured Courses cards scroll continuously as a marquee",
+      "Continue Premium button removed from the home pricing section",
+      "Products catalog no longer repeats category chips on thumbnails or a second Catalog live pill",
+    ],
+  },
+  {
     version: "1.0.74",
     date: "15 Sep 2026, 09:00 IST",
     title: "Explore products + marquee sections",

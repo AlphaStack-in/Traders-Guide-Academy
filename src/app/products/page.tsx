@@ -128,7 +128,6 @@ export default async function ProductsPage() {
             products={products}
             isAuthenticated={Boolean(subscriber)}
             telegramUrl={clientConfig.telegramUrl || undefined}
-            liveVersionLabel={`v${version}`}
           />
         </div>
       </main>
