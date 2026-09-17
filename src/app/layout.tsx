@@ -3,6 +3,7 @@ import { Inter, Sora } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { SoundAlertProvider } from "@/components/site/sound-alert-provider";
 import { clientConfig } from "@/lib/client-config";
+import Script from "next/script";
 import "./globals.css";
 
 const inter = Inter({
@@ -49,6 +50,19 @@ export default function RootLayout({
         <div className="signalflow-mesh-bg" aria-hidden="true" />
         <SoundAlertProvider>{children}</SoundAlertProvider>
         <Toaster richColors theme="dark" />
+        <Script id="tawk-to-widget" strategy="lazyOnload">
+          {`
+            var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+            (function(){
+            var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+            s1.async=true;
+            s1.src='https://embed.tawk.to/6aab455fef8aaa3444a167cc/1k2mgdve9';
+            s1.charset='UTF-8';
+            s1.setAttribute('crossorigin','*');
+            s0.parentNode.insertBefore(s1,s0);
+            })();
+          `}
+        </Script>
       </body>
     </html>
   );
