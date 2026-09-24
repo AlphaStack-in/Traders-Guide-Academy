@@ -1,49 +1,51 @@
 /**
- * Centralized server-side admin authorization.
+ * Centralized server-side admin authentication + authorization.
  *
- * TGA has exactly one admin account, defined entirely by environment
- * variables (ADMIN_EMAIL, ADMIN_PASSWORD_HASH, SESSION_SECRET) — there is no
- * database-backed multi-admin system. This replaced the previous Supabase
- * Auth (Google OAuth) + AdminUser-table RBAC when TGA moved its database off
- * Supabase onto Neon. Google sign-in returned later (see
- * src/lib/google-oauth.ts + src/app/api/auth/google/), but only as an
- * alternate credential for this same single env-var-defined identity — it
- * still just calls createAdminSession() below once the Google email matches
- * ADMIN_EMAIL, not a separate OAuth-backed account system.
+ * Three kinds of admin identity:
  *
- * Additional admins: ADDITIONAL_ADMIN_EMAILS (optional, comma-separated)
- * lists extra emails that get full admin access. They can sign in with
- * Google only — email/password login stays tied to the primary ADMIN_EMAIL
- * + ADMIN_PASSWORD_HASH. Every admin is SUPER_ADMIN (no per-admin roles).
+ *   1. Owner — the primary admin, defined by the ADMIN_EMAIL /
+ *      ADMIN_PASSWORD_HASH env vars. Always SUPER_ADMIN. Can sign in with
+ *      password or Google. Can't be edited or removed from the UI, so the
+ *      site can never be locked out of its own admin area.
+ *   2. Env extras — ADDITIONAL_ADMIN_EMAILS (optional, comma-separated).
+ *      SUPER_ADMIN, Google sign-in only. Kept for backward compatibility;
+ *      prefer adding staff on /admin/admins instead.
+ *   3. Staff — rows in the AdminUser table, managed on /admin/admins by any
+ *      SUPER_ADMIN. Each has its own role (VIEWER → SUPER_ADMIN, see
+ *      src/lib/admin-roles.ts), an optional password (null = Google only),
+ *      and an isActive flag. Deactivating a row revokes access on the
+ *      admin's very next request.
  *
- * Session mechanism: an HMAC-signed, httpOnly cookie (see
- * src/lib/session-cookie.ts), verified server-side on every check — no
- * external session store, no new npm dependencies.
- *
- * `accessLevel` is always "SUPER_ADMIN" and `source` is always "env_fallback"
- * — both fields are kept in the return shape purely so existing call sites
- * (which check `accessLevel`, call `requireAccessLevel()`, or destructure
- * `source`) keep working unchanged. The AdminUser/AdminUserAuditLog Prisma
- * models are no longer read here; they're unused dead schema now (left in
- * place rather than risking an unnecessary migration — see handoff notes).
+ * Session mechanism: an HMAC-signed, httpOnly cookie holding the admin's
+ * email (see src/lib/session-cookie.ts). Every check re-resolves that email
+ * to a live identity + role, so role changes and removals apply immediately.
  *
  * Usage:
  * ---------------------------------------------------------------------------
- * In Server Actions (throw on failure):
- *   const admin = await requireAdmin();
- *   const admin = await requireAccessLevel("SIGNAL_MANAGER"); // always passes
+ * Server Actions returning { success, error }:
+ *   const denied = await denyUnlessAccess("SIGNAL_MANAGER");
+ *   if (denied) return denied;
  *
- * In API Route handlers (return status code):
+ * Server Actions / layouts that should throw:
+ *   const admin = await requireAdmin();                    // any admin
+ *   const admin = await requireAccessLevel("ADMIN");       // ADMIN or above
+ *
+ * API Route handlers:
  *   const result = await getAdminUser();
  *   if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status });
  */
 
 import { cookies } from "next/headers";
 import type { AdminAccessLevel } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { createSessionToken, verifySessionToken } from "@/lib/session-cookie";
 import { verifyPassword } from "@/lib/password";
+import { ACCESS_LEVEL_LABELS, hasPermission } from "@/lib/admin-roles";
+import { ADMIN_SESSION_COOKIE } from "@/lib/admin-session-cookie";
 
-export const ADMIN_SESSION_COOKIE = "admin_session";
+export { ADMIN_SESSION_COOKIE } from "@/lib/admin-session-cookie";
+export { hasPermission } from "@/lib/admin-roles";
+
 const ADMIN_SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7; // 7 days
 
 interface AdminSessionPayload {
@@ -52,83 +54,136 @@ interface AdminSessionPayload {
   exp: number;
 }
 
-// ---------------------------------------------------------------------------
-// Access level ordering — kept for API compatibility with existing callers.
-// With a single hardcoded admin, every authenticated session is SUPER_ADMIN,
-// so hasPermission()/requireAccessLevel() always pass once authenticated.
-// ---------------------------------------------------------------------------
+export type AdminKind = "owner" | "env" | "staff";
 
-const ACCESS_LEVEL_ORDER: AdminAccessLevel[] = [
-  "VIEWER",
-  "SUPPORT",
-  "SIGNAL_MANAGER",
-  "ADMIN",
-  "SUPER_ADMIN",
-];
-
-export function hasPermission(
-  actual: AdminAccessLevel,
-  required: AdminAccessLevel,
-): boolean {
-  return ACCESS_LEVEL_ORDER.indexOf(actual) >= ACCESS_LEVEL_ORDER.indexOf(required);
+export interface AdminIdentity {
+  email: string;
+  name: string | null;
+  accessLevel: AdminAccessLevel;
+  kind: AdminKind;
+  /** AdminUser.id for staff admins, null for owner / env admins. */
+  staffId: string | null;
 }
-
-// ---------------------------------------------------------------------------
-// Public types
-// ---------------------------------------------------------------------------
 
 export type AdminCheckResult =
   | {
       ok: true;
       userId: string;
       email: string;
+      name: string | null;
       accessLevel: AdminAccessLevel;
+      kind: AdminKind;
+      /** AdminUser.id for staff admins; the email for owner / env admins. */
       adminUserId: string;
+      staffId: string | null;
       source: "database" | "env_fallback";
     }
   | { ok: false; error: string; status: 401 | 403 };
 
+export type AuthorizedAdmin = Extract<AdminCheckResult, { ok: true }>;
+
+function normalize(email: string): string {
+  return email.trim().toLowerCase();
+}
+
 // ---------------------------------------------------------------------------
-// Credential verification + session issuance (used by the login action)
+// Env-defined admins
 // ---------------------------------------------------------------------------
 
-/**
- * All emails allowed to hold an admin session: the primary ADMIN_EMAIL plus
- * any in ADDITIONAL_ADMIN_EMAILS (comma-separated). Lowercased, de-duplicated.
- */
-export function getAdminEmails(): string[] {
-  const primary = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+export function getOwnerAdminEmail(): string | null {
+  const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+  return email || null;
+}
+
+/** ADDITIONAL_ADMIN_EMAILS, lowercased, de-duplicated, excluding the owner. */
+export function getEnvExtraAdminEmails(): string[] {
+  const owner = getOwnerAdminEmail();
   const extra = (process.env.ADDITIONAL_ADMIN_EMAILS ?? "")
     .split(",")
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean);
-  return Array.from(new Set([...(primary ? [primary] : []), ...extra]));
+    .map((e) => normalize(e))
+    .filter((e) => e && e !== owner);
+  return Array.from(new Set(extra));
 }
 
-export function isAdminEmail(email: string): boolean {
-  return getAdminEmails().includes(email.trim().toLowerCase());
+/** Emails that are admins by env var (owner + ADDITIONAL_ADMIN_EMAILS). */
+export function getEnvAdminEmails(): string[] {
+  const owner = getOwnerAdminEmail();
+  return [...(owner ? [owner] : []), ...getEnvExtraAdminEmails()];
 }
+
+// ---------------------------------------------------------------------------
+// Identity resolution
+// ---------------------------------------------------------------------------
 
 /**
- * Checks a submitted email/password against ADMIN_EMAIL/ADMIN_PASSWORD_HASH.
- * Password login is for the primary admin only — additional admins
- * (ADDITIONAL_ADMIN_EMAILS) must use Google sign-in.
- * Fails closed (returns false) if either env var is unset.
+ * Resolves an email to a live admin identity, or null if it isn't (or is no
+ * longer) an admin. Env identities are checked first, without touching the
+ * database, so the owner can always get in even if the DB is unreachable.
  */
-export function verifyAdminCredentials(email: string, password: string): boolean {
-  const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
-  const passwordHash = process.env.ADMIN_PASSWORD_HASH;
-  if (!adminEmail || !passwordHash) return false;
-  if (email.trim().toLowerCase() !== adminEmail) return false;
-  return verifyPassword(password, passwordHash);
+export async function resolveAdminIdentity(rawEmail: string): Promise<AdminIdentity | null> {
+  const email = normalize(rawEmail);
+  if (!email) return null;
+
+  if (email === getOwnerAdminEmail()) {
+    return { email, name: null, accessLevel: "SUPER_ADMIN", kind: "owner", staffId: null };
+  }
+  if (getEnvExtraAdminEmails().includes(email)) {
+    return { email, name: null, accessLevel: "SUPER_ADMIN", kind: "env", staffId: null };
+  }
+
+  try {
+    const staff = await prisma.adminUser.findUnique({ where: { email } });
+    if (!staff || !staff.isActive) return null;
+    return {
+      email,
+      name: staff.name,
+      accessLevel: staff.accessLevel,
+      kind: "staff",
+      staffId: staff.id,
+    };
+  } catch (err) {
+    console.error("resolveAdminIdentity: AdminUser lookup failed:", err);
+    return null;
+  }
 }
 
-export async function createAdminSession(email: string): Promise<void> {
+export async function isAdminEmail(email: string): Promise<boolean> {
+  return (await resolveAdminIdentity(email)) !== null;
+}
+
+// ---------------------------------------------------------------------------
+// Credential verification + session issuance
+// ---------------------------------------------------------------------------
+
+/**
+ * Checks a submitted email/password. The owner is checked against
+ * ADMIN_PASSWORD_HASH; staff admins against AdminUser.passwordHash (null =
+ * Google sign-in only). ADDITIONAL_ADMIN_EMAILS admins have no password.
+ */
+export async function verifyAdminCredentials(rawEmail: string, password: string): Promise<boolean> {
+  const email = normalize(rawEmail);
+  if (!email || !password) return false;
+
+  const owner = getOwnerAdminEmail();
+  if (email === owner) {
+    return verifyPassword(password, process.env.ADMIN_PASSWORD_HASH);
+  }
+  if (getEnvExtraAdminEmails().includes(email)) return false;
+
+  try {
+    const staff = await prisma.adminUser.findUnique({ where: { email } });
+    if (!staff || !staff.isActive) return false;
+    return verifyPassword(password, staff.passwordHash);
+  } catch (err) {
+    console.error("verifyAdminCredentials: AdminUser lookup failed:", err);
+    return false;
+  }
+}
+
+export async function createAdminSession(rawEmail: string): Promise<void> {
+  const email = normalize(rawEmail);
   const cookieStore = await cookies();
-  const token = await createSessionToken(
-    { role: "admin", email: email.trim().toLowerCase() },
-    ADMIN_SESSION_MAX_AGE_SECONDS,
-  );
+  const token = await createSessionToken({ role: "admin", email }, ADMIN_SESSION_MAX_AGE_SECONDS);
   cookieStore.set(ADMIN_SESSION_COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -136,6 +191,13 @@ export async function createAdminSession(email: string): Promise<void> {
     path: "/",
     maxAge: ADMIN_SESSION_MAX_AGE_SECONDS,
   });
+
+  // Best-effort "last login" stamp for staff admins (shown on /admin/admins).
+  if (!getEnvAdminEmails().includes(email)) {
+    await prisma.adminUser
+      .update({ where: { email }, data: { lastLoginAt: new Date() } })
+      .catch(() => undefined);
+  }
 }
 
 export async function clearAdminSession(): Promise<void> {
@@ -148,90 +210,85 @@ export async function clearAdminSession(): Promise<void> {
 // ---------------------------------------------------------------------------
 
 /**
- * Verifies that the current request carries a valid admin session cookie
- * whose email is still in the current admin list (ADMIN_EMAIL +
- * ADDITIONAL_ADMIN_EMAILS), so removing an email invalidates any old
- * session immediately, without needing a
- * session-store purge).
- *
- * Suitable for API Route handlers where you need the status code.
+ * Verifies the current request's admin session cookie and re-resolves its
+ * email to a live identity, so a removed / deactivated admin (or one whose
+ * env var entry was deleted) is rejected on the very next request.
  */
 export async function getAdminUser(): Promise<AdminCheckResult> {
   const cookieStore = await cookies();
   const token = cookieStore.get(ADMIN_SESSION_COOKIE)?.value;
   const session = await verifySessionToken<AdminSessionPayload>(token);
 
-  if (!session || session.role !== "admin") {
+  if (!session || session.role !== "admin" || typeof session.email !== "string") {
     return { ok: false, error: "Unauthorized", status: 401 };
   }
 
-  const adminEmail = session.email.trim().toLowerCase();
-  if (!isAdminEmail(adminEmail)) {
-    // Email removed from ADMIN_EMAIL / ADDITIONAL_ADMIN_EMAILS since the
-    // session was issued, or a stale/forged cookie.
+  const identity = await resolveAdminIdentity(session.email);
+  if (!identity) {
     return { ok: false, error: "Forbidden", status: 403 };
   }
 
   return {
     ok: true,
-    userId: adminEmail,
-    email: adminEmail,
-    accessLevel: "SUPER_ADMIN",
-    adminUserId: adminEmail,
-    source: "env_fallback",
+    userId: identity.email,
+    email: identity.email,
+    name: identity.name,
+    accessLevel: identity.accessLevel,
+    kind: identity.kind,
+    adminUserId: identity.staffId ?? identity.email,
+    staffId: identity.staffId,
+    source: identity.kind === "staff" ? "database" : "env_fallback",
   };
 }
 
-// ---------------------------------------------------------------------------
-// requireAdmin() — throws on failure (for Server Actions + layouts)
-// ---------------------------------------------------------------------------
-
-export async function requireAdmin(): Promise<{
-  userId: string;
-  email: string;
-  accessLevel: AdminAccessLevel;
-  adminUserId: string;
-  source: "database" | "env_fallback";
-}> {
-  const result = await getAdminUser();
-  if (!result.ok) {
-    throw new Error(result.error);
-  }
-  return {
-    userId: result.userId,
-    email: result.email,
-    accessLevel: result.accessLevel,
-    adminUserId: result.adminUserId,
-    source: result.source,
-  };
+function permissionError(actual: AdminAccessLevel, required: AdminAccessLevel): string {
+  return `Your role (${ACCESS_LEVEL_LABELS[actual]}) can't do this — it needs ${ACCESS_LEVEL_LABELS[required]} or above.`;
 }
 
 // ---------------------------------------------------------------------------
-// requireAccessLevel() — kept for API compatibility; always passes once
-// authenticated, since the single hardcoded admin is always SUPER_ADMIN.
+// Non-throwing check — for Server Actions that return { success, error }
 // ---------------------------------------------------------------------------
 
-export async function requireAccessLevel(
+export async function checkAccessLevel(
   required: AdminAccessLevel,
-): Promise<{
-  userId: string;
-  email: string;
-  accessLevel: AdminAccessLevel;
-  adminUserId: string;
-  source: "database" | "env_fallback";
-}> {
+): Promise<{ ok: true; admin: AuthorizedAdmin } | { ok: false; error: string }> {
   const result = await getAdminUser();
   if (!result.ok) {
-    throw new Error(result.error);
+    return { ok: false, error: "Your admin session has expired. Please sign in again." };
   }
   if (!hasPermission(result.accessLevel, required)) {
-    throw new Error(`Forbidden: requires ${required} or above`);
+    return { ok: false, error: permissionError(result.accessLevel, required) };
   }
-  return {
-    userId: result.userId,
-    email: result.email,
-    accessLevel: result.accessLevel,
-    adminUserId: result.adminUserId,
-    source: result.source,
-  };
+  return { ok: true, admin: result };
+}
+
+/**
+ * Returns null when the current admin has `required` or above, otherwise a
+ * ready-to-return `{ success: false, error }` result.
+ */
+export async function denyUnlessAccess(
+  required: AdminAccessLevel,
+): Promise<{ success: false; error: string } | null> {
+  const check = await checkAccessLevel(required);
+  return check.ok ? null : { success: false, error: check.error };
+}
+
+// ---------------------------------------------------------------------------
+// Throwing checks — for layouts / Server Actions without a result shape
+// ---------------------------------------------------------------------------
+
+export async function requireAdmin(): Promise<AuthorizedAdmin> {
+  const result = await getAdminUser();
+  if (!result.ok) {
+    throw new Error(result.error);
+  }
+  return result;
+}
+
+export async function requireAccessLevel(required: AdminAccessLevel): Promise<AuthorizedAdmin> {
+  const admin = await requireAdmin();
+  if (!hasPermission(admin.accessLevel, required)) {
+    throw new Error(permissionError(admin.accessLevel, required));
+  }
+  return admin;
 }

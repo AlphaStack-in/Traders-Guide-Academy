@@ -1,9 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireAdmin } from "@/lib/admin-auth";
-import { verifyAdminCredentials } from "@/lib/admin-rbac";
-import { hashPassword, MIN_PASSWORD_LENGTH } from "@/lib/password";
+import { checkAccessLevel, requireAdmin, verifyAdminCredentials } from "@/lib/admin-rbac";
+import { prisma } from "@/lib/prisma";
+import { hashPassword, verifyPassword, MIN_PASSWORD_LENGTH } from "@/lib/password";
 import {
   updateAppSettings,
   type ActiveBroker,
@@ -13,7 +13,9 @@ import {
 export async function saveAppSettings(
   partial: Partial<AppSettingsData>,
 ): Promise<{ success: boolean; error?: string }> {
-  const admin = await requireAdmin();
+  const access = await checkAccessLevel("ADMIN");
+  if (!access.ok) return { success: false, error: access.error };
+  const admin = access.admin;
 
   // Dhan and Goodwill are mutually exclusive (see client-config.ts's old
   // comment on goodwillBrokerEnabled) — guard it here too, not just in the
@@ -39,23 +41,26 @@ export interface GenerateAdminPasswordHashInput {
 }
 
 /**
- * TGA's admin account has no DB row — its credentials are ADMIN_EMAIL /
- * ADMIN_PASSWORD_HASH env vars (see src/lib/admin-rbac.ts), which this
- * server action cannot write to. So this does NOT change the live password:
- * it verifies the current one and returns a freshly generated hash for the
- * new one. The admin still has to paste that value into
- * ADMIN_PASSWORD_HASH in Vercel (and locally in .env) and redeploy — see
- * the UI copy in components/admin/change-password-form.tsx.
+ * Changes the signed-in admin's own password.
+ *
+ * - Owner (ADMIN_EMAIL): its password lives in the ADMIN_PASSWORD_HASH env
+ *   var, which a server action can't write. So this verifies the current
+ *   password and returns a freshly generated hash (`newHash`) that the owner
+ *   pastes into Vercel and redeploys — see components/admin/change-password-form.tsx.
+ * - Staff admins (AdminUser rows): the new password is saved to the
+ *   database immediately (`updated: true`). If they had no password yet
+ *   (Google-only), the current-password field isn't required.
+ * - ADDITIONAL_ADMIN_EMAILS admins have no password (Google sign-in only).
  */
 export async function generateAdminPasswordHash(
   input: GenerateAdminPasswordHashInput,
-): Promise<{ success: boolean; error?: string; newHash?: string }> {
+): Promise<{ success: boolean; error?: string; newHash?: string; updated?: boolean }> {
   const admin = await requireAdmin();
 
-  if (admin.email !== process.env.ADMIN_EMAIL?.trim().toLowerCase()) {
+  if (admin.kind === "env") {
     return {
       success: false,
-      error: "Only the primary admin has a password. Additional admins sign in with Google.",
+      error: "This admin account signs in with Google only. Ask a Super Admin to add you on the Admins page if you need a password.",
     };
   }
 
@@ -67,10 +72,37 @@ export async function generateAdminPasswordHash(
     return { success: false, error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters.` };
   }
 
-  if (!verifyAdminCredentials(admin.email, input.currentPassword)) {
+  if (admin.kind === "owner") {
+    if (!(await verifyAdminCredentials(admin.email, input.currentPassword))) {
+      return { success: false, error: "Current password is incorrect." };
+    }
+    return { success: true, newHash: hashPassword(input.newPassword) };
+  }
+
+  const staff = admin.staffId
+    ? await prisma.adminUser.findUnique({ where: { id: admin.staffId } })
+    : null;
+  if (!staff) return { success: false, error: "Admin account not found." };
+
+  if (staff.passwordHash && !verifyPassword(input.currentPassword, staff.passwordHash)) {
     return { success: false, error: "Current password is incorrect." };
   }
 
-  const newHash = hashPassword(input.newPassword);
-  return { success: true, newHash };
+  await prisma.$transaction([
+    prisma.adminUser.update({
+      where: { id: staff.id },
+      data: { passwordHash: hashPassword(input.newPassword) },
+    }),
+    prisma.adminUserAuditLog.create({
+      data: {
+        changedById: staff.id,
+        changedByEmail: staff.email,
+        targetAdminId: staff.id,
+        action: "SET_PASSWORD",
+        newValue: "self",
+      },
+    }),
+  ]);
+
+  return { success: true, updated: true };
 }

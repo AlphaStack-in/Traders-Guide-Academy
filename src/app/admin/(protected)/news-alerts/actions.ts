@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/admin-auth";
+import { denyUnlessAccess } from "@/lib/admin-auth";
 
 export interface NewsAlertInput {
   title: string;
@@ -43,7 +43,8 @@ function normalize(input: NewsAlertInput) {
 }
 
 export async function createNewsAlert(input: NewsAlertInput) {
-  await requireAdmin();
+  const denied = await denyUnlessAccess("SIGNAL_MANAGER");
+  if (denied) return denied;
 
   const title = input.title.trim();
   const summary = input.summary.trim();
@@ -86,7 +87,8 @@ export async function createNewsAlert(input: NewsAlertInput) {
 }
 
 export async function setNewsAlertActive(id: string, isActive: boolean) {
-  await requireAdmin();
+  const denied = await denyUnlessAccess("SIGNAL_MANAGER");
+  if (denied) return denied;
 
   const alert = await prisma.newsAlert.findUnique({ where: { id } });
   if (!alert) {
@@ -102,7 +104,8 @@ export async function setNewsAlertActive(id: string, isActive: boolean) {
 }
 
 export async function deleteNewsAlert(id: string) {
-  await requireAdmin();
+  const denied = await denyUnlessAccess("SIGNAL_MANAGER");
+  if (denied) return denied;
 
   const alert = await prisma.newsAlert.findUnique({ where: { id } });
   if (!alert) {

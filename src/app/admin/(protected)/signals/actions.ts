@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/admin-auth";
+import { denyUnlessAccess } from "@/lib/admin-auth";
 import { calcPnlPercent, deriveStatus, inferHitTargetLabel } from "@/lib/signal-metrics";
 import {
   formatNewSignalMessage,
@@ -85,7 +85,8 @@ function toSignalCreateData(input: SignalInput) {
 }
 
 export async function createSignals(inputs: SignalInput[]) {
-  await requireAdmin();
+  const denied = await denyUnlessAccess("SIGNAL_MANAGER");
+  if (denied) return denied;
 
   if (inputs.length === 0) {
     return { success: false, error: "No signals to save." };
@@ -188,7 +189,8 @@ export interface SignalUpdateInput {
 }
 
 export async function updateSignal(id: string, input: SignalUpdateInput) {
-  await requireAdmin();
+  const denied = await denyUnlessAccess("SIGNAL_MANAGER");
+  if (denied) return denied;
 
   const signal = await prisma.signal.findUnique({ where: { id } });
   if (!signal) {
@@ -235,7 +237,8 @@ export async function updateSignal(id: string, input: SignalUpdateInput) {
 }
 
 export async function updateAdminNote(id: string, adminNote: string | null) {
-  await requireAdmin();
+  const denied = await denyUnlessAccess("SIGNAL_MANAGER");
+  if (denied) return denied;
 
   const signal = await prisma.signal.findUnique({ where: { id } });
   if (!signal) {
@@ -341,7 +344,8 @@ export async function getGeneralAdminUpdates(limit = 50): Promise<AdminUpdateIte
 }
 
 export async function postGeneralAdminUpdate(message: string) {
-  await requireAdmin();
+  const denied = await denyUnlessAccess("SIGNAL_MANAGER");
+  if (denied) return denied;
 
   const trimmed = message.trim();
   if (!trimmed) {
@@ -379,7 +383,8 @@ export async function getLatestAdminUpdateTimestamps(
 }
 
 export async function deleteSignal(id: string) {
-  await requireAdmin();
+  const denied = await denyUnlessAccess("SIGNAL_MANAGER");
+  if (denied) return denied;
 
   const signal = await prisma.signal.findUnique({ where: { id } });
   if (!signal) {
@@ -403,7 +408,8 @@ export async function deleteSignal(id: string) {
 }
 
 export async function closeSignal(id: string, sellPrice: number) {
-  await requireAdmin();
+  const denied = await denyUnlessAccess("SIGNAL_MANAGER");
+  if (denied) return denied;
 
   const signal = await prisma.signal.findUnique({ where: { id } });
   if (!signal) {

@@ -18,8 +18,8 @@ import {
  * .../start/route.ts, exchange the code for tokens, and fetch the verified
  * Google profile — then branch on the role that flow cookie recorded:
  *
- *   - admin: the Google account's email must match ADMIN_EMAIL or one of
- *     ADDITIONAL_ADMIN_EMAILS
+ *   - admin: the Google account's email must be ADMIN_EMAIL, one of
+ *     ADDITIONAL_ADMIN_EMAILS, or an active AdminUser row (/admin/admins)
  *     (there is still only one admin account — see src/lib/admin-rbac.ts).
  *     No schema change needed; this is just an alternate credential for the
  *     same env-var-defined identity password login already grants.
@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
   const email = normalizeEmail(googleUser.email);
 
   if (flow.role === "admin") {
-    if (!isAdminEmail(email)) {
+    if (!(await isAdminEmail(email))) {
       return fail(request, loginPage, "google_not_admin");
     }
     await createAdminSession(email);

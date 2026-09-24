@@ -6,11 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 **[Tech debts](./tech-debt-ledger.html)** — once deployed, also served at `/tech-debt-ledger.html`
 
-Versioning continues the semantic patch series from the SignalFlow template (`1.0.7` → `1.0.8` …). The footer and Admin Changelog page read the current version from `package.json` (now **1.0.75**).
+Versioning continues the semantic patch series from the SignalFlow template (`1.0.7` → `1.0.8` …). The footer and Admin Changelog page read the current version from `package.json` (now **1.0.76**).
 
 Each release header now includes a build timestamp (24-hour IST, matching `build-info.ts`'s `formattedBuildTime`), not just a date — this reflects the actual commit that shipped the version. While adding timestamps, two pre-existing dates were corrected to match their real shipping commit: `1.0.8` (was dated by the TGA fork commit, 3 days before the digest-email feature in that release actually shipped) and `1.0.2` (was off by one day around a just-after-midnight IST commit).
 
 ## [Unreleased]
+
+## [1.0.76] - 2026-09-24 20:05 IST
+
+### Added
+- **Admin** — Admins page (Super Admin only) to add, re-role, remove/restore staff admins and set their passwords, with a Recent changes log
+- **Admin** — five roles (Viewer, Support, Signal Manager, Admin, Super Admin) enforced on every admin action; the top-bar account menu shows your role
+- **Admin** — `ADDITIONAL_ADMIN_EMAILS` env var for extra Google-only Super Admins (1.0.75+ interim)
+
+### Changed
+- **Admin Settings** — staff admins change their own password instantly (owner keeps the env-var hash flow); Site Settings require Admin or above
+- **Database** — `AdminUser` table back in use (new `name`, `passwordHash`, `lastLoginAt`; audit log `changedByEmail`). Leftover rows from the old Supabase-era RBAC are deactivated by the migration
 
 ## [1.0.75] - 2026-09-16 17:30 IST
 

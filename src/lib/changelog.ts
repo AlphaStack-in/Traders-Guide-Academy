@@ -58,6 +58,18 @@ export function changelogTimestamp(date: string): string {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "1.0.76",
+    date: "24 Sep 2026, 20:05 IST",
+    title: "Multiple admins with roles",
+    highlights: [
+      "New Admins page (Super Admins only): add staff admins with their own login and a role — Viewer, Support, Signal Manager, Admin or Super Admin",
+      "Each admin action now checks the role: e.g. Support can manage members and messages, Signal Manager can also send signals and News & Alerts, Admin can also edit products, PMS, broker sessions and site settings",
+      "Staff admins can sign in with Google or an optional password, and change their own password from Settings instantly",
+      "Removing an admin or changing their role takes effect on their next click; every change is recorded in a Recent changes log",
+      "The owner account (ADMIN_EMAIL) and ADDITIONAL_ADMIN_EMAILS keep working unchanged as Super Admins",
+    ],
+  },
+  {
     version: "1.0.75",
     date: "16 Sep 2026, 17:30 IST",
     title: "Home section order, course marquee, catalog cleanup",

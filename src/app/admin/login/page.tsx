@@ -10,8 +10,9 @@ import { getAdminUser } from "@/lib/admin-rbac";
  * Defense-in-depth: an already-authenticated admin is redirected immediately
  * to /admin/dashboard.
  *
- * Authentication: a single hardcoded admin account (ADMIN_EMAIL +
- * ADMIN_PASSWORD_HASH env vars), verified in src/app/admin/login/actions.ts.
+ * Authentication: the owner admin (ADMIN_EMAIL + ADMIN_PASSWORD_HASH env
+ * vars) or a staff admin with a password (AdminUser table, managed on
+ * /admin/admins), verified in src/app/admin/login/actions.ts.
  * Session: an HMAC-signed cookie, checked in requireAdmin() / admin-rbac.ts.
  */
 export default async function AdminLoginPage() {

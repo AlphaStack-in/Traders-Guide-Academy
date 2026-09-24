@@ -2,10 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/admin-auth";
+import { denyUnlessAccess } from "@/lib/admin-auth";
 
 export async function deleteReferral(id: string) {
-  await requireAdmin();
+  const denied = await denyUnlessAccess("SUPPORT");
+  if (denied) return denied;
 
   await prisma.referral.delete({ where: { id } });
 

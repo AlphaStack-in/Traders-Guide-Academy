@@ -3,7 +3,7 @@
 import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/admin-rbac";
+import { checkAccessLevel } from "@/lib/admin-rbac";
 
 export interface AddPmsValuationInput {
   productPurchaseId: string;
@@ -17,12 +17,12 @@ export interface AddPmsValuationInput {
 /**
  * Logs a new PmsValuationEntry for a subscriber's PMS purchase — the only
  * way this data gets created (see prisma/schema.prisma's PmsValuationEntry
- * comment). Gated the same way every other admin action in this app is
- * (requireAdmin() — a single hardcoded admin account, see
- * src/lib/admin-rbac.ts), not a new access level.
+ * comment). Requires the ADMIN role or above (see src/lib/admin-rbac.ts).
  */
 export async function addPmsValuationEntry(input: AddPmsValuationInput) {
-  const admin = await requireAdmin();
+  const access = await checkAccessLevel("ADMIN");
+  if (!access.ok) return { success: false as const, error: access.error };
+  const admin = access.admin;
 
   const asOfDate = new Date(input.asOfDate);
   if (Number.isNaN(asOfDate.getTime())) {

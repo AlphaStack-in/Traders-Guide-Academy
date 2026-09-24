@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { AdminSidebar, AdminTopBar } from "@/components/admin/admin-nav";
 import { BuildVersionIndicator } from "@/components/site/build-version-indicator";
 import { requireAdmin } from "@/lib/admin-auth";
+import { ACCESS_LEVEL_LABELS } from "@/lib/admin-roles";
 import { clientConfig } from "@/lib/client-config";
 import { getActiveBroker } from "@/lib/app-settings";
 
@@ -12,10 +13,14 @@ export default async function AdminProtectedLayout({
 }) {
   let isSuperAdmin = false;
   let adminEmail: string | null = null;
+  let adminName: string | null = null;
+  let roleLabel: string | null = null;
   try {
     const admin = await requireAdmin();
     isSuperAdmin = admin.accessLevel === "SUPER_ADMIN";
     adminEmail = admin.email;
+    adminName = admin.name;
+    roleLabel = ACCESS_LEVEL_LABELS[admin.accessLevel];
   } catch {
     // Not authenticated or not an admin — send to login.
     redirect("/admin/login");
@@ -26,7 +31,7 @@ export default async function AdminProtectedLayout({
   return (
     <div className="flex min-h-screen flex-col md:pl-64">
       <AdminSidebar isSuperAdmin={isSuperAdmin} activeBroker={activeBroker} />
-      <AdminTopBar adminEmail={adminEmail} />
+      <AdminTopBar adminEmail={adminEmail} adminName={adminName} roleLabel={roleLabel} />
       <main className="mx-auto flex-1 w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {children}
       </main>

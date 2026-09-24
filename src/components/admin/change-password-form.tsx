@@ -7,7 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { generateAdminPasswordHash } from "@/app/admin/(protected)/settings/actions";
 
-export function AdminChangePasswordForm() {
+export function AdminChangePasswordForm({
+  mode = "owner",
+}: {
+  /** owner = env-var password (hash flow), staff = saved to DB, google-only = no password. */
+  mode?: "owner" | "staff" | "google-only";
+}) {
   const [isPending, startTransition] = useTransition();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -31,6 +36,14 @@ export function AdminChangePasswordForm() {
         newPassword,
         confirmPassword,
       });
+
+      if (result.success && result.updated) {
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+        toast.success("Password changed. Use it next time you sign in.");
+        return;
+      }
 
       if (!result.success || !result.newHash) {
         setError(result.error ?? "Couldn't generate a new password hash.");
@@ -62,21 +75,33 @@ export function AdminChangePasswordForm() {
       <h2 className="font-heading text-lg font-bold">
         Change <span className="signalflow-gold-text">Admin Password</span>
       </h2>
-      <p className="mt-1 text-sm text-muted-foreground">
-        There&apos;s a single admin account, and its password lives in an environment variable
-        (<code className="text-xs">ADMIN_PASSWORD_HASH</code>), not the database — so this form
-        can&apos;t rotate it by itself. It verifies your current password and generates a new hash;
-        you paste that into Vercel and redeploy to actually change it.
-      </p>
+      {mode === "owner" ? (
+        <p className="mt-1 text-sm text-muted-foreground">
+          The owner account&apos;s password lives in an environment variable
+          (<code className="text-xs">ADMIN_PASSWORD_HASH</code>), not the database — so this form
+          can&apos;t rotate it by itself. It verifies your current password and generates a new hash;
+          you paste that into Vercel and redeploy to actually change it.
+        </p>
+      ) : mode === "staff" ? (
+        <p className="mt-1 text-sm text-muted-foreground">
+          Changes your own admin password immediately. If you&apos;ve only ever signed in with Google,
+          leave the current password blank.
+        </p>
+      ) : (
+        <p className="mt-1 text-sm text-muted-foreground">
+          Your admin account signs in with Google only, so it has no password to change. Ask a
+          Super Admin to add you on the Admins page if you want one.
+        </p>
+      )}
 
-      {!newHash ? (
+      {mode === "google-only" ? null : !newHash ? (
         <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="admin-current-password">Current password</Label>
             <Input
               id="admin-current-password"
               type="password"
-              required
+              required={mode === "owner"}
               autoComplete="current-password"
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
@@ -115,7 +140,11 @@ export function AdminChangePasswordForm() {
           )}
 
           <Button type="submit" disabled={isPending} className="self-start">
-            {isPending ? "Verifying…" : "Generate new password hash"}
+            {isPending
+              ? "Verifying…"
+              : mode === "owner"
+                ? "Generate new password hash"
+                : "Change password"}
           </Button>
         </form>
       ) : (

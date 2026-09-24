@@ -3,11 +3,11 @@
 import { revalidatePath } from "next/cache";
 import type { ProductCategory } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/admin-auth";
+import { denyUnlessAccess } from "@/lib/admin-auth";
 
 // Server actions for /admin/products — catalog CRUD for the public /products
 // page. Kept separate from news-alerts/actions.ts since the two entities
-// share nothing beyond requireAdmin() and revalidatePath().
+// share nothing beyond denyUnlessAccess() and revalidatePath().
 export interface ProductInput {
   name: string;
   category: ProductCategory;
@@ -86,7 +86,8 @@ function revalidateProductPaths(slug: string) {
 }
 
 export async function createProduct(input: ProductInput) {
-  await requireAdmin();
+  const denied = await denyUnlessAccess("ADMIN");
+  if (denied) return denied;
 
   const name = input.name.trim();
   if (!name) {
@@ -112,7 +113,8 @@ export async function createProduct(input: ProductInput) {
 }
 
 export async function updateProduct(id: string, input: ProductInput) {
-  await requireAdmin();
+  const denied = await denyUnlessAccess("ADMIN");
+  if (denied) return denied;
 
   const product = await prisma.product.findUnique({ where: { id } });
   if (!product) {
@@ -142,7 +144,8 @@ export async function updateProduct(id: string, input: ProductInput) {
 }
 
 export async function setProductActive(id: string, isActive: boolean) {
-  await requireAdmin();
+  const denied = await denyUnlessAccess("ADMIN");
+  if (denied) return denied;
 
   const product = await prisma.product.findUnique({ where: { id } });
   if (!product) {
@@ -157,7 +160,8 @@ export async function setProductActive(id: string, isActive: boolean) {
 }
 
 export async function deleteProduct(id: string) {
-  await requireAdmin();
+  const denied = await denyUnlessAccess("ADMIN");
+  if (denied) return denied;
 
   // Product isn't cascade-deleted from ProductPurchase (unlike Subscriber →
   // Subscription/Payment above) — a real purchase history should never

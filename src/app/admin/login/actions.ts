@@ -10,7 +10,7 @@ export async function loginAdmin(
     return { success: false, error: "Email and password are required." };
   }
 
-  if (!verifyAdminCredentials(email, password)) {
+  if (!(await verifyAdminCredentials(email, password))) {
     return { success: false, error: "Invalid email or password." };
   }
 

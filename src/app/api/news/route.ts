@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { getAdminUser } from "@/lib/admin-auth";
+import { getAdminUser, hasPermission } from "@/lib/admin-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -87,6 +87,9 @@ export async function POST(request: Request) {
   const auth = await getAdminUser();
   if (!auth.ok) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
+  }
+  if (!hasPermission(auth.accessLevel, "SIGNAL_MANAGER")) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   try {

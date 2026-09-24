@@ -3,7 +3,7 @@
 import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/admin-auth";
+import { denyUnlessAccess } from "@/lib/admin-auth";
 import { sendAnnouncementEmail, sendReferralInviteEmail } from "@/lib/email";
 import { hashPassword } from "@/lib/password";
 import { publishAdminUpdate } from "@/lib/ably";
@@ -18,7 +18,8 @@ export interface SubscriberInput {
 }
 
 export async function createSubscriber(input: SubscriberInput) {
-  await requireAdmin();
+  const denied = await denyUnlessAccess("SUPPORT");
+  if (denied) return denied;
 
   const name = input.name.trim();
   const phone = input.phone.trim();
@@ -59,7 +60,8 @@ export async function createSubscriber(input: SubscriberInput) {
 }
 
 export async function updateSubscriber(id: string, input: SubscriberInput) {
-  await requireAdmin();
+  const denied = await denyUnlessAccess("SUPPORT");
+  if (denied) return denied;
 
   const name = input.name.trim();
   const phone = input.phone.trim();
@@ -111,7 +113,8 @@ export async function updateSubscriber(id: string, input: SubscriberInput) {
  * file under time pressure.
  */
 export async function setSubscriberPassword(id: string, newPassword: string) {
-  await requireAdmin();
+  const denied = await denyUnlessAccess("SUPPORT");
+  if (denied) return denied;
 
   if (!newPassword || newPassword.length < 6) {
     return { success: false, error: "Password must be at least 6 characters long." };
@@ -129,7 +132,8 @@ export async function setSubscriberPassword(id: string, newPassword: string) {
 }
 
 export async function deleteSubscriber(id: string) {
-  await requireAdmin();
+  const denied = await denyUnlessAccess("ADMIN");
+  if (denied) return denied;
 
   await prisma.subscriber.delete({ where: { id } });
 
@@ -139,7 +143,8 @@ export async function deleteSubscriber(id: string) {
 }
 
 export async function inviteSubscriber(id: string, origin?: string) {
-  await requireAdmin();
+  const denied = await denyUnlessAccess("SUPPORT");
+  if (denied) return denied;
 
   const subscriber = await prisma.subscriber.findUnique({ where: { id } });
   if (!subscriber) {
@@ -219,7 +224,8 @@ export interface SendAnnouncementResult {
 export async function sendAnnouncement(
   input: SendAnnouncementInput,
 ): Promise<SendAnnouncementResult> {
-  await requireAdmin();
+  const denied = await denyUnlessAccess("ADMIN");
+  if (denied) return denied;
 
   const message = input.message.trim();
   if (!message) {

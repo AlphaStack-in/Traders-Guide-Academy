@@ -49,12 +49,10 @@ function getMembersLinks(activeBroker: ActiveBroker) {
   ];
 }
 
-// isSuperAdmin no longer changes this list — TGA has a single hardcoded
-// admin account now, so there's no "Admin Users" management page to link to.
-// The param is kept (always true) so the protected layout doesn't need to
-// change how it calls this.
-function getAdminGroupLinks(_isSuperAdmin: boolean, activeBroker: ActiveBroker) {
+// Super Admins also get the Admins page (staff admin management).
+function getAdminGroupLinks(isSuperAdmin: boolean, activeBroker: ActiveBroker) {
   return [
+    ...(isSuperAdmin ? [{ href: "/admin/admins", label: "Admins" }] : []),
     { href: "/admin/settings", label: "Settings" },
     { href: "/admin/help", label: "Help Manual" },
     { href: "/admin/changelog", label: "Changelog" },
@@ -252,9 +250,17 @@ export function AdminSidebar({
  * fixed sidebar on desktop (full-width on mobile, where the sidebar collapses
  * into its own drawer) — no fixed positioning of its own needed.
  */
-export function AdminTopBar({ adminEmail = null }: { adminEmail?: string | null }) {
+export function AdminTopBar({
+  adminEmail = null,
+  adminName = null,
+  roleLabel = null,
+}: {
+  adminEmail?: string | null;
+  adminName?: string | null;
+  roleLabel?: string | null;
+}) {
   const router = useRouter();
-  const username = adminEmail ? adminEmail.split("@")[0] : null;
+  const username = adminName || (adminEmail ? adminEmail.split("@")[0] : null);
 
   async function handleLogout() {
     await fetch("/admin/logout", { method: "POST" });
@@ -281,6 +287,12 @@ export function AdminTopBar({ adminEmail = null }: { adminEmail?: string | null 
             <span className="max-w-[120px] truncate capitalize">{username}</span>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-52">
+            {roleLabel && (
+              <div className="px-2 py-1.5 text-xs text-muted-foreground">
+                <div className="truncate">{adminEmail}</div>
+                <div className="font-medium text-foreground">{roleLabel}</div>
+              </div>
+            )}
             <DropdownMenuItem asChild className="cursor-pointer gap-2">
               <Link href="/admin/settings">
                 <Settings className="h-3.5 w-3.5 text-muted-foreground" />

@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { ADMIN_SESSION_COOKIE } from "@/lib/admin-rbac";
+import { ADMIN_SESSION_COOKIE } from "@/lib/admin-session-cookie";
 import { verifySessionToken } from "@/lib/session-cookie";
 
 /**
@@ -11,9 +11,9 @@ import { verifySessionToken } from "@/lib/session-cookie";
  *   - Unauthenticated/invalid session → redirect to /admin/login.
  *
  * What this does NOT do:
- *   - Authorization beyond "is there a valid admin session" — with a single
- *     hardcoded admin account there's nothing further to authorize; the
- *     env-var identity check happens in requireAdmin() / admin-rbac.ts.
+ *   - Authorization beyond "is there a valid admin session" — resolving the
+ *     session to a live admin + role (owner env var or AdminUser row)
+ *     happens in requireAdmin() / admin-rbac.ts, which needs the database.
  *   - Redirect an already-authenticated admin away from /admin/login — that
  *     redirect is handled by the login page itself (see
  *     src/app/admin/login/page.tsx) to avoid redirect loops.

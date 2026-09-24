@@ -25,6 +25,8 @@ export {
   getAdminUser,
   requireAdmin,
   requireAccessLevel,
+  checkAccessLevel,
+  denyUnlessAccess,
   hasPermission,
   type AdminCheckResult,
 } from "@/lib/admin-rbac";

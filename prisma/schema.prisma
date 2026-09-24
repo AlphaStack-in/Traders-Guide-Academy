@@ -516,16 +516,18 @@ enum AdminAccessLevel {
   VIEWER
 }
 
-// One row per authorized admin.  supabaseUserId is the permanent auth identity
-// (Supabase Auth user.id) once bound.  email is the onboarding / binding key
-// only — used to create pending admins and bind UUID on first Google login.
-// After binding, authorization uses supabaseUserId (never email alone).
+// Staff admin accounts managed from /admin/admins (see src/lib/admin-rbac.ts).
+// The primary owner admin is NOT a row here — it stays defined by the
+// ADMIN_EMAIL / ADMIN_PASSWORD_HASH env vars and is always SUPER_ADMIN.
 model AdminUser {
   id             String           @id @default(uuid())
-  supabaseUserId String?          @unique // null until first successful Google login
-  email          String           @unique // normalized lowercase; onboarding key
+  supabaseUserId String?          @unique // legacy (Supabase era), unused
+  email          String           @unique // normalized lowercase; login key
+  name           String?
+  passwordHash   String? // null = Google sign-in only
   accessLevel    AdminAccessLevel @default(VIEWER)
   isActive       Boolean          @default(true)
+  lastLoginAt    DateTime?
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
 
@@ -536,14 +538,15 @@ model AdminUser {
   @@index([isActive])
 }
 
-// Append-only audit trail for admin access-level and activation changes.
+// Append-only audit trail for staff-admin changes made on /admin/admins.
 model AdminUserAuditLog {
   id            String    @id @default(uuid())
-  changedById   String
-  changedBy     AdminUser @relation("ChangedBy", fields: [changedById], references: [id])
+  changedById    String? // null when the change was made by the env-var owner admin
+  changedBy      AdminUser? @relation("ChangedBy", fields: [changedById], references: [id])
+  changedByEmail String? // actor email, always set for new entries
   targetAdminId String
   targetAdmin   AdminUser @relation("ChangedFor", fields: [targetAdminId], references: [id])
-  action        String // "SET_ACCESS_LEVEL" | "ACTIVATE" | "DEACTIVATE" | "CREATE"
+  action        String // "CREATE" | "SET_ACCESS_LEVEL" | "ACTIVATE" | "DEACTIVATE" | "SET_PASSWORD" | "UPDATE_NAME"
   previousValue String?
   newValue      String?
   createdAt     DateTime  @default(now())

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/admin-auth";
+import { denyUnlessAccess } from "@/lib/admin-auth";
 import { getActiveBroker } from "@/lib/app-settings";
 
 export async function revokeBrokerConnection(subscriberId: string) {
@@ -11,7 +11,8 @@ export async function revokeBrokerConnection(subscriberId: string) {
     return { success: false, error: "Broker connect isn't available on this platform." };
   }
 
-  await requireAdmin();
+  const denied = await denyUnlessAccess("ADMIN");
+  if (denied) return denied;
 
   await prisma.brokerConnection.updateMany({
     where: { subscriberId },

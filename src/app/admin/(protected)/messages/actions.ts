@@ -2,11 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/admin-auth";
+import { denyUnlessAccess } from "@/lib/admin-auth";
 import { sendContactReplyEmail } from "@/lib/email";
 
 export async function replyToMessage(id: string, replyText: string) {
-  await requireAdmin();
+  const denied = await denyUnlessAccess("SUPPORT");
+  if (denied) return denied;
 
   const reply = replyText.trim();
   if (!reply) {
@@ -50,7 +51,8 @@ export async function replyToMessage(id: string, replyText: string) {
 }
 
 export async function deleteMessage(id: string) {
-  await requireAdmin();
+  const denied = await denyUnlessAccess("SUPPORT");
+  if (denied) return denied;
 
   await prisma.contactMessage.delete({ where: { id } });
 
