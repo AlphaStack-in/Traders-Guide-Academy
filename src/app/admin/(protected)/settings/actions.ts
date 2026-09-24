@@ -52,6 +52,13 @@ export async function generateAdminPasswordHash(
 ): Promise<{ success: boolean; error?: string; newHash?: string }> {
   const admin = await requireAdmin();
 
+  if (admin.email !== process.env.ADMIN_EMAIL?.trim().toLowerCase()) {
+    return {
+      success: false,
+      error: "Only the primary admin has a password. Additional admins sign in with Google.",
+    };
+  }
+
   if (input.newPassword !== input.confirmPassword) {
     return { success: false, error: "New password and confirmation don't match." };
   }

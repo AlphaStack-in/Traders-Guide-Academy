@@ -11,6 +11,11 @@
  * still just calls createAdminSession() below once the Google email matches
  * ADMIN_EMAIL, not a separate OAuth-backed account system.
  *
+ * Additional admins: ADDITIONAL_ADMIN_EMAILS (optional, comma-separated)
+ * lists extra emails that get full admin access. They can sign in with
+ * Google only — email/password login stays tied to the primary ADMIN_EMAIL
+ * + ADMIN_PASSWORD_HASH. Every admin is SUPER_ADMIN (no per-admin roles).
+ *
  * Session mechanism: an HMAC-signed, httpOnly cookie (see
  * src/lib/session-cookie.ts), verified server-side on every check — no
  * external session store, no new npm dependencies.
@@ -88,7 +93,26 @@ export type AdminCheckResult =
 // ---------------------------------------------------------------------------
 
 /**
+ * All emails allowed to hold an admin session: the primary ADMIN_EMAIL plus
+ * any in ADDITIONAL_ADMIN_EMAILS (comma-separated). Lowercased, de-duplicated.
+ */
+export function getAdminEmails(): string[] {
+  const primary = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+  const extra = (process.env.ADDITIONAL_ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+  return Array.from(new Set([...(primary ? [primary] : []), ...extra]));
+}
+
+export function isAdminEmail(email: string): boolean {
+  return getAdminEmails().includes(email.trim().toLowerCase());
+}
+
+/**
  * Checks a submitted email/password against ADMIN_EMAIL/ADMIN_PASSWORD_HASH.
+ * Password login is for the primary admin only — additional admins
+ * (ADDITIONAL_ADMIN_EMAILS) must use Google sign-in.
  * Fails closed (returns false) if either env var is unset.
  */
 export function verifyAdminCredentials(email: string, password: string): boolean {
@@ -125,8 +149,9 @@ export async function clearAdminSession(): Promise<void> {
 
 /**
  * Verifies that the current request carries a valid admin session cookie
- * whose email still matches the current ADMIN_EMAIL env var (so rotating
- * ADMIN_EMAIL invalidates any old session immediately, without needing a
+ * whose email is still in the current admin list (ADMIN_EMAIL +
+ * ADDITIONAL_ADMIN_EMAILS), so removing an email invalidates any old
+ * session immediately, without needing a
  * session-store purge).
  *
  * Suitable for API Route handlers where you need the status code.
@@ -140,9 +165,10 @@ export async function getAdminUser(): Promise<AdminCheckResult> {
     return { ok: false, error: "Unauthorized", status: 401 };
   }
 
-  const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
-  if (!adminEmail || session.email.toLowerCase() !== adminEmail) {
-    // ADMIN_EMAIL changed since the session was issued, or a stale/forged cookie.
+  const adminEmail = session.email.trim().toLowerCase();
+  if (!isAdminEmail(adminEmail)) {
+    // Email removed from ADMIN_EMAIL / ADDITIONAL_ADMIN_EMAILS since the
+    // session was issued, or a stale/forged cookie.
     return { ok: false, error: "Forbidden", status: 403 };
   }
 
